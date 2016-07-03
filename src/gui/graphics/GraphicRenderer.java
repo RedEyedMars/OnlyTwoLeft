@@ -55,11 +55,11 @@ public class GraphicRenderer {
 					// Mapping coordinates for the vertices
 					i/length, 1f,		// top left		(V2)
 					i/length, 0,		// bottom left	(V1)
-					(1f+i)/length, 1f,		// top right	(V4)
-					(1f+i)/length, 0		// bottom right	(V3)
+					(i+1)/length, 1f,		// top right	(V4)
+					(i+1)/length, 0		// bottom right	(V3)
 			};
 
-			ByteBuffer byteBuffer = ByteBuffer.allocateDirect(12 * 4);
+			ByteBuffer byteBuffer = ByteBuffer.allocateDirect(2 * 4 * 4);
 			byteBuffer.order(ByteOrder.nativeOrder());
 			textureBuffer[t] = byteBuffer.asFloatBuffer();
 			textureBuffer[t].put(textures);

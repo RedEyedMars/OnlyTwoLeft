@@ -10,25 +10,19 @@ import gui.graphics.GraphicEntity;
 
 public class Map extends GraphicEntity {
 
-	private java.util.Map<String,MapAction> mapActions = new HashMap<String,MapAction>();
+	private java.util.Map<String,SquareIdentity> squareIds = new HashMap<String,SquareIdentity>();
 
 	private List<Square> allSquares = new ArrayList<Square>();
+	private List<Square> blackSquares = new ArrayList<Square>();
+	private List<Square> whiteSquares = new ArrayList<Square>();
 	private List<FunctionalSquare> functionalSquares = new ArrayList<FunctionalSquare>();
 
 	public Map() {
-		super("black");
+		super("blank");
 		this.setVisible(false);
-
-		mapActions.put("forestWall", new MapAction(){
-			@Override
-			public void act(MapLoader map) {
-				map.add(new WallSquare(Square.darkGreen,map.nextInteger(),map.getFloats()));
-			}});
-		mapActions.put("grass", new MapAction(){
-			@Override
-			public void act(MapLoader map) {
-				map.add(new Square(Square.green,map.nextInteger(),map.getFloats()));
-			}});
+		squareIds.put("fire",new SquareIdentity("fire",Square.red,SquareAction.hazard));
+		squareIds.put("forestWall",new SquareIdentity("forestWall",Square.darkGreen,SquareAction.impassible));
+		squareIds.put("grass", new SquareIdentity("grass",Square.green));
 	}
 
 	public List<FunctionalSquare> functionalSquares() {
@@ -39,8 +33,35 @@ public class Map extends GraphicEntity {
 		if(square.isFunctional()){
 			functionalSquares.add((FunctionalSquare)square);
 		}
+		
+		if(square.visibleToBlack()&&!square.visibleToWhite()){
+			blackSquares.add(square);
+		}
+		else if(square.visibleToWhite()&&!square.visibleToBlack()){
+			whiteSquares.add(square);
+		}
 		allSquares.add(square);
 		addChild(square);
+	}
+
+	public void setVisibleSquares(int colour){
+		List<Square> on = null;
+		List<Square> off = null;
+		if(colour==0){
+			on = blackSquares;
+			off = whiteSquares;
+		}
+		else if(colour==1){
+			on = whiteSquares;
+			off = blackSquares;
+		}
+		for(Square offSquare:off){
+			offSquare.turnOff();
+		}
+		for(Square onSquare:on){
+			onSquare.turnOn();
+		}
+		
 	}
 
 	public void load(Object[] loaded) {
@@ -93,7 +114,7 @@ public class Map extends GraphicEntity {
 		public MapLoader(Object[] loaded){
 			this.data = loaded;
 			integerIndex = 3;
-			floatIndex = (Integer)data[0]+3;
+			floatIndex = (Integer)data[0];
 			stringIndex = floatIndex+(Integer)data[1];
 		}
 		public void add(Square square){
@@ -106,9 +127,8 @@ public class Map extends GraphicEntity {
 
 		@Override
 		public Square next() {
-			if(mapActions.containsKey((String)data[stringIndex])){
-				mapActions.get(nextString()).act(this);;
-				return this.currentSquare;
+			if(squareIds.containsKey((String)data[stringIndex])){
+				return squareIds.get(nextString()).create(nextInteger(), nextInteger(), getFloats());
 			}
 			return null;
 		}
@@ -141,7 +161,13 @@ public class Map extends GraphicEntity {
 
 	}
 
-	private interface MapAction extends Action<MapLoader> {		
+	public boolean isMallible() {
+		return true;
 	}
+
+	public List<Square> getSquares() {
+		return allSquares;
+	}
+
 
 }

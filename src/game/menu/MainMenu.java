@@ -13,7 +13,7 @@ public class MainMenu extends GraphicView{
 	public MainMenu() {
 		super();
 		addChild(new GraphicEntity("title"));
-		GraphicEntity button = new GraphicEntity("black"){
+		GraphicEntity button = new GraphicEntity("blank"){
 			@Override
 			public void performOnClick(MotionEvent e){
 				startStory();
@@ -24,7 +24,7 @@ public class MainMenu extends GraphicView{
 		button.setVisible(false);
 		addChild(button);
 		
-		button = new GraphicEntity("black"){
+		button = new GraphicEntity("blank"){
 			@Override
 			public void performOnClick(MotionEvent e){
 				startEndless();
@@ -35,7 +35,7 @@ public class MainMenu extends GraphicView{
 		button.setVisible(false);
 		addChild(button);
 		
-		button = new GraphicEntity("black"){
+		button = new GraphicEntity("blank"){
 			@Override
 			public void performOnClick(MotionEvent e){
 				startPvp();
@@ -46,7 +46,7 @@ public class MainMenu extends GraphicView{
 		button.setVisible(false);
 		addChild(button);
 		
-		button = new GraphicEntity("black"){
+		button = new GraphicEntity("blank"){
 			@Override
 			public void performOnClick(MotionEvent e){
 				startHighscores();

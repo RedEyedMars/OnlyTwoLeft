@@ -1,9 +1,9 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import game.menu.HighscoreMenu;
 import game.environment.FunctionalSquare;
 import game.environment.Square;
 import game.menu.GraphicNumber;
@@ -36,6 +36,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 		addChild(white);
 
 		controlled = black;
+		Hub.map.setVisibleSquares(0);
 		Gui.giveOnType(this);
 	}	
 
@@ -90,38 +91,49 @@ public class Game extends GraphicView implements KeyBoardListener{
 		Gui.setView(new MainMenu());
 	}
 
+	private static final float standardAcceleration = 0.075f;
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
 			if('a'==c){
-				controlled.setXAcceleration(-0.1f);
+				controlled.setXAcceleration(-standardAcceleration);
 			}
 			if('d'==c){
-				controlled.setXAcceleration(0.1f);
+				controlled.setXAcceleration(standardAcceleration);
 			}
 			if('w'==c){
-				controlled.setYAcceleration(0.1f);
+				controlled.setYAcceleration(standardAcceleration);
 			}
 			if('s'==c){
-				controlled.setYAcceleration(-0.1f);
+				controlled.setYAcceleration(-standardAcceleration);
 			}
 		}
 		else if(b==KeyBoardListener.UP){
 			if(32==keycode){
-				if(controlled.getXAcceleration()==0.1f)
+				if(controlled.getXAcceleration()==standardAcceleration)
 					controlled.setXAcceleration(0f);
 			}
 			else if(30==keycode){
-				if(controlled.getXAcceleration()==-0.1f)
+				if(controlled.getXAcceleration()==-standardAcceleration)
 					controlled.setXAcceleration(0f);
 			}
 			else if(17==keycode){
-				if(controlled.getYAcceleration()==0.1f)
+				if(controlled.getYAcceleration()==standardAcceleration)
 					controlled.setYAcceleration(0f);
 			}
 			else if(31==keycode){
-				if(controlled.getYAcceleration()==-0.1f)
+				if(controlled.getYAcceleration()==-standardAcceleration)
 					controlled.setYAcceleration(0f);
+			}
+			else if(57==keycode){//space
+				if(controlled==black){
+					controlled = white;
+					Hub.map.setVisibleSquares(1);
+				}
+				else if(controlled==white){
+					controlled = black;
+					Hub.map.setVisibleSquares(0);
+				}
 			}
 		}
 	}

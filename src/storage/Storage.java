@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import game.environment.Square;
 import main.Hub;
 
 public class Storage {
@@ -36,8 +38,9 @@ public class Storage {
 		Byte[] file = readVerbatum(filename);
 		int index = 0;
 		for(;file[index]!='\n';++index);
-		Object[] loaded = Coder.decode(file, index+1, loadStringMap(file),3,0,0);
-		loaded = Coder.decode(file, index+1, loadStringMap(file),(Integer)loaded[0]+3,(Integer)loaded[1],(Integer)loaded[2]);
+		Map<Integer,String> strings = loadStringMap(file);
+		Object[] loaded = Coder.decode(file, index+1, strings,3,0,0);
+		loaded = Coder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
 		if(Hub.map==null){
 			Hub.map = new game.environment.Map();
 		}
@@ -86,6 +89,43 @@ public class Storage {
 		return builder.toArray(new Byte[0]);
 	}
 
+	public static void saveMap(String filename, game.environment.Map map) {
+		List<Object> toSave = new ArrayList<Object>(){
+			private Integer ints = 0;
+			private Integer floats = 0;
+			private Integer strings = 0;
+			{
+				add(new Integer(0));
+				add(new Integer(0));
+				add(new Integer(0));				
+			}
+			@Override
+			public boolean add(Object o){
+				if(o instanceof Integer){
+					++ints;
+				}
+				else if(o instanceof Float){
+					++floats;
+				}
+				else if(o instanceof String){
+					++strings;
+				}
+				return super.add(o);
+			}
+			@Override
+			public Object[] toArray(Object[] o){
+				Object[] ret = super.toArray(o);
+				ret[0] = ints;
+				ret[1] = floats;
+				ret[2] = strings;
+				return ret;
+			}
+		};
+		for(Square square:map.getSquares()){
+			square.saveTo(toSave);
+		}
+		save(filename,toSave.toArray(new Object[0]));
+	}
 	public static void save(String filename, Object... toSave) {
 		createFolder("data");
 		FileOutputStream writer = null;
@@ -131,14 +171,5 @@ public class Storage {
 		if(!f.exists()){
 			f.mkdirs();
 		}
-	}
-	public static void saveCurrentView() {
-		save("./data/save.file",
-				Hub.getValue("endless",Hub.highscores),
-				Hub.getValue("endless2",Hub.highscores),
-				Hub.getValue("endless3",Hub.highscores),
-				Hub.getString("endless",Hub.highscoreNames),
-				Hub.getString("endless2",Hub.highscoreNames),
-				Hub.getString("endless3",Hub.highscoreNames));
 	}
 }

@@ -206,6 +206,7 @@ int counter = 0;
 	@Override
 	public void cleanup(){
 		Gui.running = false;
+		Main.cleanup();
 		super.cleanup();
 	}
 

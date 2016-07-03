@@ -19,7 +19,7 @@ public class StoryScene extends GraphicView{
 	private int skip = 2;
 	public StoryScene(StoryAction... actions){
 		super();
-		addChild(new Square(Square.blue,1f));
+		//addChild(new Square(Square.blue,1f));
 
 		GraphicEntity actor = new GraphicEntity("characters");
 		actors.add(actor);

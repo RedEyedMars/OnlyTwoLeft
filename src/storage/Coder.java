@@ -16,7 +16,8 @@ public abstract class Coder {
 			startAt=result[1];
 		}
 		for(int index=0;index<floats;++index){
-			objs.add(decodeFloat(cs,startAt));
+			Float x = decodeFloat(cs,startAt);
+			objs.add(x);
 			startAt+=4;
 		}
 		for(int index=0;index<numStrings;++index){
@@ -30,12 +31,20 @@ public abstract class Coder {
 
 	public static void encode(Map<String,Integer> strings, List<Byte> build, Object... objs){
 		for(int i=0;i<objs.length;++i){
-			if(objs[i] instanceof Integer)
+			if(objs[i] instanceof Integer){
+				System.out.println(objs[i]);
 				encodeInteger((Integer) objs[i],build);
-			else if(objs[i] instanceof Float)
+			}				
+		}
+		for(int i=0;i<objs.length;++i){
+			if(objs[i] instanceof Float){
 				encodeFloat((Float)objs[i],build);
-			else if(objs[i] instanceof String)
-				encodeString(objs[i].toString(),strings,build);
+			}
+		}
+		for(int i=0;i<objs.length;++i){
+			if(objs[i] instanceof String){
+				encodeString(objs[i].toString(),strings,build);				
+			}
 		}
 	}
 
