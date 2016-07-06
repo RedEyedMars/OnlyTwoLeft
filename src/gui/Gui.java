@@ -10,7 +10,11 @@ import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 
 import java.awt.Font;
+import java.io.File;
 import java.util.Stack;
+
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 
 import main.Hub;
 import main.Main;
@@ -44,7 +48,7 @@ public class Gui extends GLApp {
 
         window_title = "Scrambooooooooooooooooooooooooooooo";
         displayWidth = 800;
-        displayHeight = 800;
+        displayHeight = 600;
         Hub.width = displayWidth;
         Hub.height = displayHeight;
         this.run();  // will call init(), render(), mouse event functions
@@ -79,7 +83,6 @@ public class Gui extends GLApp {
         Main.setup();
     }
 
-int counter = 0;
 
 	@Override
     public void update(){
@@ -132,7 +135,6 @@ int counter = 0;
     }
     
     public void mouseLeftDown(int x, int y) {
-    	
     	mouseListener.peek().onClick(new MotionEvent(x/Hub.width,y/Hub.height,MotionEvent.ACTION_DOWN,MotionEvent.MOUSE_LEFT));
 
     }
@@ -153,7 +155,7 @@ int counter = 0;
     }
 
     public void mouseRightUp(int x, int y) {
-    	mouseListener.peek().onClick(new MotionEvent(x,Hub.height-y,MotionEvent.ACTION_UP,MotionEvent.MOUSE_RIGHT));
+    	mouseListener.peek().onClick(new MotionEvent(x/Hub.width,y/Hub.height,MotionEvent.ACTION_UP,MotionEvent.MOUSE_RIGHT));
 
     }
 
@@ -229,5 +231,13 @@ int counter = 0;
 		Gui.drag = true;
 	}
 
-
+	public static File userSave(){
+		JFileChooser  fc = new JFileChooser("data"+File.separator+"maps");
+		int returnVal = fc.showOpenDialog(new JPanel());
+        if (returnVal == JFileChooser.APPROVE_OPTION) {            
+            return fc.getSelectedFile();
+        } else {
+            return null;
+        }
+	}
 }

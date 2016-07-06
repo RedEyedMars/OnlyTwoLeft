@@ -21,17 +21,6 @@ import game.environment.Square;
 import main.Hub;
 
 public class Storage {
-
-	public static void loadHighscores(String filename){
-
-		Byte[] file = readVerbatum(filename);
-		int index = 0;
-		for(;file[index]!='\n';++index);
-		Object[] loaded = Coder.decode(file, index+1, loadStringMap(file),3,0,3);
-		Hub.updateIfHigher("endless",(Integer)loaded[0],(String)loaded[3], Hub.highscores, Hub.highscoreNames);
-		Hub.updateIfHigher("endless2",(Integer)loaded[1],(String)loaded[4], Hub.highscores, Hub.highscoreNames);
-		Hub.updateIfHigher("endless3",(Integer)loaded[2], (String)loaded[5], Hub.highscores, Hub.highscoreNames);
-	}
 	
 	public static void loadMap(String filename){
 
@@ -41,25 +30,23 @@ public class Storage {
 		Map<Integer,String> strings = loadStringMap(file);
 		Object[] loaded = Coder.decode(file, index+1, strings,3,0,0);
 		loaded = Coder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
-		if(Hub.map==null){
-			Hub.map = new game.environment.Map();
-		}
+		Hub.map = new game.environment.Map();
 		Hub.map.load(loaded);
 	}
 
 	private static Map<Integer,String> loadStringMap(Byte[] file) {
 		Map<Integer,String> strings = new HashMap<Integer,String>();
-		int next = 0;
+		if(file[0]=='\n')return strings;
+		int next = 0;		
 		for(int i=1;i<file.length;i=next+1){
 			next=i;
-			while(file[next]!='\t'){
-				if(file[next]=='\n'){
-					strings.put(strings.size(), readStringFromBytes(file,i,next));
-					return strings;
-				}
+			while(file[next]!='\t'&&file[next]!='\n'){
 				++next;
 			}
 			strings.put(strings.size(), readStringFromBytes(file,i,next));
+			if(file[next]=='\n'){				
+				return strings;
+			}
 		}
 		return strings;
 	}

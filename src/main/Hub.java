@@ -25,7 +25,8 @@ public class Hub {
 	public static float height;
 	public static List<GraphicElement> addLayer = new ArrayList<GraphicElement>();
 	public static List<GraphicElement> removeLayer = new ArrayList<GraphicElement>();
-	public static List<GraphicElement> drawLayer = new ArrayList<GraphicElement>();
+	public static List<GraphicElement> drawBotLayer = new ArrayList<GraphicElement>();
+	public static List<GraphicElement> drawTopLayer = new ArrayList<GraphicElement>();
 	public static MouseListener genericMouseListener = new MouseListener(){
 		@Override
 		public boolean onClick(MotionEvent event) {
@@ -47,8 +48,6 @@ public class Hub {
 		public boolean continuousKeyboard() {
 			return false;
 		}};
-	public static Map<String,Integer> highscores = new HashMap<String,Integer>();
-	public static Map<String,String> highscoreNames = new HashMap<String,String>();
 	public static List<Action> scenes = new ArrayList<Action>();
 	public static int sceneIndex = 7;
 	public static game.environment.Map map;

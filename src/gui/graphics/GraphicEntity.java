@@ -9,9 +9,21 @@ import main.Hub;
 
 public class GraphicEntity extends GraphicView {
 	protected GraphicElement entity;
-	public GraphicEntity(String textureName) {
+	public GraphicEntity(String textureName, int layer) {
 		super(false);
 		this.entity = new GraphicElement(textureName,this);
+		this.entity.setLayer(layer);
+	}
+	public GraphicEntity(String textureName) {
+		this(textureName,0);
+	}
+	@Override
+	public float getWidth(){
+		return entity.getWidth();
+	}
+	@Override
+	public float getHeight(){
+		return entity.getHeight();
 	}
 	@Override
 	public void adjust(float x, float y){
@@ -38,21 +50,23 @@ public class GraphicEntity extends GraphicView {
 
 	@Override
 	public void onAddToDrawable(){
+		Hub.addLayer.add(entity);
 		entity.onAddToDrawable();
 		super.onAddToDrawable();
 	}
 
 	@Override
 	public void onRemoveFromDrawable(){
+		Hub.removeLayer.add(entity);
 		entity.onRemoveFromDrawable();
 		super.onRemoveFromDrawable();
-		
+
 	}
 
 	@Override
 	public void draw(){
 	}
-	
+
 	@Override
 	public void animate(){
 		entity.animate();
@@ -64,6 +78,10 @@ public class GraphicEntity extends GraphicView {
 		super.setVisible(vis);
 	}
 	@Override
+	public boolean isVisible(){
+		return entity.isVisible();
+	}
+	@Override
 	public void onDraw(){
 		entity.onDraw();
 		super.onDraw();
@@ -71,11 +89,13 @@ public class GraphicEntity extends GraphicView {
 
 	@Override
 	public void turnOff() {
-		entity.on(false);
+		entity.on(false);		
+		super.turnOff();
 	}
 	@Override
 	public void turnOn(){
 		entity.on(true);
+		super.turnOn();
 	}
 	@Override
 	public void setFrame(int i) {

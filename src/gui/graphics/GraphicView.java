@@ -15,8 +15,8 @@ public class GraphicView implements Graphicable, MouseListener{
 	protected List<GraphicEntity> children = new ArrayList<GraphicEntity>();
 	protected float x=0f;
 	protected float y=0f;
-	protected float height=1f;
-	protected float width=1f;
+	private float height=1f;
+	private float width=1f;
 	protected GraphicView parent = null;
 	protected boolean listenToRelease = false;
 	public GraphicView(){
@@ -57,20 +57,6 @@ public class GraphicView implements Graphicable, MouseListener{
 	@Override
 	public boolean isVisible() {
 		return false;
-	}
-
-	@Override
-	public void onAddToDrawable() {
-		for(int i=0;i<children.size();++i){
-			children.get(i).onAddToDrawable();
-		}
-	}
-
-	@Override
-	public void onRemoveFromDrawable() {
-		for(int i=0;i<children.size();++i){
-			children.get(i).onRemoveFromDrawable();
-		}
 	}
 
 	@Override
@@ -139,22 +125,30 @@ public class GraphicView implements Graphicable, MouseListener{
 	public float getHeight() {
 		return height;
 	}
+	@Override
+	public void onAddToDrawable() {
+		for(int i=0;i<children.size();++i){
+			children.get(i).onAddToDrawable();
+		}
+	}
+
+	@Override
+	public void onRemoveFromDrawable() {
+		while(!children.isEmpty()){
+			removeChild(0);
+		}
+	}
+
 	public void addChild(GraphicEntity e){
 		children.add(e);
 		e.setView(this);
-		Hub.addLayer.add(e.getGraphicElement());
-		e.onAddToDrawable();
 	}
 	public void removeChild(int e){
 		children.get(e).setView(null);
-		Hub.removeLayer.add(children.get(e).getGraphicElement());
-		children.remove(e).onRemoveFromDrawable();;
+		children.remove(e).onRemoveFromDrawable();
 	}
 	public void removeChild(GraphicEntity e){
-		e.setView(null);
-		Hub.removeLayer.add(e.getGraphicElement());
-		children.remove(e);
-		e.onRemoveFromDrawable();
+		removeChild(children.indexOf(e));
 	}
 
 
@@ -217,7 +211,7 @@ public class GraphicView implements Graphicable, MouseListener{
 
 	public boolean isWithin(float dx, float dy) {
 		return dx>x&&dx<x+getWidth()&&
-				dy>y&&dy<y+getHeight();
+			   dy>y&&dy<y+getHeight();
 	}
 	public int size() {
 		return children.size();

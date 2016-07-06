@@ -50,16 +50,16 @@ public class Game extends GraphicView implements KeyBoardListener{
 		List<Action<Hero>> onHandle = new ArrayList<Action<Hero>>();
 		List<Action<FunctionalSquare>> onHandleSquare = new ArrayList<Action<FunctionalSquare>>();
 		List<FunctionalSquare> squares = new ArrayList<FunctionalSquare>();
-		for(Hero p:new Hero[]{black,white}){
-			for(FunctionalSquare q:Hub.map.functionalSquares()){
-				if(p.isWithin(q)){
-					Action<FunctionalSquare> pq = p.getOnHitAction(q);
-					if(pq!=null){
-						onHandleSquare.add(pq);
+		for(Hero hero:new Hero[]{black,white}){
+			for(FunctionalSquare square:Hub.map.functionalSquares()){
+				if(hero.isWithin(square)){
+					Action<FunctionalSquare> herosquare = hero.getOnHitAction(square);
+					if(herosquare!=null){
+						onHandleSquare.add(herosquare);
 					}
-					Action<Hero> qp = q.getOnHitAction(p);
-					if(qp!=null){
-						onHandle.add(qp);
+					Action<Hero> squarehero = square.getOnHitAction(hero);
+					if(squarehero!=null){
+						onHandle.add(squarehero);
 					}
 				}
 			}
@@ -70,7 +70,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 			}
 			while(!onHandle.isEmpty()){
 				if(!endGame){
-					onHandle.remove(0).act(p);
+					onHandle.remove(0).act(hero);
 				}
 			}
 		}
@@ -87,7 +87,6 @@ public class Game extends GraphicView implements KeyBoardListener{
 	public void endGame(){
 		Gui.removeOnType(this);
 		Hub.addLayer.clear();
-		Hub.removeLayer.addAll(Hub.drawLayer);
 		Gui.setView(new MainMenu());
 	}
 

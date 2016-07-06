@@ -13,11 +13,10 @@ import gui.inputs.MotionEvent;
 
 
 public class GraphicElement implements Graphicable{
-	protected float angle = 0.0f;
 	protected String texName;
 	protected float transX = 0f;
 	protected float transY = 0f;
-	protected float vertices[];
+	protected float angle = 0.0f;
 	protected FloatBuffer vertexBuffer;
 	protected boolean isVisible = true;
 	protected boolean on = true;
@@ -25,7 +24,6 @@ public class GraphicElement implements Graphicable{
 	protected float width = 1f;
 	protected float height = 1f;
 	protected int layer = 0;
-	private boolean xPlaneRotated = false;
 
 	private GraphicView view;
 	public GraphicElement(String textureName, GraphicView view) {
@@ -41,7 +39,7 @@ public class GraphicElement implements Graphicable{
 		
 	}
 	protected void setupVertices(){
-		vertices = new float[]{
+		float[] vertices = new float[]{
 				0f, 0f,  0.0f,		// V1 - bottom left
 				0f,  1f,  0.0f,		// V2 - top left
 				1f, 0f,  0.0f,		// V3 - bottom right
@@ -70,6 +68,7 @@ public class GraphicElement implements Graphicable{
 			GL11.glPushMatrix();
 			GL11.glTranslatef(transX, transY, 0.0f);
 			GL11.glRotatef(angle, 0, 0, 1);
+
 			GL11.glScalef(width, height, 1f);
 			GL11.glVertexPointer(3, 0, vertexBuffer);
 			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
@@ -119,7 +118,6 @@ public class GraphicElement implements Graphicable{
 
 	@Override
 	public void onRemoveFromDrawable() {
-		Hub.removeLayer.add(this);
 	}
 	public float getHeight(){
 		return height;
@@ -146,6 +144,12 @@ public class GraphicElement implements Graphicable{
 	
 	public void on(boolean b) {
 		this.on = b;
+	}
+	public int getLayer() {
+		return layer;
+	}
+	public void setLayer(int layer){
+		this.layer = layer;
 	}
 
 }

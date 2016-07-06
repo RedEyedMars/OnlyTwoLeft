@@ -7,11 +7,13 @@ import java.util.List;
 import game.Action;
 import game.Hero;
 import gui.graphics.GraphicEntity;
+import main.Hub;
 
 public class FunctionalSquare extends Square{	
 
 	protected SquareAction blackAction;
 	protected SquareAction whiteAction;
+	protected Square target = this;
 	public FunctionalSquare(SquareIdentity id, float size, SquareAction bothAction) {
 		this(id,0, size,size, bothAction, bothAction);
 	}
@@ -41,38 +43,49 @@ public class FunctionalSquare extends Square{
 	}
 	public FunctionalSquare(SquareIdentity id, int visibleTo, int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction) {
 		super(id, visibleTo, bufferSize, floats);
-		if(this.visibleToWhite()){
-			this.blackAction = blackAction;
-			this.blackAction.setSelf(this);
-		}
-		if(this.visibleToBlack()){
-			this.whiteAction = whiteAction;
-			this.whiteAction.setSelf(this);
-		}
+		this.blackAction = blackAction;
+		this.whiteAction = whiteAction;
 	}
 	public FunctionalSquare(SquareIdentity id,float width, float height, SquareAction blackAction, SquareAction whiteAction) {
 		this(id,0,width,height,blackAction,whiteAction);
 	}
 	public FunctionalSquare(SquareIdentity id, int visibleTo, float width, float height, SquareAction blackAction, SquareAction whiteAction) {
 		super(id, visibleTo, width, height);
-		if(this.visibleToWhite()){
-			this.blackAction = blackAction;
-			this.blackAction.setSelf(this);
-		}
-		if(this.visibleToBlack()){
-			this.whiteAction = whiteAction;
-			this.whiteAction.setSelf(this);
-		}
+		this.blackAction = blackAction;
+		this.whiteAction = whiteAction;
+	}
+	
+	public void setTarget(Square target){
+		this.target = target;
 	}
 
 	public Action<Hero> getOnHitAction(Hero p) {
-		if(p.getType().equals("black"))return blackAction;
-		else if(p.getType().equals("white"))return whiteAction;
+		if(p.getType().equals("black")){
+			blackAction.setTarget(target);
+			return blackAction;
+		}
+		else if(p.getType().equals("white")){
+			whiteAction.setTarget(target);
+			return whiteAction;
+		}
 		else return null;
 	}
 
 	public boolean isFunctional() {
 		return true;
+	}
+	public SquareAction getBlackAction() {
+		return blackAction;
+	}
+	public SquareAction getWhiteAction() {
+		return whiteAction;
+	}
+	@Override
+	public void saveTo(List<Object> toSave) {
+		super.saveTo(toSave);
+		if(this!=target){
+			toSave.add(Hub.map.getSquares().indexOf(target));
+		}
 	}
 
 }

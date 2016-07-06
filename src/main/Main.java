@@ -27,19 +27,19 @@ public class Main {
 	public static void loadMap(){
 		//StoryScene.setupScenes();
 		//Storage.loadMap("./data/1.map");
-		Hub.map = new Map();
 		/*Hub.map.load(new Object[]{
-				7,4,2,
-				0,1,1,3,
+				9,4,2,
+				0,0,1,4,1,3,
 				1f,0.45f,0.45f,0.1f,
-				"grass","fire"
+				"void","hazard"
 		});*/
-		Storage.loadMap("data/mal.map");
+
+		Storage.loadMap("data/maps/new.map");
 	}
 
 	public static void cleanup() {
-		if(Hub.map.isMallible()){
-			Storage.saveMap("data/mal.map", Hub.map);
+		if(Hub.map!=null&&Hub.map.isMallible()){
+			//Storage.saveMap("data/mal.map", Hub.map);
 		}
 	}
 }

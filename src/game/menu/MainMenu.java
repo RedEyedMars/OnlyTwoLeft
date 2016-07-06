@@ -1,5 +1,6 @@
 package game.menu;
 
+import editor.Editor;
 import game.Game;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -68,7 +69,7 @@ public class MainMenu extends GraphicView{
 	}
 	
 	public void startPvp(){
-		//Gui.setView(new PvPMode());
+		Gui.setView(new Editor());
 	}
 	
 	public void startHighscores(){

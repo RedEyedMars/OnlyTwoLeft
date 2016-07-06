@@ -72,13 +72,25 @@ public class GraphicRenderer {
 			loadText(toLoadtext.remove(0),true);
 		}
 		while(!Hub.addLayer.isEmpty()){
-			Hub.drawLayer.add(Hub.addLayer.remove(0));
-        }
+			GraphicElement e = Hub.addLayer.remove(0);
+			if(e.getLayer()==1){
+				Hub.drawTopLayer.add(e);
+			}
+			else if(e.getLayer()==0){
+				Hub.drawBotLayer.add(e);
+			}			
+		}
 		while(!Hub.removeLayer.isEmpty()){
-			Hub.drawLayer.remove(Hub.removeLayer.remove(0));
-        }
+			GraphicElement e = Hub.removeLayer.remove(0);
+			if(e.getLayer()==1){
+				Hub.drawTopLayer.remove(e);
+			}
+			else if(e.getLayer()==0){
+				Hub.drawBotLayer.remove(e);
+			}
+		}
 		GL11.glTranslatef(-0.7521f+viewX, -0.565f+viewY, -1.107f+viewZ);
-		GL11.glScalef(1.51f, 1.0925f, 1f);
+		GL11.glScalef(1.504f, 1.12875f, 1f);
 		animate = System.currentTimeMillis()-last>animationInterval;
 		if(animate){
 			last = System.currentTimeMillis();
@@ -88,8 +100,11 @@ public class GraphicRenderer {
 		GL11.glFrontFace(GL11.GL_CW);
 		int previous = -1;
 		GL11.glPushMatrix();
-		for(int i=0;i<Hub.drawLayer.size();++i){
-			drawTexture(Hub.drawLayer.get(i));
+		for(int i=0;i<Hub.drawBotLayer.size();++i){
+			drawTexture(Hub.drawBotLayer.get(i));
+		}
+		for(int i=0;i<Hub.drawTopLayer.size();++i){
+			drawTexture(Hub.drawTopLayer.get(i));
 		}
 		GL11.glPopMatrix();
 		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
@@ -201,7 +216,7 @@ public class GraphicRenderer {
 		sizMap.remove(textureName);
 		GL11.glDeleteTextures(texMap.remove(textureName));
 	}
-	
+
 	public void reloadTexture(String textureName, String texturePath, int newSize){
 		sizMap.remove(textureName);
 		GL11.glDeleteTextures(texMap.remove(textureName));

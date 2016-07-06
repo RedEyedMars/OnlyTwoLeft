@@ -1,12 +1,15 @@
 package game.environment;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
 import gui.graphics.GraphicEntity;
+import main.Log;
 
 public class Map extends GraphicEntity {
 
@@ -20,9 +23,6 @@ public class Map extends GraphicEntity {
 	public Map() {
 		super("blank");
 		this.setVisible(false);
-		squareIds.put("fire",new SquareIdentity("fire",Square.red,SquareAction.hazard));
-		squareIds.put("forestWall",new SquareIdentity("forestWall",Square.darkGreen,SquareAction.impassible));
-		squareIds.put("grass", new SquareIdentity("grass",Square.green));
 	}
 
 	public List<FunctionalSquare> functionalSquares() {
@@ -33,7 +33,7 @@ public class Map extends GraphicEntity {
 		if(square.isFunctional()){
 			functionalSquares.add((FunctionalSquare)square);
 		}
-		
+
 		if(square.visibleToBlack()&&!square.visibleToWhite()){
 			blackSquares.add(square);
 		}
@@ -61,7 +61,7 @@ public class Map extends GraphicEntity {
 		for(Square onSquare:on){
 			onSquare.turnOn();
 		}
-		
+
 	}
 
 	public void load(Object[] loaded) {
@@ -127,10 +127,36 @@ public class Map extends GraphicEntity {
 
 		@Override
 		public Square next() {
-			if(squareIds.containsKey((String)data[stringIndex])){
-				return squareIds.get(nextString()).create(nextInteger(), nextInteger(), getFloats());
+			String name = nextString();
+
+			if(!squareIds.containsKey(name)){
+				String half = name;
+				List<Action> actions = new ArrayList<Action>(3);
+
+				String[] split = half.split("X");
+				for(int i=0;i<split.length;++i){
+					if(!"void".equals(split[i])){
+						int index = SquareAction.actionNames.indexOf(split[i]);
+						if(index!=-1){
+							actions.add(SquareAction.actions.get(i));
+						}
+						else {
+							index = UpdateAction.actionNames.indexOf(split[i]);
+							if(index!=-1){
+								actions.add(SquareAction.actions.get(i));
+							}
+							else {
+								Log.e("Map","COULD NOT FIND ACTION NAME:"+split[i]);
+							}
+						}
+					}
+					else actions.add(null);
+				}
+				SquareIdentity id = new SquareIdentity(name,actions.toArray(new Action[0]));
+				squareIds.put(name,id);
 			}
-			return null;
+
+			return squareIds.get(name).create(getIntegers(), getFloats());
 		}
 
 		public Integer nextInteger(){

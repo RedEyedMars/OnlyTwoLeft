@@ -32,7 +32,6 @@ public abstract class Coder {
 	public static void encode(Map<String,Integer> strings, List<Byte> build, Object... objs){
 		for(int i=0;i<objs.length;++i){
 			if(objs[i] instanceof Integer){
-				System.out.println(objs[i]);
 				encodeInteger((Integer) objs[i],build);
 			}				
 		}

@@ -79,6 +79,7 @@ public class Square extends GraphicEntity{
 		return visibleTo!=1;
 	}
 	public void saveTo(List<Object> toSave) {
+		toSave.add(this.textureIndex());
 		toSave.add(visibleTo);
 		int floats = 0;
 		toSave.add(getX());
@@ -93,8 +94,15 @@ public class Square extends GraphicEntity{
 			floats = 4;
 		}
 		toSave.add(floats);
-		id.saveTo(toSave);
-		
+		id.saveTo(toSave);		
 	}
 
+	public SquareIdentity getIdentity() {
+		return id;
+	}
+	
+	@Override
+	public void adjust(float x, float y){
+		this.getGraphicElement().adjust(x, y);
+	}
 }
