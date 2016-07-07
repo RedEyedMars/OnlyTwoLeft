@@ -35,5 +35,8 @@ public class Button <T extends Object> extends GraphicEntity{
 	public void performOnClick(MotionEvent e){		
 		onClick.act(parent);
 	}
+	public void setAction(Action<T> action) {
+		this.onClick = action;
+	}
 
 }

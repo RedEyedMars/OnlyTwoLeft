@@ -228,4 +228,16 @@ public class GraphicRenderer {
 		GL11.glDeleteTextures(texMap.remove(textureName));
 		loadImageFromExternalPath(texturePath,newSize,textureName);
 	}
+	public void translate(float x, float y, float z){
+		viewX+=x;
+		viewY+=y;
+		viewZ+=z;
+	}
+
+	public float getViewX() {
+		return viewX;
+	}
+	public float getViewY() {
+		return viewY;
+	}
 }

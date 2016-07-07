@@ -13,6 +13,7 @@ import game.environment.FunctionalSquare;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.SquareIdentity;
+import game.environment.UpdatableSquare;
 import game.environment.UpdateAction;
 import game.menu.MainMenu;
 import gui.Gui;
@@ -20,6 +21,7 @@ import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
+import gui.inputs.MouseListener;
 import main.Hub;
 import storage.Storage;
 
@@ -48,6 +50,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 	private List<Square> squares = new ArrayList<Square>();
 	private Square builder;
 	private File saveTo = null;
+	private boolean readyToAddToDrawable = false;
 	public Editor(){
 		super();
 
@@ -198,17 +201,19 @@ public class Editor extends GraphicView implements KeyBoardListener {
 		if(saveTo!=null&&saveTo.exists()){
 			Storage.loadMap(saveTo.getAbsolutePath());
 			for(Square square:Hub.map.getSquares()){
+
+				squares.add(square);
 				addIconsToSquare(square);
 				addChild(square);
-				squares.add(square);
 			}
 		}
+		this.readyToAddToDrawable  = true;
 	}
 	public void update(double seconds){
 		if(saveTo==null){
 			Gui.setView(new MainMenu());
 		}
-		super.update(seconds);
+		//super.update(seconds);
 	}
 	private static final float gridSize = 100f;
 	@Override
@@ -239,7 +244,22 @@ public class Editor extends GraphicView implements KeyBoardListener {
 					}
 					int x = (int) (e.getX()*gridSize);
 					int y = (int) (e.getY()*gridSize);
-					builder = new SquareIdentity(name).create(Arrays.asList(colour, visibleTo, 3).iterator(), Arrays.asList(((float)x)/gridSize,((float)y)/gridSize,0.05f).iterator());
+					List<Action> as = new ArrayList<Action>(3);
+					if(action1>=1)as.add(SquareAction.actions.get(action1-1));
+					if(action2>=1&&action2!=action1)as.add(SquareAction.actions.get(action2-1));
+					
+					List<Float> floats = new ArrayList<Float>();
+					floats.add(((float)x)/gridSize);
+					floats.add(((float)y)/gridSize);
+					floats.add(0.05f);
+					if(action3>=1){
+						UpdateAction action = UpdateAction.actions.get(action3-1);
+						as.add(action);
+						for(int i=0;i<action.numberOfFloats();++i){
+							floats.add(0f);
+						}
+					}
+					builder = new SquareIdentity(name,as.toArray(new Action[0])).create(Arrays.asList(colour, visibleTo, 3).iterator(), floats.iterator());
 					addIconsToSquare(builder);
 					addChild(builder);
 					builder.onAddToDrawable();
@@ -257,6 +277,11 @@ public class Editor extends GraphicView implements KeyBoardListener {
 					int x = (int) (e.getX()*gridSize);
 					int y = (int) (e.getY()*gridSize);
 					builder.adjust(((float)x)/gridSize-builder.getX(), ((float)y)/gridSize-builder.getY());
+					removeChild(builder);
+					addIconsToSquare(builder);
+					addChild(builder);
+					builder.onAddToDrawable();
+					
 				}
 			}
 			if(e.getAction()==MotionEvent.ACTION_UP){
@@ -274,6 +299,17 @@ public class Editor extends GraphicView implements KeyBoardListener {
 					mode=0;
 					actionMenu.setVisible(false);
 					updateActionMenu.setVisible(false);
+					if(action3>=1){
+						mode=-1;
+						Gui.giveOnClick(
+								((UpdatableSquare)squares.get(squares.size()-1)).getAction().getEditor(
+										action3,
+										squares.get(squares.size()-1).getX(),
+										squares.get(squares.size()-1).getY(),
+										0f,
+										0f,
+										this));
+					}
 				}
 			}
 		}
@@ -293,25 +329,135 @@ public class Editor extends GraphicView implements KeyBoardListener {
 		String name = square.getIdentity().getName();
 		if(name.contains("X")){
 			String[] split = name.split("X");
-			addActionIconToSquare(square,split[0],square.getX(),square.getY(),0.05f);
-			addActionIconToSquare(square,split[1],square.getX()+0.05f,square.getY(),0.05f);
+			addActionIconToSquare(square,split[0],square.getX()+square.getWidth()-0.05f,square.getY(),0.05f);
+			addActionIconToSquare(square,split[1],square.getX()+square.getWidth()-0.10f,square.getY(),0.05f);
+			if(split.length==3){
+				addActionIconToSquare(square,split[2],square.getX()+square.getWidth()-0.15f,square.getY(),0.05f);
+			}
 		}
 		else {
-			addActionIconToSquare(square,name,square.getX(),square.getY(),0.05f);
+			addActionIconToSquare(square,name,square.getX()+square.getWidth()-0.05f,square.getY(),0.05f);
 		}
+		addAdjustPositionButtonToSquare(square);
+		addAdjustSizeButtonToSquare(square);
 		
 	}
+	private void addAdjustPositionButtonToSquare(final Square square) {
+		final Button<Editor> button = new Button<Editor>("editor_update_icons","blank",0,this,null);
+
+		final MouseListener mouseListener = new MouseListener(){
+			@Override
+			public boolean onClick(MotionEvent event) {
+				if(event.getAction()==MotionEvent.ACTION_UP){
+					mode=0;
+					Gui.removeOnClick(this);
+				}
+				return false;
+			}
+
+			@Override
+			public boolean onHover(MotionEvent event) {
+
+				int x = (int) (event.getX()*gridSize);
+				int y = (int) (event.getY()*gridSize);
+				float dx = ((float)x)/gridSize-square.getX();
+				float dy = ((float)y)/gridSize-square.getY();
+				square.setX(square.getX()+dx);
+				square.setY(square.getY()+dy);
+				return false;
+			}
+
+			@Override
+			public void onMouseScroll(int distance) {				
+			}
+		};
+		button.setAction(new Action<Editor>(){
+			@Override
+			public void act(Editor subject) {
+				mode = -2;
+				Gui.giveOnClick(mouseListener);
+			}
+		});
+
+		button.setX(square.getX());
+		button.setY(square.getY());
+		button.adjust(0.015f, 0.015f);
+		buttons.add(button);
+		square.addChild(button);
+	}
+	private void addAdjustSizeButtonToSquare(final Square square) {
+		final Button<Editor> button = new Button<Editor>("editor_update_icons","blank",0,this,null);
+		final MouseListener mouseListener = new MouseListener(){
+			@Override
+			public boolean onClick(MotionEvent event) {
+				if(event.getAction()==MotionEvent.ACTION_UP){
+					mode=0;
+					Gui.removeOnClick(this);
+				}
+				return false;
+			}
+
+			@Override
+			public boolean onHover(MotionEvent event) {
+				int x = (int) (event.getX()*gridSize);
+				int y = (int) (event.getY()*gridSize);
+				square.adjust(((float)x)/gridSize-square.getX(), ((float)y)/gridSize-square.getY());
+				button.setX(square.getX()+square.getWidth()-0.015f);
+				button.setY(square.getY()+square.getHeight()-0.015f);
+
+				for(GraphicEntity e:square.getChildren()){
+					if(e instanceof Button){
+						buttons.remove(e);
+					}
+				}
+				removeChild(square);
+				addIconsToSquare(square);
+				addChild(square);
+				square.onAddToDrawable();
+				return false;
+			}
+
+			@Override
+			public void onMouseScroll(int distance) {				
+			}
+		};
+		button.setAction(new Action<Editor>(){
+			@Override
+			public void act(Editor subject) {
+				mode = -2;
+				Gui.giveOnClick(mouseListener);
+			}
+		});
+
+		button.setX(square.getX()+square.getWidth()-0.015f);
+		button.setY(square.getY()+square.getHeight()-0.015f);
+		button.adjust(0.015f, 0.015f);
+		buttons.add(button);
+		square.addChild(button);
+	}
 	private void addActionIconToSquare(Square fsq, String action, float x, float y,float size){
-		GraphicEntity e = new GraphicEntity("editor_icons");
+		GraphicEntity e = null;
 		if(!"void".equals(action)){
 			for(int i=0;i<SquareAction.actions.size();++i){
-				if(SquareAction.actionNames.get(i).equals(action)){					
+				if(SquareAction.actionNames.get(i).equals(action)){
+					e = new GraphicEntity("editor_icons");
 					e.setFrame(i+2);
+					break;
+				}
+			}
+			for(int i=0;i<UpdateAction.actions.size();++i){
+				if(UpdateAction.actionNames.get(i).equals(action)){
+					e = new GraphicEntity("editor_update_icons");
+					e.setFrame(i+2);
+					float dx = ((UpdatableSquare)fsq).getAction().getFloat(0);
+					float dy = ((UpdatableSquare)fsq).getAction().getFloat(1);
+					((UpdatableSquare)fsq).getAction().getEditor(i+1, fsq.getX(), fsq.getY(),dx,dy, this);
 					break;
 				}
 			}
 		}
 		else {
+			e = new GraphicEntity("editor_icons");
 			e.setFrame(1);
 		}
 		e.setX(x);
@@ -405,6 +551,16 @@ public class Editor extends GraphicView implements KeyBoardListener {
 	@Override
 	public boolean continuousKeyboard() {
 		return true;
+	}
+	public void addButtonToLastSquare(GraphicEntity button) {
+		buttons.add(button);
+		squares.get(squares.size()-1).addChild(button);
+		if(readyToAddToDrawable){
+			button.onAddToDrawable();
+		}
+	}
+	public void setMode(int i) {
+		this.mode = i;
 	}
 	
 	

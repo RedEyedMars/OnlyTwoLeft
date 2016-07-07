@@ -120,4 +120,8 @@ public class GraphicEntity extends GraphicView {
 	public int textureIndex(){
 		return entity.textureIndex();
 	}
+	@Override
+	public boolean isWithin(float dx, float dy) {
+		return entity.isWithin(dx, dy);
+	}
 }

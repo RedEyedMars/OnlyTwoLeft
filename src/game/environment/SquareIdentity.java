@@ -18,6 +18,7 @@ public class SquareIdentity {
 	public Square create(Iterator<Integer> ints, Iterator<Float> buffer){
 		this.colour = ints.next();
 		FunctionalSquare square = null;
+		System.out.println("create "+name);
 		if(actions.length==0){
 			return new Square(this,ints.next(),ints.next(),buffer);
 		}

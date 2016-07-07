@@ -2,6 +2,7 @@ package game.environment;
 
 import gui.graphics.GraphicEntity;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,5 +105,27 @@ public class Square extends GraphicEntity{
 	@Override
 	public void adjust(float x, float y){
 		this.getGraphicElement().adjust(x, y);
+	}
+	
+	private float xOffset = 0f;
+	private float yOffset = 0f;
+	@Override
+	public void setX(float x){
+
+		xOffset = x-getX();
+		super.setX(x);
+	}
+	@Override
+	public void setY(float y){
+		yOffset = y-getY();
+		super.setY(y);
+	}
+	@Override
+	public float offsetX(int index){
+		return getChild(index).getX()+xOffset-getX();
+	}
+	@Override
+	public float offsetY(int index){
+		return getChild(index).getY()+yOffset-getY();
 	}
 }

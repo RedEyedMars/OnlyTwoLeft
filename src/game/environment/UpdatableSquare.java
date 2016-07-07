@@ -1,6 +1,7 @@
 package game.environment;
 
 import java.util.Iterator;
+import java.util.List;
 
 import game.Action;
 
@@ -21,13 +22,23 @@ public class UpdatableSquare extends FunctionalSquare {
 		try {
 			this.updateAction = updateAction.getClass().newInstance();
 			this.updateAction.setFloats(floats);
+			this.updateAction.setSelf(this);
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 	}
 	
+	@Override
+	public void saveTo(List<Object> toSave){
+		super.saveTo(toSave);
+		updateAction.saveTo(toSave);
+	}
+	public UpdateAction getAction(){
+		return updateAction;
+	}
+	
 	public void update(double secondsSinceLastFrame){
-		if(activated){
+		if(!activated){
 			this.updateAction.act(secondsSinceLastFrame);
 		}
 	}

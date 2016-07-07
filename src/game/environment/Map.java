@@ -137,13 +137,13 @@ public class Map extends GraphicEntity {
 				for(int i=0;i<split.length;++i){
 					if(!"void".equals(split[i])){
 						int index = SquareAction.actionNames.indexOf(split[i]);
-						if(index!=-1){
-							actions.add(SquareAction.actions.get(i));
+						if(index!=-1){							
+							actions.add(SquareAction.actions.get(index));
 						}
 						else {
 							index = UpdateAction.actionNames.indexOf(split[i]);
 							if(index!=-1){
-								actions.add(SquareAction.actions.get(i));
+								actions.add(UpdateAction.actions.get(index));
 							}
 							else {
 								Log.e("Map","COULD NOT FIND ACTION NAME:"+split[i]);

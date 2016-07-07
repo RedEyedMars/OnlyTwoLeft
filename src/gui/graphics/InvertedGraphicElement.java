@@ -21,7 +21,7 @@ public class InvertedGraphicElement extends GraphicElement{
 		if(isVisible()&&on)
 		{
 			GL11.glPushMatrix();
-			GL11.glTranslatef(transX, transY, 0.0f);
+			GL11.glTranslatef(visualX, visualY, 0.0f);
 			GL11.glRotatef(angle-90, 0, 0, 1);
 			GL11.glScalef(height, width, 1f);
 			GL11.glVertexPointer(3, 0, vertexBuffer);

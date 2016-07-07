@@ -14,8 +14,8 @@ import gui.inputs.MotionEvent;
 
 public class GraphicElement implements Graphicable{
 	protected String texName;
-	protected float transX = 0f;
-	protected float transY = 0f;
+	protected float x = 0f;
+	protected float y = 0f;
 	protected float angle = 0.0f;
 	protected FloatBuffer vertexBuffer;
 	protected boolean isVisible = true;
@@ -24,6 +24,11 @@ public class GraphicElement implements Graphicable{
 	protected float width = 1f;
 	protected float height = 1f;
 	protected int layer = 0;
+	
+	protected float visualX = 0f;
+	protected float visualY = 0f;
+	protected float visualW = 0f;
+	protected float visualH = 0f;
 
 	private GraphicView view;
 	public GraphicElement(String textureName, GraphicView view) {
@@ -66,10 +71,10 @@ public class GraphicElement implements Graphicable{
 		if(isVisible()&&on)
 		{
 			GL11.glPushMatrix();
-			GL11.glTranslatef(transX, transY, 0.0f);
+			GL11.glTranslatef(visualX, visualY, 0.0f);
 			GL11.glRotatef(angle, 0, 0, 1);
 
-			GL11.glScalef(width, height, 1f);
+			GL11.glScalef(visualW, visualH, 1f);
 			GL11.glVertexPointer(3, 0, vertexBuffer);
 			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 			GL11.glPopMatrix();
@@ -81,20 +86,28 @@ public class GraphicElement implements Graphicable{
 		}
 	}
 	public void setX(float x){
-		transX = x;
+		this.x = x;
+		if(width<0){
+			visualX= x+width;
+		}
+		else {
+			visualX = x;
+		}
 	}
 	public void setY(float y){
-		transY = y;
+		this.y = y;
+		if(height<0){
+			visualY= y+height;
+		}
+		else {
+			visualY = y;
+		}
 	}
 	public float getX(){
-		return transX;
+		return x;
 	}
 	public float getY(){
-		return transY;
-	}
-	public void translate(float x, float y){
-		transX += x;
-		transY += y;
+		return y;
 	}
 	public void rotate(float r){
 		angle = r;
@@ -107,9 +120,24 @@ public class GraphicElement implements Graphicable{
 	public int textureIndex(){
 		return textureIndex ;
 	}
-	public void adjust(float x, float y) {
-		width = x;
-		height = y;
+	public void adjust(float w, float h) {
+		width = w;
+		if(width<0){
+			visualX= x+width;
+			visualW = -width;
+		}
+		else {
+			visualW = width;
+		}
+		height = h;
+		if(height<0){
+			visualY= y+height;
+			visualH = -height;
+		}
+		else {
+			visualH = height;
+		}
+		
 	}
 
 	@Override
@@ -131,8 +159,8 @@ public class GraphicElement implements Graphicable{
 	}
 
 	public boolean isWithin(float dx, float dy) {
-		return dx>getX()&&dx<getX()+getWidth()&&
-				dy>getY()&&dy<getY()+getHeight();
+		return dx>visualX&&dx<visualX+visualW&&
+				dy>visualY&&dy<visualY+visualH;
 	}
 
 	public void setVisible(boolean b) {
