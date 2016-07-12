@@ -14,6 +14,8 @@ public class Hero extends GraphicEntity{
 	private float yAcc=0f;
 	
 	private Game game;
+	private float previousX=0f;
+	private float previousY=0f;
 	public Hero(Game game, byte colour) {
 		super("circles");
 		this.setFrame(colour);
@@ -43,6 +45,15 @@ public class Hero extends GraphicEntity{
 		return (x>=q.getX()&&x<=q.getX()+q.getWidth()&&
 				y>=q.getY()&&y<=q.getY()+q.getHeight());
 	}
+	public boolean isCompletelyWithin(FunctionalSquare q) {
+		float dx = (q.getX()+q.getWidth() /2f)-(getX()+radius);
+		float dy = (q.getY()+q.getHeight()/2f)-(getY()+radius);
+		double angle = Math.atan2(dy, dx);
+		double x = -Math.cos(angle)*radius+getX()+radius;
+		double y = -Math.sin(angle)*radius+getY()+radius;
+		return (x>=q.getX()&&x<=q.getX()+q.getWidth()&&
+				y>=q.getY()&&y<=q.getY()+q.getHeight());
+	}
 
 	public Action<FunctionalSquare> getOnHitAction(FunctionalSquare q) {
 		return null;
@@ -52,12 +63,20 @@ public class Hero extends GraphicEntity{
 		return this.textureIndex()==0?"black":this.textureIndex()==1?"white":"OTHER";
 	}
 
-	public void move(float x, float y) {
+	private void move(float x, float y) {
+		previousX = getX();
+		previousY = getY();
 		setX(getX()+x);
 		setY(getY()+y);
 	}
 
 	public void backup(GraphicEntity e) {
+		
+		setX(previousX);
+		setY(previousY);
+		xVel=0f;yVel=0f;
+		xAcc=0f;yAcc=0f;
+		/*
 		float mx = getX()+getWidth()/2f;
 		float my = getY()+getHeight()/2f;
 		float ox = e.getX()+e.getWidth()/2f;
@@ -75,7 +94,7 @@ public class Hero extends GraphicEntity{
 		}
 		else if(angle<-Math.PI/4f&&angle>-Math.PI*3f/4f){//up
 			setY(e.getY()+e.getHeight());
-		}
+		}*/
 	}
 
 	public void setXVelocity(float dx) {

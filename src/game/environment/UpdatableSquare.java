@@ -1,5 +1,6 @@
 package game.environment;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,17 +9,23 @@ import game.Action;
 public class UpdatableSquare extends FunctionalSquare {
 	private UpdateAction updateAction;
 	private boolean activated = false;
-	public UpdatableSquare(SquareIdentity id, int bufferSize, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
-		this(id, 0, bufferSize, floats, bothAction, bothAction, updateAction);
+	public UpdatableSquare(int colour, int bufferSize, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
+		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, bothAction, bothAction, updateAction);
 	}
-	public UpdatableSquare(SquareIdentity id, int visibleTo, int bufferSize, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
-		this(id, visibleTo, bufferSize, floats, bothAction, bothAction, updateAction);
+	public UpdatableSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
+		this(ints, floats, bothAction, bothAction, updateAction);
 	}
-	public UpdatableSquare(SquareIdentity id, int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
-		this(id, 0, bufferSize, floats, blackAction, whiteAction, updateAction);		
+	public UpdatableSquare(int colour, int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
+		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, blackAction, whiteAction, updateAction);		
 	}
-	public UpdatableSquare(SquareIdentity id, int visibleTo, int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
-		super(id, visibleTo, bufferSize, floats, blackAction, whiteAction);
+	public UpdatableSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
+		super(ints, floats, blackAction, whiteAction);
+		if(blackAction==null&&whiteAction==null){
+			actionType=3;
+		}
+		else {
+			actionType+=3;//it's set to 1 or 2 by FunctionalSquare, so +=3 means 4 or 5
+		}
 		try {
 			this.updateAction = updateAction.getClass().newInstance();
 			this.updateAction.setFloats(floats);
@@ -26,12 +33,6 @@ public class UpdatableSquare extends FunctionalSquare {
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	@Override
-	public void saveTo(List<Object> toSave){
-		super.saveTo(toSave);
-		updateAction.saveTo(toSave);
 	}
 	public UpdateAction getAction(){
 		return updateAction;
@@ -47,5 +48,18 @@ public class UpdatableSquare extends FunctionalSquare {
 	}
 	public void deactivate(){
 		this.activated = false;
+	}
+	
+	@Override
+	public void saveActions(List<Object> toSave){
+		super.saveActions(toSave);
+		this.updateAction.saveTo(toSave);
+	}
+
+	@Override
+	public List<Action> getActions() {
+		List<Action> list = super.getActions();
+		list.add(updateAction);
+		return list;
 	}
 }

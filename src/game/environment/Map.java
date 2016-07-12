@@ -13,8 +13,6 @@ import main.Log;
 
 public class Map extends GraphicEntity {
 
-	private java.util.Map<String,SquareIdentity> squareIds = new HashMap<String,SquareIdentity>();
-
 	private List<Square> allSquares = new ArrayList<Square>();
 	private List<Square> blackSquares = new ArrayList<Square>();
 	private List<Square> whiteSquares = new ArrayList<Square>();
@@ -30,6 +28,7 @@ public class Map extends GraphicEntity {
 	}
 
 	public void addSquare(Square square){
+		if(square==null)return;
 		if(square.isFunctional()){
 			functionalSquares.add((FunctionalSquare)square);
 		}
@@ -69,8 +68,31 @@ public class Map extends GraphicEntity {
 			addSquare(square);
 		}
 	}
+	
+	private float xOffset = 0f;
+	private float yOffset = 0f;
+	@Override
+	public void setX(float x){
+
+		xOffset = x-getX();
+		super.setX(x);
+	}
+	@Override
+	public void setY(float y){
+		yOffset = y-getY();
+		super.setY(y);
+	}
+	@Override
+	public float offsetX(int index){
+		return getChild(index).getX()+xOffset-getX();
+	}
+	@Override
+	public float offsetY(int index){
+		return getChild(index).getY()+yOffset-getY();
+	}
 
 	private class MapLoader implements Iterable<Square>, Iterator<Square> {
+		private int maxIntegers;
 		private int integerIndex = 3;
 		private int floatIndex = 0;
 		private int stringIndex = 0;
@@ -114,7 +136,8 @@ public class Map extends GraphicEntity {
 		public MapLoader(Object[] loaded){
 			this.data = loaded;
 			integerIndex = 3;
-			floatIndex = (Integer)data[0];
+			maxIntegers = (Integer)data[0];
+			floatIndex = maxIntegers;
 			stringIndex = floatIndex+(Integer)data[1];
 		}
 		public void add(Square square){
@@ -122,41 +145,12 @@ public class Map extends GraphicEntity {
 		}
 		@Override
 		public boolean hasNext() {
-			return stringIndex<data.length;
+			return integerIndex+1<maxIntegers;
 		}
 
 		@Override
 		public Square next() {
-			String name = nextString();
-
-			if(!squareIds.containsKey(name)){
-				String half = name;
-				List<Action> actions = new ArrayList<Action>(3);
-
-				String[] split = half.split("X");
-				for(int i=0;i<split.length;++i){
-					if(!"void".equals(split[i])){
-						int index = SquareAction.actionNames.indexOf(split[i]);
-						if(index!=-1){							
-							actions.add(SquareAction.actions.get(index));
-						}
-						else {
-							index = UpdateAction.actionNames.indexOf(split[i]);
-							if(index!=-1){
-								actions.add(UpdateAction.actions.get(index));
-							}
-							else {
-								Log.e("Map","COULD NOT FIND ACTION NAME:"+split[i]);
-							}
-						}
-					}
-					else actions.add(null);
-				}
-				SquareIdentity id = new SquareIdentity(name,actions.toArray(new Action[0]));
-				squareIds.put(name,id);
-			}
-
-			return squareIds.get(name).create(getIntegers(), getFloats());
+			return Square.create(getIntegers(), getFloats());
 		}
 
 		public Integer nextInteger(){

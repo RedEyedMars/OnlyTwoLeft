@@ -1,5 +1,7 @@
 package game.menu;
 
+import java.util.List;
+
 import game.Action;
 import main.Hub;
 
@@ -70,6 +72,13 @@ public abstract class StoryAction implements Action<StoryScene>{
 			public boolean isDone() {
 				return true;
 			}};
+	}
+	
+	public void saveTo(List<Object> saveTo){
+		
+	}
+	public int getIndex(){
+		return 0;
 	}
 	
 	

@@ -6,9 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import editor.Button;
+import editor.ButtonAction;
 import editor.Editor;
 import game.Hero;
 import gui.Gui;
+import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 import game.Action;
@@ -31,6 +33,10 @@ public abstract class UpdateAction implements Action<Double>{
 		public int numberOfFloats(){
 			return 2;
 		}
+		@Override
+		public int getIndex() {
+			return 0;
+		}
 	};
 
 	protected ArrayList<Float> data = new ArrayList<Float>(){
@@ -39,7 +45,6 @@ public abstract class UpdateAction implements Action<Double>{
 			if(this.size()>=numberOfFloats()){
 				this.clear();
 			}
-			System.out.println(obj);
 			return super.add(obj);
 		}
 	};
@@ -55,8 +60,8 @@ public abstract class UpdateAction implements Action<Double>{
 		return data.get(i);
 	}
 	public void saveTo(List<Object> saveTo){
+		saveTo.add(getIndex());
 		for(Float flt:data){
-			System.out.println("SAVE"+flt);
 			saveTo.add(flt);			
 		}
 	}
@@ -75,50 +80,18 @@ public abstract class UpdateAction implements Action<Double>{
 			e.printStackTrace();
 		}
 	}
-	public MouseListener getEditor(final int id, final float x,final float y,final float dx,final float dy, final Editor editor) {
-		return new MouseListener(){
-			Button<Editor> button;
-			MouseListener self = this;
-			private boolean pop = false;
-			{				
-				button = new Button<Editor>("editor_update_icons",id+1,editor,new Action<Editor>(){
-					@Override
-					public void act(Editor subject) {
-						editor.setMode(-1);
-						pop = true;
-						Gui.giveOnClick(self);
-					}
-				});
-				button.setX(x+dx);
-				button.setY(y+dy);
-				button.adjust(0.05f, 0.05f);
-				editor.addButtonToLastSquare(button);				
-			}
-			@Override
-			public boolean onClick(MotionEvent event) {
-				if(!pop){
-					data.add(event.getX()-x);				
-					if(data.size()<numberOfFloats()){
-						data.add(event.getY()-y);
-					}
-					Gui.removeOnClick(this);
-				}
-				else if(event.getAction()==MotionEvent.ACTION_UP){
-					pop=false;
-				}
-				return false;
-			}
-
-			@Override
-			public boolean onHover(MotionEvent event) {
-				button.setX(event.getX());
-				button.setY(event.getY());
-				return false;
-			}
-
-			@Override
-			public void onMouseScroll(int distance) {
-
-			}};
+	public static UpdateAction getAction(Integer i) {
+		if(i==-1){
+			return null;
+		}
+		else {
+			return actions.get(i);
+		}
+	}
+	public void addFloats(float x, float y) {
+		data.add(x);				
+		if(data.size()<numberOfFloats()){
+			data.add(y);
+		}
 	}
 }

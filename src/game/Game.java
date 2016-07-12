@@ -6,6 +6,7 @@ import java.util.List;
 
 import game.environment.FunctionalSquare;
 import game.environment.Square;
+import game.environment.SquareAction;
 import game.menu.GraphicNumber;
 import game.menu.MainMenu;
 import gui.Gui;
@@ -30,7 +31,11 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 		black = new Hero(this,Hero.black);
 		white = new Hero(this,Hero.white);
-		black.move(0.25f,0f);
+		black.setX(0.25f);
+		black.setY(0f);
+
+		white.setX(0.25f);
+		white.setY(0f);
 		addChild(Hub.map);
 		addChild(black);
 		addChild(white);
@@ -44,14 +49,38 @@ public class Game extends GraphicView implements KeyBoardListener{
 	public void update(double secondsSinceLastFrame){
 		super.update(secondsSinceLastFrame);
 		handleInterceptions();
+		if(controlled.getX()>0.8f){
+			Hub.map.setX(Hub.map.getX()-(controlled.getX()-0.8f));
+			controlled.setX(0.8f);
+		}
+		else if(controlled.getX()<0.2f){
+			Hub.map.setX(Hub.map.getX()+(0.2f-controlled.getX()));
+			controlled.setX(0.2f);
+		}
+		if(controlled.getY()>0.8f){
+			Hub.map.setY(Hub.map.getY()-(controlled.getY()-0.8f));
+			controlled.setY(0.8f);
+		}
+		else if(controlled.getY()<0.2f){
+			Hub.map.setY(Hub.map.getY()+(0.2f-controlled.getY()));
+			controlled.setY(0.2f);
+		}
 	}
 
 	private void handleInterceptions(){
 		List<Action<Hero>> onHandle = new ArrayList<Action<Hero>>();
 		List<Action<FunctionalSquare>> onHandleSquare = new ArrayList<Action<FunctionalSquare>>();
 		List<FunctionalSquare> squares = new ArrayList<FunctionalSquare>();
+		List<FunctionalSquare> mapSquares = Hub.map.functionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
-			for(FunctionalSquare square:Hub.map.functionalSquares()){
+			for(int i=mapSquares.size()-1;i>=0;--i){
+				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
+				if(action!=null&&action.isWithin(hero,mapSquares.get(i))){
+					action.act(hero);
+					break;
+				}
+			}
+			/*use if more than one square can be triggered currently just the top square
 				if(hero.isWithin(square)){
 					Action<FunctionalSquare> herosquare = hero.getOnHitAction(square);
 					if(herosquare!=null){
@@ -63,6 +92,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 					}
 				}
 			}
+			/* 
 			while(!onHandleSquare.isEmpty()){
 				if(!endGame){
 					//onHandleSquare.remove(0).act(squares.get(i));
@@ -72,7 +102,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 				if(!endGame){
 					onHandle.remove(0).act(hero);
 				}
-			}
+			}*/
 		}
 
 	}

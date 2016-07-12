@@ -11,6 +11,7 @@ public class Button <T extends Object> extends GraphicEntity{
 	private T parent;
 	private String subTex;
 	private Integer subFrame;
+	private GraphicEntity selected;
 	public Button(String textureName, T parent, Action<T> onClick) {
 		this(textureName,null,parent,onClick);
 	}
@@ -29,6 +30,9 @@ public class Button <T extends Object> extends GraphicEntity{
 			e.setFrame(subFrame);
 			addChild(e);
 		}
+		selected = new GraphicEntity("editor_select",1);
+		selected.setVisible(false);
+		addChild(selected);
 	}
 	
 	@Override
@@ -38,5 +42,21 @@ public class Button <T extends Object> extends GraphicEntity{
 	public void setAction(Action<T> action) {
 		this.onClick = action;
 	}
+	public void setSelected(boolean b) {
+		selected.setVisible(b);
+	}
+	
+	@Override
+	public void adjust(float width, float height, float dWidth, float dHeight){
+		super.adjust(width, height, dWidth, dHeight);
+		getChild(0).adjust(dWidth, dHeight);
+		getChild(1).adjust(width, height);
+	}
 
+	@Override
+	public void turnOn(){		
+	}
+	@Override
+	public void turnOff(){		
+	}
 }
