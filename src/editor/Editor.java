@@ -29,7 +29,7 @@ import storage.Storage;
 public class Editor extends GraphicView implements KeyBoardListener {
 
 	private static final float gridSize = 20f;
-	
+
 	private int visibleTo=0;
 	private int mode=-1;
 	private int colour = 0;
@@ -49,7 +49,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 
 	private List<GraphicEntity> buttons = new ArrayList<GraphicEntity>();
 
-	private List<Square> squares = new ArrayList<Square>();
+	private List<Square> squares;
 	private Square builder1;
 	private Square builder2;
 	private File saveTo = null;
@@ -95,7 +95,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 			colourMenu.add(button);
 			buttons.add(button);
 		}
-		for(int i=0;i<8;++i){
+		for(int i=0;i<6;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons","squares",i,this,new ButtonAction(){
 				private int id;
@@ -150,7 +150,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 			buttons.add(button);
 			addChild(button);
 		}
-		for(int i=0;i<4;++i){
+		for(int i=0;i<6;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons",i+1,this,new ButtonAction(){
 				private int id;
@@ -210,13 +210,18 @@ public class Editor extends GraphicView implements KeyBoardListener {
 		Gui.giveOnType(this);
 
 		saveTo = Gui.userSave();
-		if(saveTo!=null&&saveTo.exists()){
-			Storage.loadMap(saveTo.getAbsolutePath());
-			for(Square square:Hub.map.getSquares()){
-
-				squares.add(square);
-				addIconsToSquare(square,null);
-				addChild(square);
+		if(saveTo!=null){
+			if(saveTo.exists()){
+				Storage.loadMap(saveTo.getAbsolutePath());
+				squares = Hub.map.getSquares();
+				for(Square square:Hub.map.getSquares()){
+					addIconsToSquare(square,null);
+					addChild(square);
+				}
+			}
+			else {
+				Hub.map = new game.environment.Map();
+				squares = Hub.map.getSquares();
 			}
 		}
 		this.readyToAddToDrawable  = true;
@@ -245,7 +250,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 					List<Float> floats = new ArrayList<Float>();
 					floats.add(((float)x)/gridSize);
 					floats.add(((float)y)/gridSize);
-					floats.add(0.05f);
+					floats.add(0.05f);					
 
 					if(action3!=0){
 						for(int i=0;i<UpdateAction.actions.get(action3-1).numberOfFloats();++i){
@@ -314,7 +319,7 @@ public class Editor extends GraphicView implements KeyBoardListener {
 					}
 					addChild(builder1);
 					builder1.onAddToDrawable();
-					
+
 				}
 			}
 		}

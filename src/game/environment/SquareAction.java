@@ -16,6 +16,7 @@ public abstract class SquareAction implements Action<Hero> {
 	public static final SquareAction safe = new SquareAction(true){
 		@Override
 		public void act(Hero subject) {
+			subject.safeSquare(target);
 		}
 		@Override
 		public int getIndex() {
@@ -43,9 +44,10 @@ public abstract class SquareAction implements Action<Hero> {
 			return 2;
 		}
 	};
-	public static final SquareAction activate = new SquareAction(){
+	public static final SquareAction activate = new SquareAction(true){
 		@Override
 		public void act(Hero subject) {
+			//System.out.println(target);
 			if(target instanceof UpdatableSquare){
 				((UpdatableSquare)target).activate();
 			}
@@ -58,8 +60,13 @@ public abstract class SquareAction implements Action<Hero> {
 		public int getIndex() {
 			return 3;
 		}
+		@Override
+		public void saveTo(List<Object> toSave){
+			super.saveTo(toSave);
+			toSave.add(Hub.map.getSquares().indexOf(target));
+		}
 	};
-	public static final SquareAction deactivate = new SquareAction(){
+	public static final SquareAction deactivate = new SquareAction(true){
 		@Override
 		public void act(Hero subject) {
 			if(target instanceof UpdatableSquare){
@@ -73,6 +80,11 @@ public abstract class SquareAction implements Action<Hero> {
 		@Override
 		public int getIndex() {
 			return 4;
+		}
+		@Override
+		public void saveTo(List<Object> toSave){
+			super.saveTo(toSave);
+			toSave.add(Hub.map.getSquares().indexOf(target));
 		}
 	};
 
@@ -100,9 +112,6 @@ public abstract class SquareAction implements Action<Hero> {
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
-		if(numberOfTargets()==1){
-			saveTo.add(Hub.map.getSquares().indexOf(target));
-		}
 	}
 	static {
 		try {

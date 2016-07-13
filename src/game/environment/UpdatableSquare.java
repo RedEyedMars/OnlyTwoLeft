@@ -10,16 +10,16 @@ public class UpdatableSquare extends FunctionalSquare {
 	private UpdateAction updateAction;
 	private boolean activated = false;
 	public UpdatableSquare(int colour, int bufferSize, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
-		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, bothAction, bothAction, updateAction);
+		this(colour, 0, bufferSize,null, floats, bothAction, bothAction, updateAction);
 	}
-	public UpdatableSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
-		this(ints, floats, bothAction, bothAction, updateAction);
+	public UpdatableSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, SquareAction bothAction, UpdateAction updateAction) {
+		this(colour, visibleTo, bufferSize,ints, floats, bothAction, bothAction, updateAction);
 	}
 	public UpdatableSquare(int colour, int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
-		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, blackAction, whiteAction, updateAction);		
+		this(colour, 0, bufferSize,null, floats, blackAction, whiteAction, updateAction);		
 	}
-	public UpdatableSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
-		super(ints, floats, blackAction, whiteAction);
+	public UpdatableSquare(int colour, int visibleTo, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction, UpdateAction updateAction) {
+		super(colour, visibleTo, bufferSize,ints, floats, blackAction, whiteAction);
 		if(blackAction==null&&whiteAction==null){
 			actionType=3;
 		}
@@ -39,7 +39,7 @@ public class UpdatableSquare extends FunctionalSquare {
 	}
 	
 	public void update(double secondsSinceLastFrame){
-		if(!activated){
+		if(activated){
 			this.updateAction.act(secondsSinceLastFrame);
 		}
 	}
@@ -48,12 +48,6 @@ public class UpdatableSquare extends FunctionalSquare {
 	}
 	public void deactivate(){
 		this.activated = false;
-	}
-	
-	@Override
-	public void saveActions(List<Object> toSave){
-		super.saveActions(toSave);
-		this.updateAction.saveTo(toSave);
 	}
 
 	@Override

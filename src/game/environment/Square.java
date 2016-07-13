@@ -1,6 +1,7 @@
 package game.environment;
 
 import gui.graphics.GraphicEntity;
+import main.Hub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +24,12 @@ public class Square extends GraphicEntity{
 	private int visibleTo = 0;//0=both,1=black,2=white
 	private int colour;
 	protected int actionType = 0;
-	public Square(Iterator<Integer> ints, Iterator<Float> floats) {
+	public Square(int colour, int visibleTo,int bufferSize, Iterator<Integer> ints, Iterator<Float> floats) {
 		super("squares");
-		this.colour = ints.next();
+		this.colour = colour;
 		this.setFrame(colour);
-		this.visibleTo = ints.next();
-		int bufferSize = ints.next();
+		this.visibleTo = visibleTo;
+		bufferSize = bufferSize;
 		if(bufferSize==1){
 			float size = floats.next();
 			adjust(size,size);
@@ -55,7 +56,14 @@ public class Square extends GraphicEntity{
 		}
 	}
 	public Square(int colour, int bufferSize, Iterator<Float> floats) {
-		this(Arrays.asList(colour,0,bufferSize).iterator(),floats);
+		this(colour,0,bufferSize,new Iterator<Integer>(){
+			public boolean hasNext() {
+				return false;
+			}
+			@Override
+			public Integer next() {
+				return null;
+			}},floats);
 	}
 	
 	public Square(int colour,int visibleTo, float width, float height) {
@@ -125,49 +133,52 @@ public class Square extends GraphicEntity{
 			floats = 4;
 		}
 		toSave.add(actionType);
-		saveActions(toSave);
 		toSave.add(this.textureIndex());
 		toSave.add(visibleTo);
 		toSave.add(floats);	
+		for(Action action:getActions()){
+			action.saveTo(toSave);
+		}
 	}
 	public List<Action> getActions() {
 		return new ArrayList<Action>();
 	}
-	public void saveActions(List<Object> toSave){
-	}
 	public static Square create(Iterator<Integer> ints, Iterator<Float> floats){		
 		Square square = null;
 		int actionType = ints.next();
+		int colour = ints.next();
+		int visibleTo = ints.next();
+		int bufferSize = ints.next();
 		if(actionType==0){
-			square = new Square(ints,floats);
+			square = new Square(colour,visibleTo,bufferSize,ints,floats);
 		}
 		else if(actionType==1){
 			SquareAction action = SquareAction.getAction(ints.next());
-			square = new FunctionalSquare(ints,floats,action);
+			square = new FunctionalSquare(colour,visibleTo,bufferSize,ints,floats,action);
 		}
 		else if(actionType==2){
 			SquareAction action1 = SquareAction.getAction(ints.next());
 			SquareAction action2 = SquareAction.getAction(ints.next());
-			square = new FunctionalSquare(ints,floats,action1,action2);
+			square = new FunctionalSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2);
 		}
 		else if(actionType==3){
 			UpdateAction action = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(ints,floats,null,action);
+			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,null,action);
 		}
 		else if(actionType==4){
 			SquareAction action1 = SquareAction.getAction(ints.next());
 			UpdateAction action2 = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(ints,floats,action1,action2);
+			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2);
 		}
 		else if(actionType==5){
 			SquareAction action1 = SquareAction.getAction(ints.next());
 			SquareAction action2 = SquareAction.getAction(ints.next());
 			UpdateAction action3 = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(ints,floats,action1,action2,action3);
+			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2,action3);
 		}
 		else if(actionType==6){
 			OnCreateAction action = OnCreateAction.getAction(ints.next());
-			square = new OnCreateSquare(ints,floats,action);
+			square = new OnCreateSquare(colour,visibleTo,bufferSize,ints,floats,action);
 		}
 		return square;
 	}
@@ -176,14 +187,23 @@ public class Square extends GraphicEntity{
 		List<Integer> ints = new ArrayList<Integer>();
 		if(squareAction1==-1&&squareAction2==-1&&updateAction==-1&&onCreateAction==-1){
 			ints.add(0);
+			ints.add(colour);
+			ints.add(visibleTo);
+			ints.add(bufferSize);
 		}
 		else if(squareAction1>=0&&updateAction==-1){
 			if(squareAction2==-1||squareAction1==squareAction2){
 				ints.add(1);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
 				ints.add(squareAction1);
 			}
 			else {
 				ints.add(2);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
 				ints.add(squareAction1);
 				ints.add(squareAction2);
 			}
@@ -191,23 +211,42 @@ public class Square extends GraphicEntity{
 		else if(updateAction>=0){
 			if(squareAction1==-1&&squareAction2==-1){
 				ints.add(3);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
 				ints.add(updateAction);
 			}
 			else if(squareAction2==-1||squareAction1==squareAction2){
 				ints.add(4);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
 				ints.add(squareAction1);
 				ints.add(updateAction);
 			}
 			else {
 				ints.add(5);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
 				ints.add(squareAction1);
 				ints.add(squareAction2);
 				ints.add(updateAction);
 			}
 		}
-		ints.add(colour);
-		ints.add(visibleTo);
-		ints.add(bufferSize);
+		
+		int lastUpdatableSquare=Hub.map.getSquares().size()-1;
+		for(;lastUpdatableSquare>=0;--lastUpdatableSquare){
+			if(Hub.map.getSquares().get(lastUpdatableSquare) instanceof UpdatableSquare){
+				break;
+			}
+		}
+		if(squareAction1!=0&&SquareAction.getAction(squareAction1).numberOfTargets()==1){			
+			ints.add(lastUpdatableSquare);
+		}
+		if(squareAction1!=squareAction2&&squareAction2!=0&&SquareAction.getAction(squareAction2).numberOfTargets()==1){
+			ints.add(lastUpdatableSquare);
+		}
 		return ints.iterator();
 	}
 }

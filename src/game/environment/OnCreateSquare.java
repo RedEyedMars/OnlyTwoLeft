@@ -5,14 +5,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
+import main.Hub;
 
 public class OnCreateSquare extends Square{
 
 	private OnCreateAction action;
 	private List<Object> data = new ArrayList<Object>();
 
-	public OnCreateSquare(Iterator<Integer> ints, Iterator<Float> floats, OnCreateAction action) {
-		super(ints, floats);
+	public OnCreateSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnCreateAction action) {
+		super(colour, visibleTo, bufferSize,ints, floats);
 		actionType = 6;
 		try {
 			this.action = action.getClass().newInstance();

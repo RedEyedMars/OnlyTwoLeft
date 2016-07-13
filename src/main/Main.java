@@ -34,7 +34,7 @@ public class Main {
 				"void","hazard"
 		});*/
 
-		Storage.loadMap("data/maps/forest.map");
+		Storage.loadMap("data/maps/new.map");
 	}
 
 	public static void cleanup() {

@@ -14,7 +14,8 @@ public class FunctionalSquare extends Square{
 
 	protected SquareAction blackAction;
 	protected SquareAction whiteAction;
-	protected Square target = this;
+	private Square blackTarget=this;
+	private Square whiteTarget=this;
 	public FunctionalSquare(int colour, float size, SquareAction bothAction) {
 		this(colour,0, size,size, bothAction, bothAction);
 	}
@@ -34,18 +35,27 @@ public class FunctionalSquare extends Square{
 		this(colour, visibleTo, size,size, blackAction, whiteAction);
 	}
 	public FunctionalSquare(int colour, int bufferSize, Iterator<Float> floats, SquareAction bothAction) {
-		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, bothAction, bothAction);
+		this(colour, 0, bufferSize,null, floats, bothAction, bothAction);
 	}
-	public FunctionalSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction bothAction) {
-		this(ints, floats, bothAction, bothAction);
+	public FunctionalSquare(int colour, int visibleTo,int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, SquareAction bothAction) {
+		this(colour, visibleTo, bufferSize,ints, floats, bothAction, bothAction);
 	}
 	public FunctionalSquare(int colour,int bufferSize, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction) {
-		this(Arrays.asList(colour, 0, bufferSize).iterator(), floats, blackAction, whiteAction);		
+		this(colour, 0, bufferSize,null, floats, blackAction, whiteAction);		
 	}
-	public FunctionalSquare(Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction) {
-		super(ints, floats);
+	public FunctionalSquare(int colour, int visibleTo, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction) {
+		super(colour,visibleTo,bufferSize,ints, floats);
 		this.blackAction = blackAction;
+		if(blackAction.numberOfTargets()>0){
+			blackTarget = Hub.map.getSquares().get(ints.next());
+		}
 		this.whiteAction = whiteAction;
+		if(whiteAction.numberOfTargets()>0){
+			if(whiteAction!=blackAction){
+				whiteTarget = Hub.map.getSquares().get(ints.next());
+			}
+			else whiteTarget = blackTarget;
+		}
 		if(whiteAction==blackAction){
 			actionType=1;
 		}
@@ -67,18 +77,14 @@ public class FunctionalSquare extends Square{
 			actionType=2;
 		}
 	}
-	
-	public void setTarget(Square target){
-		this.target = target;
-	}
 
-	public SquareAction getOnHitAction(Hero p) {
-		if(p.getType().equals("black")&&blackAction!=null){
-			blackAction.setTarget(target);
+	public SquareAction getOnHitAction(Hero hero) {
+		if(hero.getType().equals("black")&&blackAction!=null){
+			blackAction.setTarget(blackTarget);
 			return blackAction;
 		}
-		else if(p.getType().equals("white")&&whiteAction!=null){
-			whiteAction.setTarget(target);
+		else if(hero.getType().equals("white")&&whiteAction!=null){
+			whiteAction.setTarget(whiteTarget);
 			return whiteAction;
 		}
 		else return null;
@@ -94,26 +100,12 @@ public class FunctionalSquare extends Square{
 		return whiteAction;
 	}
 	@Override
-	public void saveTo(List<Object> toSave) {
-		super.saveTo(toSave);
-		if(this!=target){
-		//	toSave.add(Hub.map.getSquares().indexOf(target));
-		}
-	}
-	@Override
-	public void saveActions(List<Object> toSave){
-		if(blackAction!=null){
-			blackAction.saveTo(toSave);
-		}
-		if(whiteAction!=null&&whiteAction!=blackAction){
-			whiteAction.saveTo(toSave);
-		}
-	}
-	@Override
 	public List<Action> getActions() {
 		List<Action> list = super.getActions();
+		blackAction.setTarget(blackTarget);
 		list.add(blackAction);
 		if(blackAction!=whiteAction){
+			whiteAction.setTarget(whiteTarget);
 			list.add(whiteAction);
 		}
 		return list;
