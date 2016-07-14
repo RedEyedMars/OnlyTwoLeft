@@ -1,9 +1,12 @@
 package game.menu;
 
 import editor.Editor;
+import editor.MapEditor;
+import editor.OnCreateSquareEditor;
 import game.Game;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 import main.Hub;
@@ -57,10 +60,12 @@ public class MainMenu extends GraphicView{
 		button.setY(0.04f);
 		button.setVisible(false);
 		addChild(button);
+		
+	
 	}
 	
 	public void startStory(){
-		//Hub.scenes.get(Hub.sceneIndex).act(null);
+		Gui.setView(new OnCreateSquareEditor(null, 0f, 0f, 1f, 1f));
 	}
 	
 	public void startEndless(){
@@ -69,10 +74,9 @@ public class MainMenu extends GraphicView{
 	}
 	
 	public void startPvp(){
-		Gui.setView(new Editor());
+		Gui.setView(new MapEditor());
 	}
 	
 	public void startHighscores(){
-		//Gui.setView(new HighscoreMenu());
 	}
 }

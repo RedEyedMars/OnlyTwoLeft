@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 
 import org.lwjgl.opengl.GL11;
 
+import main.Hub;
+
 /**
  * GLFont uses the Java Font class to create character sets and render text.  
  * GLFont can generate text in nearly any size, and in any font that Java supports.  
@@ -154,8 +156,8 @@ public class GLFont {
 
 		// get size of texture image needed to hold largest character of this font
 		//int maxCharSize = getFontSize(font);
-		int imgSizeW = GLApp.getPowerOfTwoBiggerThan(512);
-		int imgSizeH = GLApp.getPowerOfTwoBiggerThan(32);
+		int imgSizeW = 16*16;
+		int imgSizeH = 16*16;
 		if (imgSizeW > 2048) {
 			GLApp.err("GLFont.createCharImage(): texture size will be too big (" + imgSizeW + ") Make the font size smaller.");
 			return null;
@@ -182,17 +184,23 @@ public class GLFont {
 
 		// place the character (on baseline, centered horizontally)
 		FontMetrics fm = g.getFontMetrics();
-		int cwidth = fm.charWidth(text.charAt(0));
+		int cwidth = fm.charWidth('M');
 		int height = fm.getHeight();
 		int ascent = fm.getAscent();
-		int hborder = 6;
+		int hborder = 3;
 
-		int vborder = (int) ((float)(imgSizeH - height)/2)+ascent*(3)/2+1;
-		hborder = 6;
-		String[] words = text.split(" ");
-		for(int j=0;j<words.length;++j){
-			g.drawString(words[j]+" ", hborder, vborder-ascent);
-			hborder+=(words[j]).length()*cwidth;
+		int vborder = height-ascent/2-1;
+		char[] data = new char[128];
+		for(int i=0;i<128;++i){
+			data[i]=((char)i);
+		}
+		int index = 0;
+		for(int y=0;y<8;++y){
+			for(int x=0;x<16;++x){
+				Hub.renderer.letterWidths.add((float) (fm.charWidth(data[index]))/cwidth);
+				g.drawChars(data, index, 1, hborder+x*16, vborder+y*16);
+				++index;
+			}
 		}
 
 		g.dispose();

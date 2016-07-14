@@ -48,7 +48,7 @@ public abstract class StoryAction implements Action<StoryScene>{
 			private String text = ftext+"            ";
 			@Override
 			public void act(StoryScene scene) {
-				scene.getText().setValue(text.substring(0,index));
+				//scene.getText().setValue(text.substring(0,index));
 				++index;
 			}
 			@Override

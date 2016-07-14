@@ -12,11 +12,11 @@ public class OnCreateSquare extends Square{
 	private OnCreateAction action;
 	private List<Object> data = new ArrayList<Object>();
 
-	public OnCreateSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnCreateAction action) {
+	public OnCreateSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats) {
 		super(colour, visibleTo, bufferSize,ints, floats);
 		actionType = 6;
 		try {
-			this.action = action.getClass().newInstance();
+			this.action = OnCreateAction.section.getClass().newInstance();
 			this.action.setArgs(ints, floats);
 			this.action.act(this);
 		} catch (InstantiationException | IllegalAccessException e) {
@@ -32,6 +32,9 @@ public class OnCreateSquare extends Square{
 	}
 	public void add(Object obj){
 		data.add(obj);
+	}
+	public Object useLast() {
+		return data.remove(data.size()-1);
 	}
 	@Override
 	public List<Action> getActions() {

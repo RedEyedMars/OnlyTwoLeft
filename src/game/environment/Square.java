@@ -88,7 +88,7 @@ public class Square extends GraphicEntity{
 		return visibleTo<2;
 	}
 	public boolean visibleToWhite() {
-		return visibleTo!=1;
+		return visibleTo!=1&&visibleTo!=3;
 	}
 
 	
@@ -177,8 +177,7 @@ public class Square extends GraphicEntity{
 			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2,action3);
 		}
 		else if(actionType==6){
-			OnCreateAction action = OnCreateAction.getAction(ints.next());
-			square = new OnCreateSquare(colour,visibleTo,bufferSize,ints,floats,action);
+			square = new OnCreateSquare(colour,visibleTo,bufferSize,ints,floats);
 		}
 		return square;
 	}
@@ -233,6 +232,12 @@ public class Square extends GraphicEntity{
 				ints.add(squareAction2);
 				ints.add(updateAction);
 			}
+		}
+		else if(onCreateAction!=0){
+			ints.add(6);
+			ints.add(colour);
+			ints.add(visibleTo);
+			ints.add(bufferSize);
 		}
 		
 		int lastUpdatableSquare=Hub.map.getSquares().size()-1;

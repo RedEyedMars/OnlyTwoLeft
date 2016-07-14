@@ -12,7 +12,6 @@ import gui.inputs.MotionEvent;
 import main.Hub;
 
 public class StoryScene extends GraphicView{
-	private GraphicWord text;
 	private List<GraphicEntity> actors = new ArrayList<GraphicEntity>();
 	private StoryAction[] actions;
 	private int storyIndex = 0;
@@ -67,10 +66,6 @@ public class StoryScene extends GraphicView{
 			setFrame(2);
 		}
 		});
-		text = new GraphicWord(26*7,true);
-		text.setX(0.08f);
-		text.setY(0.24f);
-		addChild(text);
 
 		this.actions = actions;
 	}
@@ -91,10 +86,6 @@ public class StoryScene extends GraphicView{
 
 	public GraphicEntity getActor(int i) {
 		return actors.get(i);		
-	}
-
-	public GraphicWord getText() {
-		return text;
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.List;
 import game.environment.FunctionalSquare;
 import game.environment.Square;
 import game.environment.SquareAction;
-import game.menu.GraphicNumber;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;

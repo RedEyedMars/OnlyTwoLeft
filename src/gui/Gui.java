@@ -123,6 +123,11 @@ public class Gui extends GLApp {
         }
         
     }
+    
+    @Override
+    public void mouseWheel(int amount) {
+    	mouseListener.peek().onMouseScroll(amount);
+    }
 
     public void mouseMove(int x, int y) {
     	mouseListener.peek().onHover(new MotionEvent(x/Hub.width,y/Hub.height,MotionEvent.ACTION_DOWN,MotionEvent.MOUSE_LEFT));
@@ -219,6 +224,9 @@ public class Gui extends GLApp {
 		}
 		Hub.currentView = view;
 		giveOnClick(view);
+		if(view instanceof KeyBoardListener){
+			Gui.giveOnType((KeyBoardListener) view);
+		}
 		view.onAddToDrawable();
 	}
 

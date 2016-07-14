@@ -67,10 +67,31 @@ public class GraphicRenderer {
 		}
 		textureBuffers.put(k, textureBuffer);
 	}
-	public void display(){
-		while(!toLoadtext.isEmpty()){
-			loadText(toLoadtext.remove(0),true);
+	public void setupTextureBuffer(int xMax, int yMax) {
+		float length = (float)xMax;
+		float height = (float)yMax;
+		FloatBuffer[] textureBuffer = new FloatBuffer[xMax*yMax];
+		float textures[];
+		for(int y=0;y<yMax;++y){
+			for(int x=0;x<xMax;++x){
+				textures= new float[]{
+						// Mapping coordinates for the vertices
+						x/length, (y+1)/height,		// top left		(V2)
+						x/length, (y)/height,		// bottom left	(V1)
+						(x+1)/length, (y+1)/height,		// top right	(V4)
+						(x+1)/length, (y)/height		// bottom right	(V3)
+				};
+
+				ByteBuffer byteBuffer = ByteBuffer.allocateDirect(2 * 4 * 4);
+				byteBuffer.order(ByteOrder.nativeOrder());
+				textureBuffer[y*xMax+x] = byteBuffer.asFloatBuffer();
+				textureBuffer[y*xMax+x].put(textures);
+				textureBuffer[y*xMax+x].position(0);
+			}
 		}
+		textureBuffers.put(xMax*yMax, textureBuffer);
+	}
+	public void display(){
 		while(!Hub.addLayer.isEmpty()){
 			GraphicElement e = Hub.addLayer.remove(0);
 			if(e.getLayer()==1){
@@ -152,6 +173,7 @@ public class GraphicRenderer {
 				loadImageFromPath("images/"+filename,size,name);
 			}
 
+			loadText();
 			loaded = true;
 		}
 	}
@@ -161,21 +183,17 @@ public class GraphicRenderer {
 	}
 
 
-	public void loadText(String text) {
-		toLoadtext.add(text);
-	}
-	private void loadText(String text, boolean fixed){
-		if(!contains("$"+text)){
-			String name = "$"+text;
-			if(!buffersInclude(1)){
-				setupTextureBuffer(1);			
-			}
-			loadImageFromGLImage(
-					GLFont.createCharImage(
-							text, 
-							new Font("Times New Roman", Font.PLAIN, 12), new float[]{1,1,1,1}, new float[]{0,0,0,0f}),
-					name);
-		}
+	private Font font = new Font("Times New Roman", Font.PLAIN, 16);
+
+	public List<Float> letterWidths= new ArrayList<Float>();
+	private void loadText(){
+		setupTextureBuffer(16,16);
+		loadImageFromGLImage(
+				GLFont.createCharImage(
+						"$text", 
+						font, new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f}),
+				"$text",
+				16*16);
 	}
 
 	public void loadImageFromPath(String path, int size, String name){
@@ -210,7 +228,7 @@ public class GraphicRenderer {
 			tex = Gui.makeTexture(textureImg);
 		}
 		texMap.put(name, tex);
-		sizMap.put(name, 1);
+		sizMap.put(name, size);
 	}
 	public void deleteTexture(String textureName) {
 		sizMap.remove(textureName);
