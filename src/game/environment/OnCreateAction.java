@@ -14,31 +14,31 @@ import game.Hero;
 public abstract class OnCreateAction implements Action<OnCreateSquare>{
 	public static Map<String,OnCreateAction> actions = new HashMap<String,OnCreateAction>();
 	public static List<OnCreateAction> actionList = new ArrayList<OnCreateAction>();
-	
+
 	public static final OnCreateAction section = new OnCreateAction(){
 		private int numberOfActions = 0;
 		private List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
 		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			this.ints.clear();
+			this.actions.clear();
 			super.setArgs(ints, floats);
 			numberOfActions = this.ints.get(0);
 			for(int i=0;i<numberOfActions;++i){
 				int actionIndex = ints.next();
-				try {
-					OnCreateAction action = actionList.get(actionIndex).getClass().newInstance();
-					action.setArgs(ints, floats);
-					this.actions.add(action);
-				} catch (InstantiationException | IllegalAccessException e) {
-					e.printStackTrace();
-				}
+				OnCreateAction action = actionList.get(actionIndex).create();
+				action.setArgs(ints, floats);
+				this.actions.add(action);
 			}
 		}
 		@Override
 		public void act(OnCreateSquare square) {
+			square.getData().clear();
 			for(OnCreateAction action:actions){
 				action.act(square);
 			}
 		}
-		public void saveArgs(List<Object> saveTo){
+		@Override
+		public void saveTo(List<Object> saveTo){
 			saveTo.add(numberOfActions);
 			for(OnCreateAction action:actions){
 				action.saveTo(saveTo);
@@ -53,11 +53,11 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			return 0;
 		}
 	};
-	
-	public static final OnCreateAction create_square_list = new OnCreateAction(){
+
+	public static final OnCreateAction create_list = new OnCreateAction(){
 		@Override
 		public void act(OnCreateSquare square) {
-			square.add(new ArrayList<Square>());
+			square.add(new ArrayList<Object>());
 		}
 		@Override
 		public int getIndex() {
@@ -83,7 +83,32 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			return 2;
 		}
 	};
-	public static final OnCreateAction put_into_list = new OnCreateAction(){
+	public static final OnCreateAction create_squares = new OnCreateAction(){
+		private List<Square> list = new ArrayList<Square>();		
+		@Override
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			int size = ints.next();
+			for(int i=0;i<size;++i){
+				list.add(Square.create(ints, floats));
+			}
+		}
+		@Override
+		public void act(OnCreateSquare square) {
+			square.add(list);
+		}
+		@Override
+		protected void saveArgs(List<Object> saveTo){
+			saveTo.add(list.size());
+			for(int i=0;i<list.size();++i){
+				list.get(i).saveTo(saveTo);
+			}
+		}
+		@Override
+		public int getIndex() {
+			return 3;
+		}
+	};
+	public static final OnCreateAction put = new OnCreateAction(){
 		private int indexOfList;
 		@Override
 		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
@@ -100,10 +125,10 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		}
 		@Override
 		public int getIndex() {
-			return 3;
+			return 4;
 		}
 	};
-	public static final OnCreateAction display_square_list = new OnCreateAction(){
+	public static final OnCreateAction get = new OnCreateAction(){
 		private int indexOfList;
 		@Override
 		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
@@ -111,9 +136,64 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		}
 		@Override
 		public void act(OnCreateSquare square) {
-			List<Square> list = (List<Square>) square.getData().get(indexOfList);
-			for(Square sqr:list){
-				square.addChild(sqr);
+			List<Object> list = (List<Object>) square.getData().get(indexOfList);
+			square.add(list.remove(list.size()-1));
+		}
+		@Override
+		protected void saveArgs(List<Object> saveTo){
+			saveTo.add(indexOfList);
+		}
+		@Override
+		public int getIndex() {
+			return 5;
+		}
+	};
+	public static final OnCreateAction get_random = new OnCreateAction(){
+		private int indexOfList;
+		@Override
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			indexOfList=ints.next();
+		}
+		@Override
+		public void act(OnCreateSquare square) {
+			List<Object> list = (List<Object>) square.getData().get(indexOfList);
+			square.add(list.remove((int)(Math.random()*list.size())));
+		}
+		@Override
+		protected void saveArgs(List<Object> saveTo){
+			saveTo.add(indexOfList);
+		}
+		@Override
+		public int getIndex() {
+			return 6;
+		}
+	};
+	public static final OnCreateAction display_list = new OnCreateAction(){
+		private int indexOfList;
+		@Override
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			indexOfList=ints.next();
+		}
+		@Override
+		public void act(OnCreateSquare square) {
+			List<Object> list = (List<Object>) square.getData().get(indexOfList);
+			float dx = 10000f;
+			float dy = 10000f;
+			for(Object sqr:list){
+				if(((Square)sqr).getX()<dx){
+					dx=((Square)sqr).getX();
+				}
+				if(((Square)sqr).getY()<dy){
+					dy=((Square)sqr).getY();
+				}
+			}
+			dx=square.getX()-dx;
+			dy=square.getY()-dy;
+			for(Object sqr:list){
+				Square s = ((Square)sqr);
+				s.setX(s.getX()+dx);
+				s.setY(s.getY()+dy);
+				square.addChild(s);
 			}
 		}
 		@Override
@@ -122,10 +202,10 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		}
 		@Override
 		public int getIndex() {
-			return 4;
+			return 7;
 		}
 	};
-	
+
 	protected List<Float> floats = new ArrayList<Float>();
 	public int numberOfFloats(){
 		return 0;
@@ -142,12 +222,21 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			this.ints.add(ints.next());
 		}
 	}
-	
+
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
 		saveArgs(saveTo);
 	}
-	
+
+	public OnCreateAction create(){
+		try {
+			return getClass().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	protected void saveArgs(List<Object> saveTo){
 		for(int i=0;i<numberOfInts();++i){
 			saveTo.add(ints.get(i));
@@ -156,7 +245,7 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			saveTo.add(floats.get(i));
 		}
 	}
-	
+
 	static {
 		try {
 			for(Field field:OnCreateAction.class.getFields()){
@@ -179,52 +268,5 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		else {
 			return actionList.get(i);
 		}
-	}
-	public OnCreateAction createFromString(String toParse){
-		String[] split = toParse.split(":");
-		String name = split[0];
-		String[] intSplit = split[1].split(",");
-		String[] floatSplit = split[2].split(",");
-		List<Integer> ints = new ArrayList<Integer>();
-		List<Float> floats = new ArrayList<Float>();
-		for(String i:intSplit){
-			ints.add(Integer.parseInt(i));
-		}
-		for(String f:floatSplit){
-			floats.add(Float.parseFloat(f));
-		}
-		try {
-			OnCreateAction action = actions.get(name).getClass().newInstance();
-			action.setArgs(ints.iterator(), floats.iterator());
-			return action;
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	public OnCreateAction createFromString(String name,Square square){
-		final List<Integer> ints = new ArrayList<Integer>();
-		final List<Float> floats = new ArrayList<Float>();
-		List<Object> probe = new ArrayList<Object>(){
-			@Override
-			public boolean add(Object obj){
-				if(obj instanceof Integer){
-					return ints.add((Integer) obj);
-				}
-				else if(obj instanceof Float){
-					return floats.add((Float) obj);
-				}
-				return false;
-			}
-		};
-		square.saveTo(probe);
-		try {
-			OnCreateAction action = actions.get(name).getClass().newInstance();
-			action.setArgs(ints.iterator(), floats.iterator());
-			return action;
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 }

@@ -36,6 +36,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 		white.setX(0.25f);
 		white.setY(0f);
 		addChild(Hub.map);
+		Hub.map.onCreate();
 		addChild(black);
 		addChild(white);
 

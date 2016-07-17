@@ -75,6 +75,39 @@ public class Storage {
 		}
 		return builder.toArray(new Byte[0]);
 	}
+	
+
+
+	public static String loadText(String filename) {
+		StringBuilder builder = new StringBuilder();
+		for(Byte b:readVerbatum(filename)){
+			builder.append((char)(int)b);
+		}
+		return builder.toString();
+	}
+
+	public static void saveText(String filename, String text) {
+		createFolder("data");
+		FileOutputStream writer = null;
+		try {
+			writer = new FileOutputStream(filename,false);
+			byte[] bytes = new byte[text.length()];
+			char[] chars = text.toCharArray();
+			for(int i=0;i<chars.length;++i){
+				bytes[i] = (byte) chars[i];
+			}
+			writer.write(bytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if(writer!=null){
+			try {
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	public static void saveMap(String filename, game.environment.Map map) {
 		List<Object> toSave = new ArrayList<Object>(){

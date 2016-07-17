@@ -27,9 +27,11 @@ public class UpdatableSquare extends FunctionalSquare {
 			actionType+=3;//it's set to 1 or 2 by FunctionalSquare, so +=3 means 4 or 5
 		}
 		try {
-			this.updateAction = updateAction.getClass().newInstance();
-			this.updateAction.setFloats(floats);
-			this.updateAction.setSelf(this);
+			if(this.updateAction!=null){
+				this.updateAction = updateAction.getClass().newInstance();
+				this.updateAction.setFloats(floats);
+				this.updateAction.setSelf(this);
+			}
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
@@ -37,7 +39,7 @@ public class UpdatableSquare extends FunctionalSquare {
 	public UpdateAction getAction(){
 		return updateAction;
 	}
-	
+
 	public void update(double secondsSinceLastFrame){
 		if(activated){
 			this.updateAction.act(secondsSinceLastFrame);

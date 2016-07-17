@@ -65,7 +65,7 @@ public class Square extends GraphicEntity{
 				return null;
 			}},floats);
 	}
-	
+
 	public Square(int colour,int visibleTo, float width, float height) {
 		super("squares");
 		adjust(width,height);
@@ -91,12 +91,12 @@ public class Square extends GraphicEntity{
 		return visibleTo!=1&&visibleTo!=3;
 	}
 
-	
+
 	@Override
 	public void adjust(float x, float y){
 		this.getGraphicElement().adjust(x, y);
 	}
-	
+
 	private float xOffset = 0f;
 	private float yOffset = 0f;
 	@Override
@@ -147,6 +147,7 @@ public class Square extends GraphicEntity{
 		Square square = null;
 		int actionType = ints.next();
 		int colour = ints.next();
+		if(!ints.hasNext())return null;
 		int visibleTo = ints.next();
 		int bufferSize = ints.next();
 		if(actionType==0){
@@ -181,75 +182,78 @@ public class Square extends GraphicEntity{
 		}
 		return square;
 	}
-	public static Iterator<Integer> makeInts(int squareAction1, int squareAction2, int updateAction, int onCreateAction,
-											 int colour, int visibleTo,int bufferSize) {		
+	public static Iterator<Integer> makeInts(int squareAction1, int squareAction2, int updateAction, boolean onCreateAction,
+			int colour, int visibleTo,int bufferSize) {		
 		List<Integer> ints = new ArrayList<Integer>();
-		if(squareAction1==-1&&squareAction2==-1&&updateAction==-1&&onCreateAction==-1){
-			ints.add(0);
-			ints.add(colour);
-			ints.add(visibleTo);
-			ints.add(bufferSize);
+		if(!onCreateAction){
+			if(squareAction1==-1&&squareAction2==-1&&updateAction==-1){
+				ints.add(0);
+				ints.add(colour);
+				ints.add(visibleTo);
+				ints.add(bufferSize);
+			}
+			else if(squareAction1>=0&&updateAction==-1){
+				if(squareAction2==-1||squareAction1==squareAction2){
+					ints.add(1);
+					ints.add(colour);
+					ints.add(visibleTo);
+					ints.add(bufferSize);
+					ints.add(squareAction1);
+				}
+				else {
+					ints.add(2);
+					ints.add(colour);
+					ints.add(visibleTo);
+					ints.add(bufferSize);
+					ints.add(squareAction1);
+					ints.add(squareAction2);
+				}
+			}
+			else if(updateAction>=0){
+				if(squareAction1==-1&&squareAction2==-1){
+					ints.add(3);
+					ints.add(colour);
+					ints.add(visibleTo);
+					ints.add(bufferSize);
+					ints.add(updateAction);
+				}
+				else if(squareAction2==-1||squareAction1==squareAction2){
+					ints.add(4);
+					ints.add(colour);
+					ints.add(visibleTo);
+					ints.add(bufferSize);
+					ints.add(squareAction1);
+					ints.add(updateAction);
+				}
+				else {
+					ints.add(5);
+					ints.add(colour);
+					ints.add(visibleTo);
+					ints.add(bufferSize);
+					ints.add(squareAction1);
+					ints.add(squareAction2);
+					ints.add(updateAction);
+				}
+			}
 		}
-		else if(squareAction1>=0&&updateAction==-1){
-			if(squareAction2==-1||squareAction1==squareAction2){
-				ints.add(1);
-				ints.add(colour);
-				ints.add(visibleTo);
-				ints.add(bufferSize);
-				ints.add(squareAction1);
-			}
-			else {
-				ints.add(2);
-				ints.add(colour);
-				ints.add(visibleTo);
-				ints.add(bufferSize);
-				ints.add(squareAction1);
-				ints.add(squareAction2);
-			}
-		}
-		else if(updateAction>=0){
-			if(squareAction1==-1&&squareAction2==-1){
-				ints.add(3);
-				ints.add(colour);
-				ints.add(visibleTo);
-				ints.add(bufferSize);
-				ints.add(updateAction);
-			}
-			else if(squareAction2==-1||squareAction1==squareAction2){
-				ints.add(4);
-				ints.add(colour);
-				ints.add(visibleTo);
-				ints.add(bufferSize);
-				ints.add(squareAction1);
-				ints.add(updateAction);
-			}
-			else {
-				ints.add(5);
-				ints.add(colour);
-				ints.add(visibleTo);
-				ints.add(bufferSize);
-				ints.add(squareAction1);
-				ints.add(squareAction2);
-				ints.add(updateAction);
-			}
-		}
-		else if(onCreateAction!=0){
+		else{
 			ints.add(6);
 			ints.add(colour);
 			ints.add(visibleTo);
 			ints.add(bufferSize);
+			ints.add(0);
 		}
-		
+
 		int lastUpdatableSquare=Hub.map.getSquares().size()-1;
 		for(;lastUpdatableSquare>=0;--lastUpdatableSquare){
 			if(Hub.map.getSquares().get(lastUpdatableSquare) instanceof UpdatableSquare){
 				break;
 			}
 		}
-		if(squareAction1!=0&&SquareAction.getAction(squareAction1).numberOfTargets()==1){			
+		if(squareAction1!=-1&&SquareAction.getAction(squareAction1).numberOfTargets()==1){			
 			ints.add(lastUpdatableSquare);
 		}
-		if(squareAction1!=squareAction2&&squareAction2!=0&&SquareAction.getAction(squareAction2).numberOfTargets()==1){
+		if(squareAction1!=squareAction2&&squareAction2!=-1&&SquareAction.getAction(squareAction2).numberOfTargets()==1){
 			ints.add(lastUpdatableSquare);
 		}
 		return ints.iterator();

@@ -46,11 +46,11 @@ public class FunctionalSquare extends Square{
 	public FunctionalSquare(int colour, int visibleTo, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, SquareAction blackAction, SquareAction whiteAction) {
 		super(colour,visibleTo,bufferSize,ints, floats);
 		this.blackAction = blackAction;
-		if(blackAction.numberOfTargets()>0){
+		if(blackAction!=null&&blackAction.numberOfTargets()>0){
 			blackTarget = Hub.map.getSquares().get(ints.next());
 		}
 		this.whiteAction = whiteAction;
-		if(whiteAction.numberOfTargets()>0){
+		if(whiteAction!=null&&whiteAction.numberOfTargets()>0){
 			if(whiteAction!=blackAction){
 				whiteTarget = Hub.map.getSquares().get(ints.next());
 			}
@@ -102,8 +102,10 @@ public class FunctionalSquare extends Square{
 	@Override
 	public List<Action> getActions() {
 		List<Action> list = super.getActions();
-		blackAction.setTarget(blackTarget);
-		list.add(blackAction);
+		if(blackAction!=null){
+			blackAction.setTarget(blackTarget);
+			list.add(blackAction);
+		}
 		if(blackAction!=whiteAction){
 			whiteAction.setTarget(whiteTarget);
 			list.add(whiteAction);

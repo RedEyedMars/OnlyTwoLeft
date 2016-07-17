@@ -17,6 +17,7 @@ public class Map extends GraphicEntity {
 	private List<Square> blackSquares = new ArrayList<Square>();
 	private List<Square> whiteSquares = new ArrayList<Square>();
 	private List<FunctionalSquare> functionalSquares = new ArrayList<FunctionalSquare>();
+	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
 
 	public Map() {
 		super("blank");
@@ -32,12 +33,14 @@ public class Map extends GraphicEntity {
 		if(square.isFunctional()){
 			functionalSquares.add((FunctionalSquare)square);
 		}
-
 		if(square.visibleToBlack()&&!square.visibleToWhite()){
 			blackSquares.add(square);
 		}
 		else if(square.visibleToWhite()&&!square.visibleToBlack()){
 			whiteSquares.add(square);
+		}
+		if(square instanceof OnCreateSquare){
+			onCreates.add((OnCreateSquare) square);
 		}
 		allSquares.add(square);
 		addChild(square);
@@ -102,7 +105,7 @@ public class Map extends GraphicEntity {
 		private Iterator<Integer> integerIterator = new Iterator<Integer>(){
 			@Override
 			public boolean hasNext() {
-				return integerIndex<floatIndex;
+				return integerIndex<maxIntegers;
 			}
 			@Override
 			public Integer next() {
@@ -187,6 +190,12 @@ public class Map extends GraphicEntity {
 
 	public List<Square> getSquares() {
 		return allSquares;
+	}
+
+	public void onCreate() {
+		for(OnCreateSquare square:onCreates){
+			square.act();
+		}
 	}
 
 

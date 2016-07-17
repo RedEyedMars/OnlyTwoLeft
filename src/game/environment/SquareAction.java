@@ -129,7 +129,7 @@ public abstract class SquareAction implements Action<Hero> {
 		}
 	}
 	public static SquareAction getAction(Integer i) {
-		if(i==-1){
+		if(i==-1||i>=actions.size()){
 			return null;
 		}
 		else {

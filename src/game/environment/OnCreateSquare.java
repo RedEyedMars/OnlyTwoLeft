@@ -15,13 +15,12 @@ public class OnCreateSquare extends Square{
 	public OnCreateSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats) {
 		super(colour, visibleTo, bufferSize,ints, floats);
 		actionType = 6;
-		try {
-			this.action = OnCreateAction.section.getClass().newInstance();
-			this.action.setArgs(ints, floats);
-			this.action.act(this);
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
+		this.action = OnCreateAction.section.create();
+		this.action.setArgs(ints, floats);
+	}
+	
+	public void act(){
+		this.action.act(this);
 	}
 
 	public List<Object> getData(){

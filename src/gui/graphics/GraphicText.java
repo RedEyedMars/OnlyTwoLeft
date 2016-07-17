@@ -164,6 +164,9 @@ public class GraphicText extends GraphicEntity {
 		public int length() {
 			return length;
 		}
+		public String getText() {
+			return text;
+		}
 
 	}
 	private class GraphicChar extends GraphicEntity{

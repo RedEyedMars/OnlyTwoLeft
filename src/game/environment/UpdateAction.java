@@ -81,7 +81,7 @@ public abstract class UpdateAction implements Action<Double>{
 		}
 	}
 	public static UpdateAction getAction(Integer i) {
-		if(i==-1){
+		if(i==-1||i>=actions.size()){
 			return null;
 		}
 		else {

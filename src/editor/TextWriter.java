@@ -1,5 +1,9 @@
 package editor;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
@@ -7,15 +11,28 @@ import gui.inputs.KeyBoardListener;
 public class TextWriter extends GraphicText implements KeyBoardListener {
 
 	private int index = 0;
-	public TextWriter(String text) {
+	private Map<Integer, ButtonAction> ctrlCommands;
+	private Editor editor;
+	public TextWriter(Editor parent,String text, Map<Integer,ButtonAction> ctrlCommands) {
 		super(text);
+		this.editor = parent;
 		blinker.setVisible(true);
+		this.ctrlCommands = ctrlCommands;
 	}
 
+	private boolean ctrling = false;
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
-			if(keycode==14){
+			if(ctrling){
+				if(ctrlCommands.containsKey(keycode)){
+					ctrlCommands.get(keycode).act(editor);
+				}
+			}
+			else if(keycode==29||keycode==157){
+				ctrling=true;
+			}
+			else if(keycode==14){
 				if(getText().length()==0)return;
 				if(lineIndex>0&&getText().charAt(index-1)=='\n'){
 					--lineIndex;
@@ -54,16 +71,20 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 			}
 			else if(keycode==200){//up
 				if(lineIndex>0){
-					index-=
+					if(lineIndex<lines.size()){
+						index-=
 							charIndex>=lines.get(lineIndex).length()?
 									lines.get(lineIndex).length():
-										charIndex;	
-									--lineIndex;
-									index-=lines.get(lineIndex).length()+1;
-									index+=
-											charIndex>=lines.get(lineIndex).length()?
-													lines.get(lineIndex).length():
-														charIndex;				
+									charIndex;
+						--index;
+					}
+					
+							--lineIndex;
+							index-=lines.get(lineIndex).length();
+							index+=
+									charIndex>=lines.get(lineIndex).length()?
+									lines.get(lineIndex).length():
+									charIndex;				
 
 				}
 			}
@@ -110,6 +131,11 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 				insert(c);
 			}
 		}
+		else if(KeyBoardListener.UP==b){
+			if(keycode==29||keycode==157){
+				ctrling=false;
+			}
+		}
 
 	}
 
@@ -136,6 +162,14 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 	@Override
 	public boolean continuousKeyboard() {
 		return false;
+	}
+	
+	public String[] getLines(){
+		List<String> strings = new ArrayList<String>();
+		for(GraphicLine line:lines){
+			strings.add(line.getText());
+		}
+		return strings.toArray(new String[0]);
 	}
 
 }
