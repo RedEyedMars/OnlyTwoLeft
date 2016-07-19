@@ -80,10 +80,16 @@ public class FunctionalSquare extends Square{
 
 	public SquareAction getOnHitAction(Hero hero) {
 		if(hero.getType().equals("black")&&blackAction!=null){
+			if(blackAction.numberOfTargets()==2){
+				blackAction.setTarget(this);
+			}
 			blackAction.setTarget(blackTarget);
 			return blackAction;
 		}
 		else if(hero.getType().equals("white")&&whiteAction!=null){
+			if(whiteAction.numberOfTargets()==2){
+				whiteAction.setTarget(this);
+			}
 			whiteAction.setTarget(whiteTarget);
 			return whiteAction;
 		}

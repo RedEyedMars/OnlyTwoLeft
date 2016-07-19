@@ -18,7 +18,10 @@ import main.Hub;
 public class Game extends GraphicView implements KeyBoardListener{
 	protected Hero black;
 	protected Hero white;
+
 	protected Hero controlled;
+	protected Hero wild;
+	protected Hero focused;
 
 	private float pointerX = 0.05f;
 	private float pointerY = 0.05f;
@@ -30,41 +33,32 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 		black = new Hero(this,Hero.black);
 		white = new Hero(this,Hero.white);
-		black.setX(0.25f);
-		black.setY(0f);
+		black.setX(0.45f);
+		black.setY(0.5f);
 
-		white.setX(0.25f);
-		white.setY(0f);
+		white.setX(0.55f);
+		white.setY(0.5f);
 		addChild(Hub.map);
 		Hub.map.onCreate();
 		addChild(black);
 		addChild(white);
 
 		controlled = black;
+		wild = white;
+		focused = black;
+		
+		addChild(new VisionBubble(black,white));
 		Hub.map.setVisibleSquares(0);
 		Gui.giveOnType(this);
 	}	
 
+	private static final float uppderViewBorder = 0.6f;
+	private static final float lowerViewBorder = 0.4f;
 	@Override
 	public void update(double secondsSinceLastFrame){
 		super.update(secondsSinceLastFrame);
 		handleInterceptions();
-		if(controlled.getX()>0.8f){
-			Hub.map.setX(Hub.map.getX()-(controlled.getX()-0.8f));
-			controlled.setX(0.8f);
-		}
-		else if(controlled.getX()<0.2f){
-			Hub.map.setX(Hub.map.getX()+(0.2f-controlled.getX()));
-			controlled.setX(0.2f);
-		}
-		if(controlled.getY()>0.8f){
-			Hub.map.setY(Hub.map.getY()-(controlled.getY()-0.8f));
-			controlled.setY(0.8f);
-		}
-		else if(controlled.getY()<0.2f){
-			Hub.map.setY(Hub.map.getY()+(0.2f-controlled.getY()));
-			controlled.setY(0.2f);
-		}
+		handleViewMovement();
 	}
 
 	private void handleInterceptions(){
@@ -77,7 +71,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null&&action.isWithin(hero,mapSquares.get(i))){
 					action.act(hero);
-					break;
+					if(action.requiresComplete()){
+						break;
+					}
 				}
 			}
 			/*use if more than one square can be triggered currently just the top square
@@ -107,6 +103,30 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 	}
 
+	private void handleViewMovement(){
+		if(focused.getX()>uppderViewBorder){
+			Hub.map.setX(Hub.map.getX()-(focused.getX()-uppderViewBorder));
+			wild.setX(wild.getX()-(focused.getX()-uppderViewBorder));
+			focused.setX(uppderViewBorder);
+			
+		}
+		else if(focused.getX()<lowerViewBorder){
+			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));;
+			wild.setX(wild.getX()+(lowerViewBorder-focused.getX()));
+			focused.setX(lowerViewBorder);
+		}
+		if(focused.getY()>uppderViewBorder){
+			Hub.map.setY(Hub.map.getY()-(focused.getY()-uppderViewBorder));
+			wild.setY(wild.getY()-(focused.getY()-uppderViewBorder));
+			focused.setY(uppderViewBorder);
+		}
+		else if(focused.getY()<lowerViewBorder){
+			Hub.map.setY(Hub.map.getY()+(lowerViewBorder-focused.getY()));
+			wild.setY(wild.getY()+(lowerViewBorder-focused.getY()));
+			focused.setY(lowerViewBorder);
+		}
+	}
+	
 	@Override
 	public boolean onHover(MotionEvent event){
 		pointerX = event.getX();
@@ -155,12 +175,14 @@ public class Game extends GraphicView implements KeyBoardListener{
 					controlled.setYAcceleration(0f);
 			}
 			else if(57==keycode){//space
-				if(controlled==black){
-					controlled = white;
+				if(focused==black){
+					focused = white;
+					wild = black;
 					Hub.map.setVisibleSquares(1);
 				}
-				else if(controlled==white){
-					controlled = black;
+				else if(focused==white){
+					focused = black;
+					wild = white;
 					Hub.map.setVisibleSquares(0);
 				}
 			}

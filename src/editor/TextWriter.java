@@ -14,7 +14,7 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 	private Map<Integer, ButtonAction> ctrlCommands;
 	private Editor editor;
 	public TextWriter(Editor parent,String text, Map<Integer,ButtonAction> ctrlCommands) {
-		super(text);
+		super("timesnewroman",text);
 		this.editor = parent;
 		blinker.setVisible(true);
 		this.ctrlCommands = ctrlCommands;

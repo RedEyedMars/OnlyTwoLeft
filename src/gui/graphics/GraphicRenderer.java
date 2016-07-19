@@ -110,8 +110,10 @@ public class GraphicRenderer {
 				Hub.drawBotLayer.remove(e);
 			}
 		}
+		//GL11.glTranslatef(-0f, -0f, -1f);
 		GL11.glTranslatef(-0.7521f+viewX, -0.565f+viewY, -1.107f+viewZ);
 		GL11.glScalef(1.504f, 1.12875f, 1f);
+		//GL11.glScalef(1f, 1f, 1f);
 		animate = System.currentTimeMillis()-last>animationInterval;
 		if(animate){
 			last = System.currentTimeMillis();
@@ -140,7 +142,7 @@ public class GraphicRenderer {
 		if(previousTexture != texMap.get(d.getTextureName())){
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, texMap.get(d.getTextureName()));
 			previousTexture = texMap.get(d.getTextureName());
-		}
+		}		
 		GL11.glTexCoordPointer(2, 0, textureBuffers.get(sizMap.get(d.getTextureName()))[d.textureIndex()]);
 		d.draw();
 	}
@@ -173,7 +175,8 @@ public class GraphicRenderer {
 				loadImageFromPath("images/"+filename,size,name);
 			}
 
-			loadText();
+			loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
+			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
 			loaded = true;
 		}
 	}
@@ -182,17 +185,17 @@ public class GraphicRenderer {
 		return texMap.containsKey(key);
 	}
 
-
-	private Font font = new Font("Times New Roman", Font.PLAIN, 16);
-
-	public List<Float> letterWidths= new ArrayList<Float>();
-	private void loadText(){
-		setupTextureBuffer(16,16);
+	public Map<String,List<Float>> letterWidths= new HashMap<String,List<Float>>();
+	private void loadText(String fontName,Font font, int size, float[] foregroundColour, float[] backgroundColour){
+		if(!buffersInclude(16*16)){
+			setupTextureBuffer(16,16);
+		}
+		letterWidths.put(fontName,new ArrayList<Float>());
 		loadImageFromGLImage(
 				GLFont.createCharImage(
-						"$text", 
-						font, new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f}),
-				"$text",
+						fontName, 
+						font,size, foregroundColour, backgroundColour),
+				"$"+fontName,
 				16*16);
 	}
 

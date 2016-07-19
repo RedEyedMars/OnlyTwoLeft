@@ -119,6 +119,12 @@ public class Square extends GraphicEntity{
 		return getChild(index).getY()+yOffset-getY();
 	}
 
+	public boolean isCompletelyWithin(Square q) {
+		double x = getX()+getWidth();
+		double y = getY()+getHeight();
+		return (getX()>=q.getX()&&x<=q.getX()+q.getWidth()&&
+				getY()>=q.getY()&&y<=q.getY()+q.getHeight());
+	}
 	public void saveTo(List<Object> toSave) {
 		toSave.add(getX());
 		toSave.add(getY());

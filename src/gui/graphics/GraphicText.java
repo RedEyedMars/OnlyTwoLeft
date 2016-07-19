@@ -7,6 +7,9 @@ import main.Hub;
 
 public class GraphicText extends GraphicEntity {
 
+	private float visualW=1f;
+	private float visualH=1f;
+	
 	protected String text;
 	protected List<GraphicLine> lines = new ArrayList<GraphicLine>();
 
@@ -52,8 +55,10 @@ public class GraphicText extends GraphicEntity {
 			}
 		}
 	};
-	public GraphicText(String text) {
+	private String font;
+	public GraphicText(String font, String text) {
 		super("blank");
+		this.font = font;
 		this.text = text;
 		String[] lines = text.split("\n");
 		for(int i=0;i<lines.length;++i){
@@ -108,9 +113,15 @@ public class GraphicText extends GraphicEntity {
 
 	@Override
 	public float offsetY(int index){
-		return 0.025f*(-index);
+		return 0.025f*(-index)*visualH;
 	}
 
+	public void setWidthFactor(float w){
+		this.visualW = w;
+	}
+	public void setHeightFactor(float h){
+		this.visualH = h;
+	}
 
 	protected class GraphicLine extends GraphicEntity{
 		private String text;
@@ -156,7 +167,7 @@ public class GraphicText extends GraphicEntity {
 				offset = 0;
 			}
 			else if(index<chars.size()){
-				offset+=getChild(index-1).getWidth()*chars.get(index-1).getWidthValue();
+				offset+=getChild(index-1).getWidth()*chars.get(index-1).getWidthValue()*visualW;
 			}
 
 			return offset;
@@ -173,9 +184,9 @@ public class GraphicText extends GraphicEntity {
 		private float value;
 
 		public GraphicChar(char c) {
-			super("$text");
+			super("$"+font);
 			setFrame(c);
-			value = Hub.renderer.letterWidths.get(c)*14/16;
+			value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
 		}
 
 		public float getWidthValue() {
@@ -184,12 +195,12 @@ public class GraphicText extends GraphicEntity {
 
 		public void change(char c) {
 			setFrame(c);
-			value = Hub.renderer.letterWidths.get(c)*14/16;
+			value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
 		}
 
 		@Override
 		public void adjust(float x, float y){
-			super.adjust(0.025f,0.025f);
+			super.adjust(0.025f*visualW,0.025f*visualH);
 		}
 	}
 }

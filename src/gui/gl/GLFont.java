@@ -126,6 +126,7 @@ public class GLFont {
 			// Create a BufferedImage with one character
 			BufferedImage image = createCharImage(onechar, 
 					f,  // the font
+					16,
 					fgColor,       // text
 					bgColor);      // background
 			// make a texture from the image
@@ -148,7 +149,7 @@ public class GLFont {
 	 * @param bgColor  background color as rgb or rgba values in range 0-1 (set alpha to 0 to make transparent)
 	 * @return
 	 */
-	public static BufferedImage createCharImage(String text, Font font, float[] fgColor, float[] bgColor) {
+	public static BufferedImage createCharImage(String fontName, Font font, int size, float[] fgColor, float[] bgColor) {
 		Color bg = bgColor==null? new Color(0,0,0,0) : (bgColor.length==3? new Color(bgColor[0],bgColor[1],bgColor[2],1) : new Color(bgColor[0],bgColor[1],bgColor[2],bgColor[3]));
 		Color fg = fgColor==null? new Color(1,1,1,1) : (fgColor.length==3? new Color(fgColor[0],fgColor[1],fgColor[2],1) : new Color(fgColor[0],fgColor[1],fgColor[2],fgColor[3]));
 		boolean isAntiAliased = true;
@@ -156,8 +157,8 @@ public class GLFont {
 
 		// get size of texture image needed to hold largest character of this font
 		//int maxCharSize = getFontSize(font);
-		int imgSizeW = 16*16;
-		int imgSizeH = 16*16;
+		int imgSizeW = size*16;
+		int imgSizeH = size*16;
 		if (imgSizeW > 2048) {
 			GLApp.err("GLFont.createCharImage(): texture size will be too big (" + imgSizeW + ") Make the font size smaller.");
 			return null;
@@ -187,9 +188,9 @@ public class GLFont {
 		int cwidth = fm.charWidth('M');
 		int height = fm.getHeight();
 		int ascent = fm.getAscent();
-		int hborder = 3;
-
+		int hborder = 2;
 		int vborder = height-ascent/2-1;
+		
 		char[] data = new char[128];
 		for(int i=0;i<128;++i){
 			data[i]=((char)i);
@@ -197,8 +198,8 @@ public class GLFont {
 		int index = 0;
 		for(int y=0;y<8;++y){
 			for(int x=0;x<16;++x){
-				Hub.renderer.letterWidths.add((float) (fm.charWidth(data[index]))/cwidth);
-				g.drawChars(data, index, 1, hborder+x*16, vborder+y*16);
+				Hub.renderer.letterWidths.get(fontName).add((float) (fm.charWidth(data[index]))/cwidth);
+				g.drawChars(data, index, 1, hborder+x*size, vborder+y*size+1);
 				++index;
 			}
 		}

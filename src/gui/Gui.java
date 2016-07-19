@@ -239,7 +239,7 @@ public class Gui extends GLApp {
 		Gui.drag = true;
 	}
 
-	public static File userSave(){
+	public static File userSave(String sub){
 		JFileChooser  fc = new JFileChooser("data"+File.separator+"maps");
 		int returnVal = fc.showOpenDialog(new JPanel());
         if (returnVal == JFileChooser.APPROVE_OPTION) {            

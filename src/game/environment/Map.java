@@ -30,6 +30,14 @@ public class Map extends GraphicEntity {
 
 	public void addSquare(Square square){
 		if(square==null)return;
+		displaySquare(square);
+		allSquares.add(square);
+		addChild(square);
+	}
+
+
+	public void displaySquare(Square square){
+		if(square==null)return;
 		if(square.isFunctional()){
 			functionalSquares.add((FunctionalSquare)square);
 		}
@@ -42,8 +50,6 @@ public class Map extends GraphicEntity {
 		if(square instanceof OnCreateSquare){
 			onCreates.add((OnCreateSquare) square);
 		}
-		allSquares.add(square);
-		addChild(square);
 	}
 
 	public void setVisibleSquares(int colour){
@@ -71,12 +77,11 @@ public class Map extends GraphicEntity {
 			addSquare(square);
 		}
 	}
-	
+
 	private float xOffset = 0f;
 	private float yOffset = 0f;
 	@Override
 	public void setX(float x){
-
 		xOffset = x-getX();
 		super.setX(x);
 	}
@@ -87,11 +92,21 @@ public class Map extends GraphicEntity {
 	}
 	@Override
 	public float offsetX(int index){
-		return getChild(index).getX()+xOffset-getX();
+		if(index!=0){
+			return getChild(index).getX()+xOffset-getX();
+		}
+		else {
+			return -getX();
+		}
 	}
 	@Override
 	public float offsetY(int index){
-		return getChild(index).getY()+yOffset-getY();
+		if(index!=0){
+			return getChild(index).getY()+yOffset-getY();
+		}
+		else {
+			return -getY();
+		}
 	}
 
 	private class MapLoader implements Iterable<Square>, Iterator<Square> {
@@ -196,6 +211,24 @@ public class Map extends GraphicEntity {
 		for(OnCreateSquare square:onCreates){
 			square.act();
 		}
+	}
+
+	public boolean isWithinWall(Square target) {
+		for(FunctionalSquare square:functionalSquares){
+			if(square.getActions().contains(SquareAction.actions.get(0))
+					&&(target.isCompletelyWithin(square)||
+						target.isCompletelyWithin(square))){
+				return false;
+			}
+		}
+		for(FunctionalSquare square:functionalSquares){
+			if(square.getActions().contains(SquareAction.actions.get(1))
+					&&(square.isWithin(target.getX(), target.getY())||
+					   square.isWithin(target.getX()+target.getWidth(), target.getY()+target.getHeight()))){
+				return true;
+			}
+		}
+		return false;
 	}
 
 

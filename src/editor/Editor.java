@@ -136,7 +136,7 @@ public class Editor extends GraphicView {
 			colour2Menu.add(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<5;++i){
+		for(int i=-1;i<6;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons",i,this,new ButtonAction(){
 				private int id;
@@ -161,7 +161,7 @@ public class Editor extends GraphicView {
 			buttons.add(button);
 			addChild(button);
 		}
-		for(int i=-1;i<5;++i){
+		for(int i=-1;i<6;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons",i,this,new ButtonAction(){
 				private int id;
@@ -258,7 +258,7 @@ public class Editor extends GraphicView {
 		updateActionMenu.get(action3+1).setSelected(true);
 		onCreateAction.setSelected(false);
 
-		visibleToShower.setX(0.2f);
+		visibleToShower.setX(0.95f);
 		visibleToShower.setY(0.95f);
 		visibleToShower.adjust(0.05f, 0.05f);
 		visibleToShower.setFrame(3);
@@ -349,6 +349,12 @@ public class Editor extends GraphicView {
 				}
 				if(mode==2){
 					mode=0;
+
+					if(squares.get(0)==builder1){
+						squares.get(0).setX(0f);
+						squares.get(0).setY(0f);
+						squares.get(0).adjust(1f,1f);
+					}
 					removeChild(builder1);
 					if(builder2!=null){
 						removeChild(builder2);
@@ -360,11 +366,6 @@ public class Editor extends GraphicView {
 					}
 					addChild(builder1);
 					builder1.onAddToDrawable();
-					if(squares.get(0)==builder1){
-						squares.get(0).setX(0f);
-						squares.get(0).setY(0f);
-						squares.get(0).adjust(1f,1f);
-					}
 				}
 			}
 		}

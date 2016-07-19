@@ -31,7 +31,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private boolean reset = false;
 	public MapEditor(){
 		super();
-		saveTo = Gui.userSave();
+		saveTo = Gui.userSave("maps");
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				Storage.loadMap(saveTo.getAbsolutePath());
@@ -118,19 +118,6 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private void moveView(float x, float y){
 		this.screenX+=x;
 		this.screenY+=y;
-		if(squares.size()>0){
-			float w = squares.get(0).getWidth();
-			float h = squares.get(0).getHeight();
-			w+=Math.abs(x);
-			h+=Math.abs(y);
-			if(x>0){
-				squares.get(0).setX(squares.get(0).getX()-x);
-			}
-			if(y>0){
-				squares.get(0).setY(squares.get(0).getY()-y);
-			}
-			squares.get(0).adjust(w,h);
-		}
 		for(int i=1;i<squares.size();++i){
 			squares.get(i).setX(squares.get(i).getX()+x);
 			squares.get(i).setY(squares.get(i).getY()+y);
@@ -142,7 +129,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		return true;
 	}
 	public void restartWith(Square square) {
-		squares.add(square);
+		if(square!=null){
+			squares.add(square);
+		}
 		buttons.clear();
 		setupButtons();
 		for(Square sqr:squares){

@@ -16,8 +16,7 @@ public class Client {
 	private Handler handler;
 	public String severAddress;
 	public Client(String severAddress){
-		this.severAddress = severAddress;
-				
+		this.severAddress = severAddress;				
 	}
 	public void run(){
 		try {

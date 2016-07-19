@@ -9,6 +9,7 @@ import java.util.Map;
 import game.environment.OnCreateAction;
 import game.environment.OnCreateSquare;
 import game.environment.Square;
+import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
@@ -31,7 +32,7 @@ public class OnCreateSquareEditor extends Editor{
 	public OnCreateSquareEditor(MapEditor parent,float x, float y, float w, float h){
 		super();
 		String text = "";
-		saveTo = Gui.userSave();
+		saveTo = Gui.userSave("ocs");
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				text = Storage.loadText(saveTo.getAbsolutePath());
@@ -75,6 +76,19 @@ public class OnCreateSquareEditor extends Editor{
 		writer = new TextWriter(this,text,ctrlCommands);
 		Gui.giveOnType(writer);
 		addChild(writer);		
+	}
+	public void update(double seconds){
+		if(saveTo==null){
+			if(editor==null){
+				Gui.setView(new MainMenu());
+			}
+			else {
+				editor.restartWith(null);
+				Gui.removeOnType(writer);
+				Gui.setView(editor);
+			}
+		}
+		super.update(seconds);
 	}
 	private void saveAndReturnToEditor() {
 		Storage.saveText(saveTo.getAbsolutePath(), writer.getText());

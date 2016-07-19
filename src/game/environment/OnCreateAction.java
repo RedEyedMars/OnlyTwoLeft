@@ -9,6 +9,7 @@ import java.util.Iterator;
 
 import game.Action;
 import game.Hero;
+import main.Hub;
 
 
 public abstract class OnCreateAction implements Action<OnCreateSquare>{
@@ -194,6 +195,9 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 				s.setX(s.getX()+dx);
 				s.setY(s.getY()+dy);
 				square.addChild(s);
+				if(Hub.map!=null){
+					Hub.map.displaySquare(s);
+				}
 			}
 		}
 		@Override

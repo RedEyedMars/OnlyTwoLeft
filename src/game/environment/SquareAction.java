@@ -87,6 +87,27 @@ public abstract class SquareAction implements Action<Hero> {
 			toSave.add(Hub.map.getSquares().indexOf(target));
 		}
 	};
+	public static final SquareAction move = new SquareAction(false){
+		@Override
+		public void act(Hero subject) {
+			float x = target.getX();
+			float y = target.getY();
+			subject.push(target);
+			if(Hub.map.isWithinWall(target)){
+				target.setX(x);
+				target.setY(y);
+				subject.backup(target);
+			}
+		}
+		@Override
+		public int numberOfTargets(){
+			return 0;
+		}
+		@Override
+		public int getIndex() {
+			return 5;
+		}
+	};
 
 	private boolean requireComplete;
 	public SquareAction(){
@@ -109,6 +130,9 @@ public abstract class SquareAction implements Action<Hero> {
 	}
 	public int numberOfTargets(){
 		return 0;
+	}
+	public boolean requiresComplete(){
+		return requireComplete;
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());

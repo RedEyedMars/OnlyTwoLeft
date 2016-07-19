@@ -83,7 +83,7 @@ public class Hero extends GraphicEntity{
 				rightBorder=e.getX()+e.getWidth();
 				rightBorderSafe= e.getX()+e.getWidth();
 			}			
-			
+
 			float downBorder = safeSquare.getY();
 			float upBorder = safeSquare.getY()+safeSquare.getHeight();
 			float downBorderSafe = downBorder;
@@ -109,6 +109,29 @@ public class Hero extends GraphicEntity{
 				setY(upBorderSafe);
 			}
 		}
+	}
+	public void push(Square target) {
+
+		float dx = (target.getX()+target.getWidth() /2f)-(getX()+radius);
+		float dy = (target.getY()+target.getHeight()/2f)-(getY()+radius);
+		double angle = Math.atan2(dy, dx);
+		if((angle<=Math.PI*3f/4f&&angle>=Math.PI/4f)||(angle>=-Math.PI*3f/4f&&angle<=-Math.PI/4f)){
+			if(getY()+getHeight()<target.getY()+target.getHeight()){
+				target.setY(getY()+getHeight());
+			}
+			else if(getY()>target.getY()){
+				target.setY(getY()-target.getHeight());
+			}
+		}
+		else {
+			if(getX()+getWidth()<target.getX()+target.getWidth()){
+				target.setX(getX()+getWidth());
+			}
+			else if(getX()>target.getX()){
+				target.setX(getX()-target.getWidth());
+			}
+		}
+
 	}
 
 	public void setXVelocity(float dx) {
