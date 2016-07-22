@@ -3,10 +3,13 @@ package duo.client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import duo.messages.BlankMessage;
 import duo.messages.MeetMeAtPortMessage;
 import duo.messages.Message;
 import duo.messages.PassMessage;
@@ -20,11 +23,12 @@ public class Handler {
 	private ObjectInputStream input;
 	private List<Message> outgoingMail = new ArrayList<Message>();
 	private Socket socket;
-	public Handler(int port) {
+	private Client client;
+	public Handler(Client client,int port) {
+		this.client = client;
 		try {
 			this.port = port;
-			socket = new Socket(Client.client.severAddress,port);
-
+			socket = new Socket(client.getServerAddress(),port);
 			output = new ObjectOutputStream(socket.getOutputStream());
 			send(new PingMessage());
 			input = new ObjectInputStream(socket.getInputStream());
@@ -44,8 +48,13 @@ public class Handler {
 		public void run(){
 			while(connected){
 				try {
-					((Message)input.readObject()).act(socket);
-				} catch (ClassNotFoundException | IOException e) {
+					Message message = ((Message)input.readObject());
+					message.act(socket);
+					//System.out.println(message);
+				} catch(SocketException s){
+					client.close();
+				}
+				catch (ClassNotFoundException | IOException e) {
 					e.printStackTrace();
 				};
 			}
@@ -79,8 +88,11 @@ public class Handler {
 		}
 	}
 	public Integer getPort() {
-		// TODO Auto-generated method stub
-		return null;
+		return port;
+	}
+
+	public boolean isConnected() {
+		return connected;
 	}
 
 }

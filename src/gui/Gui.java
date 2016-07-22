@@ -202,7 +202,9 @@ public class Gui extends GLApp {
 	}
     public static void removeOnType(KeyBoardListener listener) {
     	if(!keyboardListener.empty()){
-    		keyboardListener.pop();
+    		if(keyboardListener.peek()==listener){
+    			keyboardListener.pop();
+    		}
     	}
 		if(!keyboardListener.empty()){
 			continuousKeyboard = keyboardListener.peek().continuousKeyboard();
@@ -240,7 +242,7 @@ public class Gui extends GLApp {
 	}
 
 	public static File userSave(String sub){
-		JFileChooser  fc = new JFileChooser("data"+File.separator+"maps");
+		JFileChooser  fc = new JFileChooser("data"+File.separator+sub);
 		int returnVal = fc.showOpenDialog(new JPanel());
         if (returnVal == JFileChooser.APPROVE_OPTION) {            
             return fc.getSelectedFile();

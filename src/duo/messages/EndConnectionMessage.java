@@ -9,7 +9,7 @@ public class EndConnectionMessage extends Message{
 
 	@Override
 	public void act(Socket socket) {
-		Client.client.getHandler().close();
+		Client.endConnection();
 	}
 
 }

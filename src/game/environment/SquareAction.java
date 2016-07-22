@@ -93,7 +93,7 @@ public abstract class SquareAction implements Action<Hero> {
 			float x = target.getX();
 			float y = target.getY();
 			subject.push(target);
-			if(Hub.map.isWithinWall(target)){
+			if(Hub.map.isWithinWall(target)||subject.getPartner().isWithin(target)){
 				target.setX(x);
 				target.setY(y);
 				subject.backup(target);

@@ -16,6 +16,8 @@ public class GraphicText extends GraphicEntity {
 	protected int charIndex=0;
 	protected int lineIndex = 0;
 	private GraphicText self = this;
+	private String font;
+	private int layer;
 	protected GraphicEntity blinker = new GraphicEntity("squares",1){
 		private double since;
 		private int horz = charIndex;
@@ -55,11 +57,11 @@ public class GraphicText extends GraphicEntity {
 			}
 		}
 	};
-	private String font;
-	public GraphicText(String font, String text) {
+	public GraphicText(String font, String text, int layer) {
 		super("blank");
 		this.font = font;
 		this.text = text;
+		this.layer = layer;
 		String[] lines = text.split("\n");
 		for(int i=0;i<lines.length;++i){
 			GraphicLine line = new GraphicLine(lines[i]);
@@ -92,7 +94,6 @@ public class GraphicText extends GraphicEntity {
 			}
 		}
 		for(int i=0;i<size;++i){
-
 			if(i<lines.length){
 				this.lines.get(i).change(lines[i]);
 			}
@@ -184,7 +185,7 @@ public class GraphicText extends GraphicEntity {
 		private float value;
 
 		public GraphicChar(char c) {
-			super("$"+font);
+			super("$"+font,layer);
 			setFrame(c);
 			value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
 		}

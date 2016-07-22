@@ -10,17 +10,21 @@ import gui.inputs.KeyBoardListener;
 
 public class TextWriter extends GraphicText implements KeyBoardListener {
 
-	private int index = 0;
-	private Map<Integer, ButtonAction> ctrlCommands;
+	protected int index = 0;
+	protected Map<Integer, ButtonAction> ctrlCommands;
 	private Editor editor;
+	protected boolean ctrling = false;
 	public TextWriter(Editor parent,String text, Map<Integer,ButtonAction> ctrlCommands) {
-		super("timesnewroman",text);
+		super("timesnewroman",text,0);
 		this.editor = parent;
 		blinker.setVisible(true);
 		this.ctrlCommands = ctrlCommands;
 	}
+	public TextWriter(String font,String text) {
+		super(font,text,1);
+		this.editor = null;
+	}
 
-	private boolean ctrling = false;
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){

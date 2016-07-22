@@ -167,7 +167,7 @@ public class GraphicView implements Graphicable, MouseListener{
 			return true;
 		}
 		else {
-			if(listenToRelease&&event.getAction()==MotionEvent.ACTION_UP ){
+			if(listenToRelease&&event.getAction()==MotionEvent.ACTION_UP &&isWithin(event.getX(),event.getY())){
 				for(int i=0;i<children.size();++i){
 					children.get(i).onClick(event);
 				}

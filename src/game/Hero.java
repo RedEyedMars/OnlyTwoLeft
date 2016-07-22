@@ -18,11 +18,18 @@ public class Hero extends GraphicEntity{
 	private float previousX=0f;
 	private float previousY=0f;
 	private Square safeSquare;
+	private Hero partner;
 	public Hero(Game game, byte colour) {
 		super("circles");
 		this.setFrame(colour);
 		this.adjust(radius*2f, radius*2f);
 		this.game = game;
+	}
+	public void setPartner(Hero hero){
+		this.partner = hero;
+	}
+	public Hero getPartner(){
+		return partner;
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
@@ -38,7 +45,7 @@ public class Hero extends GraphicEntity{
 		super.update(secondsSinceLastFrame);
 	}
 
-	public boolean isWithin(FunctionalSquare q) {
+	public boolean isWithin(GraphicEntity q) {
 		float dx = (q.getX()+q.getWidth() /2f)-(getX()+radius);
 		float dy = (q.getY()+q.getHeight()/2f)-(getY()+radius);
 		double angle = Math.atan2(dy, dx);
@@ -47,7 +54,7 @@ public class Hero extends GraphicEntity{
 		return (x>=q.getX()&&x<=q.getX()+q.getWidth()&&
 				y>=q.getY()&&y<=q.getY()+q.getHeight());
 	}
-	public boolean isCompletelyWithin(FunctionalSquare q) {
+	public boolean isCompletelyWithin(GraphicEntity q) {
 		double x = getX()+radius+radius;
 		double y = getY()+radius+radius;
 		return (getX()>=q.getX()&&x<=q.getX()+q.getWidth()&&

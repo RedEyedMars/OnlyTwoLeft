@@ -61,11 +61,11 @@ public class Editor extends GraphicView {
 		super();
 		setupButtons();
 
-		mode = -1;
+		mode = 0;
 	}
 
 	protected void setupButtons(){
-		for(int i=-1;i<8;++i){
+		for(int i=-1;i<16;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("squares",i,this,new ButtonAction(){
 				private int id;
@@ -89,21 +89,21 @@ public class Editor extends GraphicView {
 			}){
 				@Override
 				public float offsetX(int i){
-					return frame>=0?0.011f:0f;
+					return frame>=0?0.01f:0f;
 				}
 				@Override
 				public float offsetY(int i){
 					return frame>=0?0.01125f:0f;
 				}
 			};
-			button.setX(0.09f+i*0.06f);
+			button.setX(0.08f+i*0.05f);
 			button.setY(0.03f);
-			button.adjust(0.06f,0.06f,0.0375f, 0.0375f);
+			button.adjust(0.05f,0.06f,0.03125f, 0.0375f);
 			addChild(button);
 			colourMenu.add(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<8;++i){
+		for(int i=-1;i<16;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("squares",i,this,new ButtonAction(){
 				private int id;
@@ -122,16 +122,16 @@ public class Editor extends GraphicView {
 			}){
 				@Override
 				public float offsetX(int i){
-					return frame>=0?0.011f:0f;
+					return frame>=0?0.01f:0f;
 				}
 				@Override
 				public float offsetY(int i){
 					return frame>=0?0.01125f:0f;
 				}
 			};
-			button.setX(0.09f+i*0.06f);
+			button.setX(0.08f+i*0.05f);
 			button.setY(0.09f);
-			button.adjust(0.06f,0.06f,0.0375f, 0.0375f);
+			button.adjust(0.05f,0.06f,0.03125f, 0.0375f);
 			addChild(button);
 			colour2Menu.add(button);
 			buttons.add(button);

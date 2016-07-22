@@ -1,5 +1,8 @@
 package main;
 
+import java.util.Random;
+
+import duo.client.Client;
 import game.environment.Map;
 import game.menu.MainMenu;
 import game.menu.StoryScene;
@@ -8,6 +11,9 @@ import gui.graphics.GraphicView;
 import storage.Storage;
 
 public class Main {
+
+	public static long seed = new Random().nextLong();
+	public static Random randomizer = new Random(seed);
 
 	/**
 	 * @param args
@@ -34,12 +40,13 @@ public class Main {
 				"void","hazard"
 		});*/
 
-		Storage.loadMap("data/maps/new.map");
+		Storage.loadMap("data/maps/forest1.map");
 	}
 
 	public static void cleanup() {
 		if(Hub.map!=null&&Hub.map.isMallible()){
 			//Storage.saveMap("data/mal.map", Hub.map);
 		}
+		Client.endConnection();
 	}
 }

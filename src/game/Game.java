@@ -29,23 +29,38 @@ public class Game extends GraphicView implements KeyBoardListener{
 	protected int tick = 1;
 
 	private boolean endGame = false;
-	public Game(){
+	public Game(boolean colourToControl){
 
 		black = new Hero(this,Hero.black);
 		white = new Hero(this,Hero.white);
+		black.setPartner(white);
+		white.setPartner(black);
+		
 		black.setX(0.45f);
 		black.setY(0.5f);
 
 		white.setX(0.55f);
 		white.setY(0.5f);
+
 		addChild(Hub.map);
 		Hub.map.onCreate();
+		if(Hub.map.getSquares().size()>0){
+			Hub.map.getSquares().get(0).setX(0f);
+			Hub.map.getSquares().get(0).setY(0f);
+		}
 		addChild(black);
 		addChild(white);
 
-		controlled = black;
-		wild = white;
-		focused = black;
+		if(colourToControl==true/*black*/){
+			controlled = black;
+			wild = white;
+			focused = black;
+		}
+		else {
+			controlled = white;
+			wild = black;
+			focused = white;			
+		}
 		
 		addChild(new VisionBubble(black,white));
 		Hub.map.setVisibleSquares(0);

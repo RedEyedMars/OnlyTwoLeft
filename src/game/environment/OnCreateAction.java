@@ -10,6 +10,7 @@ import java.util.Iterator;
 import game.Action;
 import game.Hero;
 import main.Hub;
+import main.Main;
 
 
 public abstract class OnCreateAction implements Action<OnCreateSquare>{
@@ -158,7 +159,7 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		@Override
 		public void act(OnCreateSquare square) {
 			List<Object> list = (List<Object>) square.getData().get(indexOfList);
-			square.add(list.remove((int)(Math.random()*list.size())));
+			square.add(list.remove((int)(Main.randomizer.nextFloat()*list.size())));
 		}
 		@Override
 		protected void saveArgs(List<Object> saveTo){

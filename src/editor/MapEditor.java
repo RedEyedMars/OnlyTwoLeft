@@ -27,7 +27,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private HashMap<String,Square> screenBackgrounds = new HashMap<String,Square>();
 	private float screenX = 0;
 	private float screenY = 0;
-	
+
 	private boolean reset = false;
 	public MapEditor(){
 		super();
@@ -39,6 +39,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				for(Square square:Hub.map.getSquares()){
 					addIconsToSquare(square,null);
 					addChild(square);
+				}
+				if(squares.size()>0){
+					squares.get(0).setX(0f);
+					squares.get(0).setY(0f);
 				}
 			}
 			else {
@@ -138,7 +142,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			addChild(sqr);
 			addIconsToSquare(sqr,null);
 		}
-		
+
 		reset = true;
 	}
 

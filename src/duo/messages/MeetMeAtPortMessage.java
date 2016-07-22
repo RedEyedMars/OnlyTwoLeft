@@ -14,7 +14,7 @@ public class MeetMeAtPortMessage extends Message{
 	}
 	@Override
 	public void act(Socket socket) {
-		Client.client.setHandler(new Handler(port));
+		Client.setHandler(port);
 	}
 
 }

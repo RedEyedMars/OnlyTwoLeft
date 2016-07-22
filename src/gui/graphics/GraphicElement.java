@@ -182,5 +182,8 @@ public class GraphicElement implements Graphicable{
 	public void setLayer(int layer){
 		this.layer = layer;
 	}
+	public float getAngle() {
+		return angle;
+	}
 
 }

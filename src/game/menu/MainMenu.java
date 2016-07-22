@@ -1,9 +1,13 @@
 package game.menu;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import editor.Editor;
 import editor.MapEditor;
 import editor.OnCreateSquareEditor;
 import game.Game;
+import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
@@ -12,116 +16,66 @@ import gui.inputs.MotionEvent;
 import main.Hub;
 import main.Main;
 
-public class MainMenu extends GraphicView{
+public class MainMenu extends Menu{
 
 	public MainMenu() {
+		this(new ArrayList<Square>());
+	}
+	public MainMenu(List<Square> squares) {
 		super();
-		addChild(new GraphicEntity("title"));
-		GraphicEntity button = new Button("Editors"){
+		this.listenToRelease = true;
+		addChild(new GraphicEntity("squares"));
+		getChild(0).setFrame(7);
+		GraphicEntity button = new MenuButton("Solo"){
 			@Override
-			public void performOnClick(MotionEvent e){
-				startStory();
+			public void performOnRelease(MotionEvent e){
+				solo();
 			}
 		};
+		button.setX(0.2f);
 		button.setY(0.51f);
 		addChild(button);
 		
-		button = new GraphicEntity("blank"){
+		button = new MenuButton("Duo"){
 			@Override
-			public void performOnClick(MotionEvent e){
-				startEndless();
+			public void performOnRelease(MotionEvent e){
+				duo();
 			}
 		};
-		button.adjust(1f,0.15f);
-		button.setY(0.36f);
-		button.setVisible(false);
+		button.setX(0.2f);
+		button.setY(0.35f);
 		addChild(button);
 		
-		button = new GraphicEntity("blank"){
+		button = new MenuButton("Editors"){
 			@Override
-			public void performOnClick(MotionEvent e){
-				startPvp();
+			public void performOnRelease(MotionEvent e){
+				editor();
 			}
 		};
-		button.adjust(1f,0.15f);
-		button.setY(0.2f);
-		button.setVisible(false);
-		addChild(button);
-		
-		button = new GraphicEntity("blank"){
-			@Override
-			public void performOnClick(MotionEvent e){
-				startHighscores();
-			}
-		};
-		button.adjust(1f,0.15f);
-		button.setY(0.04f);
-		button.setVisible(false);
-		addChild(button);
-		
-	
+		button.setX(0.2f);
+		button.setY(0.19f);
+		addChild(button);		
+		this.squares = squares;
+		for(Square square:squares){
+			addChild(square);
+		}
 	}
 	
-	public void startStory(){
-		Gui.setView(new OnCreateSquareEditor(null, 0f, 0f, 1f, 1f));
+	public void duo(){
+		Gui.setView(new DuoMenu(squares));
 	}
 	
-	public void startEndless(){
+	public void solo(){
 		Main.loadMap();
-		Gui.setView(new Game());
+		Gui.setView(new Game(true));
 	}
 	
-	public void startPvp(){
-		Gui.setView(new MapEditor());
+	public void editor(){
+		Gui.setView(new EditorMenu(squares));
 	}
 	
 	public void startHighscores(){
 	}
+
 	
-	private class Button extends GraphicEntity{		
-		private Button self = this;
-		public Button(String name) {
-			super("blank",0);
-			adjust(0.8f,0.15f);
-			setX(0.2f);
-			GraphicEntity left = new GraphicEntity("speech_bubble",0){
-				@Override
-				public void performOnClick(MotionEvent e){
-					self.performOnClick(e);
-				}
-			};
-			left.adjust(0.1f, 0.15f);
-			left.setX(0.2f);
-			left.setFrame(0);
-			addChild(left);
-			GraphicEntity mid = new GraphicEntity("speech_bubble",0){
-				@Override
-				public void performOnClick(MotionEvent e){
-					self.performOnClick(e);
-				}
-			};
-			mid.adjust(0.4f, 0.15f);
-			mid.setX(0.3f);
-			mid.setFrame(1);
-			addChild(mid);
-			GraphicEntity right = new GraphicEntity("speech_bubble",0){
-				@Override
-				public void performOnClick(MotionEvent e){
-					self.performOnClick(e);
-				}
-			};
-			right.adjust(0.1f, 0.15f);
-			right.setX(0.7f);
-			right.setFrame(2);
-			addChild(right);
-			
-			GraphicText text = new GraphicText("impact",name);
-			text.setWidthFactor(1.4f);
-			text.setHeightFactor(3f);
-			text.adjust(text.getWidth(), text.getHeight());
-			text.setX(0.3f);
-			addChild(text);
-		}
-		
-	}
 }

@@ -156,6 +156,12 @@ public class GraphicRenderer {
 
 	public void loadImages(){
 		if(!loaded ){
+			if(!buffersInclude(8*8)){
+				setupTextureBuffer(8,8);
+			}
+			if(!buffersInclude(16*16)){
+				setupTextureBuffer(16,16);
+			}
 			InputStream url = R.class.getResourceAsStream("images/image.list");
 			StringBuilder fileBuilder = new StringBuilder();
 			try {
@@ -177,6 +183,7 @@ public class GraphicRenderer {
 
 			loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
 			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
+			loadText("impactWhite",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{1f,1f,1f,1}, new float[]{0,0,0,0f});
 			loaded = true;
 		}
 	}
@@ -187,9 +194,7 @@ public class GraphicRenderer {
 
 	public Map<String,List<Float>> letterWidths= new HashMap<String,List<Float>>();
 	private void loadText(String fontName,Font font, int size, float[] foregroundColour, float[] backgroundColour){
-		if(!buffersInclude(16*16)){
-			setupTextureBuffer(16,16);
-		}
+		
 		letterWidths.put(fontName,new ArrayList<Float>());
 		loadImageFromGLImage(
 				GLFont.createCharImage(

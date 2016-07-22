@@ -7,9 +7,11 @@ public class AddGameMessage extends Message{
 
 	private String gameName;
 	private String mapName;
-	public AddGameMessage(String gameName, String mapName){
+	private Boolean colour;
+	public AddGameMessage(String gameName, String mapName, String colour){
 		this.gameName = gameName;
 		this.mapName = mapName;
+		this.colour = colour.equals("black")?true:colour.equals("white")?false:null;
 	}
 	
 	@Override
