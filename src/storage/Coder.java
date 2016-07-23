@@ -8,20 +8,20 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class Coder {
-	public static Object[] decode(Byte[] cs,int startAt,Map<Integer,String> strings, int integers, int floats, int numStrings){
+	public static Object[] decode(byte[] file,int startAt,Map<Integer,String> strings, int integers, int floats, int numStrings){
 		List<Object> objs = new ArrayList<Object>();
 		for(int index = 0;index<integers;++index){
-			Integer[] result = decodeInteger(cs,startAt);
+			Integer[] result = decodeInteger(file,startAt);
 			objs.add(result[0]);
 			startAt=result[1];
 		}
 		for(int index=0;index<floats;++index){
-			Float x = decodeFloat(cs,startAt);
+			Float x = decodeFloat(file,startAt);
 			objs.add(x);
 			startAt+=4;
 		}
 		for(int index=0;index<numStrings;++index){
-			Integer[] result = decodeInteger(cs,startAt);
+			Integer[] result = decodeInteger(file,startAt);
 			objs.add(strings.get(result[0]));
 			startAt=result[1];
 		}
@@ -100,7 +100,7 @@ public abstract class Coder {
 		build.addAll(Arrays.asList(bytes));
 	}
 
-	public static Float decodeFloat(Byte[] cs, int a){
+	public static Float decodeFloat(byte[] cs, int a){
 		byte[] b = new byte[4];
 		for(int i=0;i<4;++i){
 			b[i]=cs[i+a];
@@ -109,7 +109,7 @@ public abstract class Coder {
 	}
 
 
-	public static Integer[] decodeInteger(Byte[] cs, int a){
+	public static Integer[] decodeInteger(byte[] cs, int a){
 		int i=0;
 		while(cs[a]>=0){
 			i*=128;

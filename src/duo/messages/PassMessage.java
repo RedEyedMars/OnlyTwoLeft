@@ -2,6 +2,8 @@ package duo.messages;
 
 import java.net.Socket;
 
+import duo.Handler;
+
 public class PassMessage extends Message {
 	private static final long serialVersionUID = 63329407315714395L;
 	
@@ -11,8 +13,8 @@ public class PassMessage extends Message {
 	}
 
 	@Override
-	public void act(Socket socket) {
-		this.message.act(socket);
+	public void act(Handler handler) {
+		this.message.act(handler);
 	}
 
 }

@@ -2,6 +2,8 @@ package duo.messages;
 
 import java.net.Socket;
 
+import duo.Handler;
+
 public class AddPlayerMessage extends Message{
 	private static final long serialVersionUID = -8715731293278294725L;
 	private String playerName;
@@ -10,6 +12,6 @@ public class AddPlayerMessage extends Message{
 	}
 	
 	@Override
-	public void act(Socket socket) {
+	public void act(Handler handler) {
 	}
 }

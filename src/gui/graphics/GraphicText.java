@@ -74,7 +74,7 @@ public class GraphicText extends GraphicEntity {
 		blinker.setFrame(7);
 		blinker.adjust(0.005f,0.025f);
 		blinker.setY(0.975f);
-		blinker.setVisible(false);
+		blinker.turnOff();
 
 	}
 

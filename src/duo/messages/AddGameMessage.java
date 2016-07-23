@@ -1,6 +1,6 @@
 package duo.messages;
 
-import java.net.Socket;
+import duo.Handler;
 
 public class AddGameMessage extends Message{
 	private static final long serialVersionUID = 1248603591622901924L;
@@ -12,10 +12,10 @@ public class AddGameMessage extends Message{
 		this.gameName = gameName;
 		this.mapName = mapName;
 		this.colour = colour.equals("black")?true:colour.equals("white")?false:null;
-	}
-	
+	}	
+
 	@Override
-	public void act(Socket socket) {		
+	public void act(Handler handler) {
 	}
 
 }

@@ -24,9 +24,13 @@ public class Storage {
 	
 	public static void loadMap(String filename){
 
-		Byte[] file = readVerbatum(filename);
+		byte[] file = readVerbatum(filename);
+		loadMap(file);
+	}
+	
+	public static void loadMap(byte[] file){
 		int index = 0;
-		for(;file[index]!='\n';++index);
+		for(;(char)file[index]!='\n';++index);
 		Map<Integer,String> strings = loadStringMap(file);
 		Object[] loaded = Coder.decode(file, index+1, strings,3,0,0);
 		loaded = Coder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
@@ -34,7 +38,7 @@ public class Storage {
 		Hub.map.load(loaded);
 	}
 
-	private static Map<Integer,String> loadStringMap(Byte[] file) {
+	private static Map<Integer,String> loadStringMap(byte[] file) {
 		Map<Integer,String> strings = new HashMap<Integer,String>();
 		if(file[0]=='\n')return strings;
 		int next = 0;		
@@ -51,7 +55,7 @@ public class Storage {
 		return strings;
 	}
 	
-	private static String readStringFromBytes(Byte[] file, int start, int end){
+	private static String readStringFromBytes(byte[] file, int start, int end){
 		StringBuilder builder = new StringBuilder();
 		for(;start<end;++start){
 			builder.append(((char)(byte)file[start]));
@@ -59,7 +63,7 @@ public class Storage {
 		return builder.toString();
 	}
 
-	public static Byte[] readVerbatum(String filename){
+	public static byte[] readVerbatum(String filename){
 		List<Byte> builder = new ArrayList<Byte>();
 		try {
 			FileInputStream reader = new FileInputStream(filename);
@@ -73,7 +77,11 @@ public class Storage {
 		catch (IOException e){
 			e.printStackTrace();
 		}
-		return builder.toArray(new Byte[0]);
+		byte[] bytes = new byte[builder.size()];
+		for(int i=0;i<builder.size();++i){
+			bytes[i]=builder.get(i);
+		}
+		return bytes;
 	}
 	
 

@@ -3,40 +3,39 @@ package game.menu;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.File;
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 import duo.client.Client;
-import duo.messages.EndServerMessage;
-import duo.messages.RemoveGameMessage;
+import duo.messages.JoinGameMessage;
+import duo.messages.KickFromGameMessage;
 import editor.ButtonAction;
 import editor.Editor;
 import editor.TextWriter;
+import game.Game;
 import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
-import gui.graphics.GraphicText;
-import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
+import main.Main;
 
-public class JoinMenu extends Menu {
+public class JoinMenu extends Menu implements IDuoMenu{
 	private Client client;
 	private TextWriter name;
 	private TextWriter ip;
+	private MenuButton joinButton;
+	private MenuButton gameButton;
 	private MenuButton buttonList;
 	private List<String[]> gamesList = new ArrayList<String[]>(){
 		private static final long serialVersionUID = 6849911565108959389L;
 		@Override
 		public void clear(){
 			super.clear();
+			buttonList.changeText("");
 		}
 		@Override
 		public boolean add(String[] game){
@@ -47,6 +46,10 @@ public class JoinMenu extends Menu {
 			return ret;
 		}
 	};
+	private int gameTopIndex = 0;
+	private int gameIndex = 0;
+	private String officialName;
+	private String officialGame;
 	public JoinMenu(List<Square> squares) {
 		super();
 		this.listenToRelease = true;
@@ -71,7 +74,7 @@ public class JoinMenu extends Menu {
 		};
 		nameButton.adjust(0.8f, 0.15f);
 		nameButton.setX(0.1f);
-		nameButton.setY(0.67f);
+		nameButton.setY(0.72f);
 
 		name = new TextWriter("impact","Player Two"){
 			{
@@ -94,7 +97,7 @@ public class JoinMenu extends Menu {
 			}
 		};
 		name.setX(0.325f);
-		name.setY(0.69f);
+		name.setY(0.74f);
 		addChild(nameButton);
 		addChild(name);
 		//Gui.giveOnType(name);
@@ -118,8 +121,9 @@ public class JoinMenu extends Menu {
 		};
 		ipButton.adjust(0.8f, 0.15f);
 		ipButton.setX(0.1f);
-		ipButton.setY(0.51f);
+		ipButton.setY(0.56f);
 
+		final JoinMenu self = this;
 		ip = new TextWriter("impact"," "){
 			{
 				setWidthFactor(1.4f);
@@ -142,6 +146,7 @@ public class JoinMenu extends Menu {
 							change(string);
 							charIndex = string.length();
 							index = string.length();
+							new JoinThread(self).start();
 						} catch (UnsupportedFlavorException | IOException e) {
 							e.printStackTrace();
 						}
@@ -149,32 +154,39 @@ public class JoinMenu extends Menu {
 				change("");
 			}
 			@Override
+			public void change(String newText){
+				super.change(newText);
+				if(newText.length()==0){
+					charIndex=0;
+					index=0;
+				}
+			}
+			@Override
 			public void keyCommand(boolean b, char c, int keycode){
-				if(keycode==14||keycode==29||keycode==157){
-					super.keyCommand(b, c, keycode);
-				}
-				else if(ctrling){
-					super.keyCommand(b, c, keycode);
-				}
-				else if(c>=32){
-					super.keyCommand(b, c, keycode);
-					if(b==false){
-						new JoinThread().start();
+				if(!"Connected".equals(ip.getText())){
+					if(keycode==14||keycode==29||keycode==157){
+						super.keyCommand(b, c, keycode);
+					}
+					else if(ctrling){
+						super.keyCommand(b, c, keycode);
+					}
+					else if(c>=32){
+						super.keyCommand(b, c, keycode);
+						if(b==false){
+							new JoinThread(self).start();
+						}
 					}
 				}
-
 			}
 		};
 		ip.setX(0.23f);
-		ip.setY(0.53f);
+		ip.setY(0.58f);
 		addChild(ipButton);
 		addChild(ip);
 		Gui.giveOnType(name);
 
-		buttonList = new MenuButton("stuff"){
-			private int topIndex = 0;
+		buttonList = new MenuButton(""){
 			private int botIndex = 1;
-			private int index;
 			GraphicEntity selectorSquare = new GraphicEntity("squares",1);
 			{
 				selectorSquare.setFrame(14);
@@ -188,10 +200,9 @@ public class JoinMenu extends Menu {
 			}
 			@Override
 			public void performOnRelease(MotionEvent e){
-				gamesList.add(new String[]{"newgame","forest1","black"});
-				gamesList.add(new String[]{"newgame","forest2","black"});
-				gamesList.add(new String[]{"newgame","forest3","black"});
-				gamesList.add(new String[]{"newgame","forest4","black"});
+				if(isVisible()==false)return;
+				gameIndex=(botIndex-1)-(int) ((botIndex-1)*(e.getY()-getY())/(getHeight()-0.06f));
+				setY(getY());
 			}
 			@Override
 			public void changeText(String newGame){
@@ -201,28 +212,46 @@ public class JoinMenu extends Menu {
 				return index==4?0.05f:index==3?0.05f:super.offsetX(index);
 			}
 			public float offsetY(int index){
-				return index==4?getHeight()-(botIndex-1)*0.0225f:index==3?getHeight()+0.01f-index*0.0225f:super.offsetY(index);
+				return index==4?getHeight()-0.065f:
+					index==3?getHeight()-0.06f-(gameIndex)*0.035f:
+						super.offsetY(index);
 			}
 			@Override
 			public void adjust(float x, float y){
 				super.adjust(x, y);
 				if(selectorSquare!=null){
-					selectorSquare.adjust(0.7f,0.025f);
+					selectorSquare.adjust(0.7f,0.03f);
 				}
 			}
 			@Override
 			public void onMouseScroll(int dx){
-				if(index==3||index==0){
-					topIndex+=-dx/120;
-					if(topIndex<0){
-						topIndex=0;
+				if(isVisible()==false)return;
+				if(dx<0){//down
+					if((gamesList.size()>=4&&gameIndex<3)||(gamesList.size()<4&&gameIndex<gamesList.size()-1)){
+						++gameIndex;
 					}
-					else if(topIndex>gamesList.size()){
-						topIndex=gamesList.size();
+					else {
+						++gameTopIndex;
+						if(gameTopIndex+4>=gamesList.size()){
+							if(gamesList.size()>=4){
+								gameTopIndex=gamesList.size()-4;
+							}
+							else {
+								gameTopIndex=0;
+							}
+						}
 					}
 				}
-				else {
-					index+=-dx/120;
+				else if(dx>0){//up
+					if(gameIndex>0){
+						--gameIndex;
+					}
+					else {
+						--gameTopIndex;
+						if(gameTopIndex<0){
+							gameTopIndex=0;
+						}
+					}
 				}
 				reset();
 			}
@@ -232,7 +261,19 @@ public class JoinMenu extends Menu {
 				if(botIndex>4){
 					botIndex=4;
 				}
-				for(int i=topIndex;i<topIndex+4&&i<gamesList.size();++i){
+
+				if(joinButton.getText().startsWith("Join")){
+					if(botIndex==0){
+						setVisible(false);
+						joinButton.setVisible(false);
+					}
+					else {
+						setVisible(true);
+						joinButton.setVisible(true);
+					}
+				}
+
+				for(int i=gameTopIndex;i<gameTopIndex+4&&i<gamesList.size();++i){
 					builder.append(gamesList.get(i)[0]);
 					for(int j=0;j<40-gamesList.get(i)[0].length();++j){
 						builder.append(" ");
@@ -243,18 +284,36 @@ public class JoinMenu extends Menu {
 					}
 					builder.append(gamesList.get(i)[2]);
 					builder.append("\n");
-				}				
+				}
+				adjust(0.8f, 0.04f+0.04f*(botIndex));
 				setX(getX());
-				setY(getY());
-				System.out.println(builder.toString()+"------");
+				setY(0.35f+0.04f*(4-botIndex));
 				selectorSquare.setVisible(botIndex!=0);
 				super.changeText(builder.toString());
 			}
 		};
-		buttonList.adjust(0.8f, 0.3f);
+		buttonList.adjust(0.8f, 0.20f);
 		buttonList.setX(0.1f);
-		buttonList.setY(0.19f);
+		buttonList.setY(0.35f);
+		buttonList.setVisible(false);
 		addChild(buttonList);
+
+		gameButton = new MenuButton("");
+		gameButton.setX(0.2f);
+		gameButton.setY(0.35f);
+		addChild(gameButton);
+		gameButton.setVisible(false);
+
+		joinButton = new MenuButton("Join"){
+			@Override
+			public void performOnRelease(MotionEvent e){
+				progressGame();
+			}
+		};
+		joinButton.setX(0.2f);
+		joinButton.setY(0.19f);
+		joinButton.setVisible(false);
+		addChild(joinButton);
 
 		GraphicEntity button = new MenuButton("Return"){
 			@Override
@@ -270,27 +329,98 @@ public class JoinMenu extends Menu {
 			addChild(square);
 		}
 		this.squares = squares;
+	}
 
+	public void kick(){
+		if(joinButton.getText().startsWith("Waiting")){
+			buttonList.setVisible(true);
+			gameButton.setVisible(false);
+			joinButton.changeText("Join");
+		}
+	}
+
+	@Override
+	public void playerJoins(String playerName) {
+	}
+
+	@Override
+	public void startGame(boolean colour) {
+		System.out.println("start game");
+		Gui.removeOnType(name);
+		Gui.removeOnType(ip);
+		Game game = new Game(colour);
+		client.getHandler().setHero(game.getHero());
+		Gui.setView(game);		
 	}
 
 	public void returnToMain(){
-		Client.endConnection();
+		client.close();
 		Gui.setView(new DuoMenu(squares));
 	}
+	public void progressGame() {
+		if("Join".equals(joinButton.getText())&&buttonList.isVisible()){
+			joinButton.changeText("Waiting .");
+			officialName = name.getText();
+			officialGame = gamesList.get(gameIndex+gameTopIndex)[0];
+			gameButton.changeText(officialGame);
+			gameButton.setVisible(true);
+			buttonList.setVisible(false);
+			Client.send(new JoinGameMessage(gamesList.get(gameIndex+gameTopIndex)[0],officialName));
+		}
+		else if(joinButton.getText().startsWith("Waiting")){
+			Client.send(new KickFromGameMessage(officialGame));
+			joinButton.changeText("Join");
+			gameButton.setVisible(false);
+			buttonList.setVisible(true);
+		}
+	}
 
+	private double dotter = 0f;
+	@Override
+	public void update(double seconds){
+		super.update(seconds);
+		dotter+=seconds;
+		if(dotter>1f){
+			dotter-=1f;
+			String name = joinButton.getText();
+			if(name.startsWith("Waiting")){
+				String dots = name.substring(7);
+				dots+=" .";
+				if(dots.length()>=8){
+					dots=" .";
+				}
+				joinButton.changeText(name.substring(0, 7)+dots);
+			}
+		}
+	}	
 	private class JoinThread extends Thread {
-		public JoinThread(){
+		private IDuoMenu join;
+		public JoinThread(IDuoMenu joinMenu){
 			super();
+			this.join = joinMenu;
 		}
 		@Override
 		public void run(){
 			try{
 				client = new Client(ip.getText(),name.getText()){
 					{
-						games = gamesList;
+						handler.games = gamesList;
+					}
+					@Override
+					public void close(){
+						if("Connected".equals(ip.getText())){
+							if(joinButton.getText().startsWith("Waiting")){
+								handler.sendNow(new KickFromGameMessage(officialGame));
+							}
+							disconnect();
+							handler.games.clear();
+						}
+						super.close();
 					}
 				};
+				client.setMenu(join);
 				client.run();
+				ip.change("Connected");
 			}
 			catch(IOException e){
 				client.close();
@@ -298,5 +428,11 @@ public class JoinMenu extends Menu {
 
 		}
 	}
+	public void disconnect() {
+		ip.change("");
+		buttonList.setVisible(false);
+	}
+
+
 
 }

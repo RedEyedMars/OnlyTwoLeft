@@ -26,8 +26,11 @@ import duo.messages.AddGameMessage;
 import duo.messages.AddPlayerMessage;
 import duo.messages.EndConnectionMessage;
 import duo.messages.EndServerMessage;
+import duo.messages.GameListMessage;
+import duo.messages.KickFromGameMessage;
 import duo.messages.PingMessage;
 import duo.messages.RemoveGameMessage;
+import duo.messages.SendMapMessage;
 import duo.messages.StartGameMessage;
 import editor.MapEditor;
 import editor.OnCreateSquareEditor;
@@ -43,7 +46,7 @@ import main.Hub;
 import main.Main;
 import storage.Storage;
 
-public class HostMenu extends Menu {
+public class HostMenu extends Menu implements IDuoMenu{
 	private MenuButton ip;
 	private Client client;
 	private MenuButton mapButton;
@@ -51,7 +54,8 @@ public class HostMenu extends Menu {
 	private TextWriter name;
 	private GraphicEntity blackButton;
 	private GraphicEntity whiteButton;
-	public static MenuButton gameButton;
+	private GraphicEntity kickButton;
+	private MenuButton gameButton;
 	public HostMenu(List<Square> squares) {
 		super();
 		this.listenToRelease = true;
@@ -222,13 +226,33 @@ public class HostMenu extends Menu {
 		gameButton.setY(0.19f);
 		addChild(gameButton);
 
+		kickButton = new GraphicEntity("editor_button",1){
+			{
+				this.listenToRelease = true;
+			}
+			@Override
+			public void performOnRelease(MotionEvent e){
+				if(isVisible()){
+					setVisible(false);
+					Client.send(new KickFromGameMessage(name.getText()));
+					gameButton.changeText("Waiting .");
+				}
+			}
+		};
+		kickButton.setFrame(1);
+		kickButton.adjust(0.137f,0.16f);
+		kickButton.setX(0.07f);
+		kickButton.setY(0.19f);
+		kickButton.setVisible(false);
+		addChild(kickButton);
+
 
 		for(Square square:squares){
 			addChild(square);
 		}
 		this.squares = squares;
-
-		new HostThread().start();
+		
+		new HostThread(this).start();
 	}
 
 	public void progressGame() {
@@ -240,10 +264,15 @@ public class HostMenu extends Menu {
 			gameButton.changeText("Create Game");
 			Client.send(new RemoveGameMessage(name.getText()));
 		}
-		else if("Start Game".equals(gameButton.getText())){
-			Storage.loadMap(mapFile.getAbsolutePath());
-			Client.pass(new StartGameMessage(Hub.map,whiteButton.isVisible()));
-			Gui.setView(new Game(blackButton.isVisible()));
+		else if(gameButton.getText().startsWith("Start")){
+			SendMapMessage.send(
+					client,
+					mapFile.getAbsolutePath(),
+					new StartGameMessage(whiteButton.isVisible()));
+			Gui.removeOnType(name);
+			Game game = new Game(blackButton.isVisible());
+			client.getHandler().setHero(game.getHero());
+			Gui.setView(game);
 		}
 	}
 	public void flipColour(){
@@ -268,12 +297,24 @@ public class HostMenu extends Menu {
 			mapButton.changeText(name);
 		}
 	}
-
-	public void returnToMain(){
-		if(gameButton.getText().startsWith("Waiting")||gameButton.getText().equals("Start Game")){
-			Client.send(new RemoveGameMessage(name.getText()));
+	public void playerJoins(String playerName) {
+		if(gameButton.getText().startsWith("Waiting")){
+			kickButton.setVisible(true);
+			gameButton.changeText("Start w/"+ playerName);
 		}
-		Client.endConnection();
+	}
+	public void kick() {
+		if(gameButton.getText().startsWith("Start")){
+			kickButton.setVisible(false);
+			gameButton.changeText("Waiting .");
+		}
+	}
+	@Override
+	public void startGame(boolean colour) {		
+	}
+	public void returnToMain(){
+		client.close();
+		Gui.removeOnType(name);
 		Gui.setView(new DuoMenu(squares));
 	}
 
@@ -297,8 +338,10 @@ public class HostMenu extends Menu {
 	}
 
 	private class HostThread extends Thread {
-		public HostThread(){
+		private IDuoMenu host;
+		public HostThread(IDuoMenu host){
 			super();
+			this.host = host;
 		}
 		@Override
 		public void run(){
@@ -320,6 +363,7 @@ public class HostMenu extends Menu {
 						}
 					}
 				};
+				client.setMenu(host);
 				client.run();
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -20,10 +20,8 @@ public class Client2 {
 		Client client = new Client("127.0.0.1","Belma");
 		try {
 			client.run();
-			Client.send(new JoinGameMessage("newb"));
-			Client.pass(new PingMessage());
-			Client.send(new EndConnectionMessage());
-			client.close();
+			Client.send(new JoinGameMessage("newb","Belma"));			
+			//client.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

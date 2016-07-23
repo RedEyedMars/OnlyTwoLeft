@@ -1,5 +1,7 @@
 package game;
 
+import duo.client.Client;
+import duo.messages.MoveHeroMessage;
 import game.environment.FunctionalSquare;
 import game.environment.Square;
 import gui.graphics.GraphicEntity;
@@ -69,7 +71,7 @@ public class Hero extends GraphicEntity{
 		return this.textureIndex()==0?"black":this.textureIndex()==1?"white":"OTHER";
 	}
 
-	private void move(float x, float y) {
+	protected void move(float x, float y) {
 		previousX = getX();
 		previousY = getY();
 		setX(getX()+x);

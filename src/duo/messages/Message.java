@@ -1,10 +1,11 @@
 package duo.messages;
 
 import java.io.Serializable;
-import java.net.Socket;
+
+import duo.Handler;
 
 public abstract class Message implements Serializable{
 	private static final long serialVersionUID = 2753949064349001175L;
 
-	public abstract void act(Socket socket);
+	public abstract void act(Handler handler);
 }

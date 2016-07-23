@@ -16,21 +16,25 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import duo.Handler;
 import duo.messages.AddGameMessage;
 import duo.messages.AddPlayerMessage;
 import duo.messages.EndConnectionMessage;
 import duo.messages.Message;
 import duo.messages.PingMessage;
+import duo.messages.SendMapMessage;
+import duo.messages.StartGameMessage;
+import game.menu.IDuoMenu;
 
 public class Client {
 	private static Client client;
-	private Handler handler;
+	protected Handler handler;
 	private String serverAddress;
 	private String playerName;
-	protected List<String[]> games = new ArrayList<String[]>();
 	public Client(String severAddress, String playerName){
 		this.serverAddress = severAddress;				
 		this.playerName = playerName;
+		this.handler = new Handler(this);
 	}
 	public void run() throws IOException{
 		if(client!=null){
@@ -43,7 +47,7 @@ public class Client {
 		oos.writeObject(new AddPlayerMessage(client.getPlayerName()));
 		ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 		try {
-			((Message)ois.readObject()).act(socket);
+			((Message)ois.readObject()).act(handler);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -72,30 +76,25 @@ public class Client {
 	public Handler getHandler() {
 		return this.handler;
 	}
-
-
 	public static void send(Message msg) {
-		client.sendMessage(msg);
-	}
-	public static void pass(Message msg) {
-		client.passMessage(msg);
-	}
-	public void sendMessage(Message msg){
-		this.handler.send(msg);
-	}
-	public void passMessage(Message message) {
-		this.handler.pass(message);
-
-	}
-	public void close(){
-		if(handler!=null){
-			handler.close();
+		if(client!=null){
+			client.handler.send(msg);
 		}
 	}
-	public static void endConnection(){
+	public static void pass(Message msg) {
+		if(client!=null){
+			client.handler.pass(msg);
+		}
+	}
+
+	public static void endConnection() {
 		if(client!=null){
 			client.close();
 		}
+	}
+	public void close(){
+		handler.disconnect();
+		client = null;
 	}
 
 	public static void main(String[] args){
@@ -103,9 +102,18 @@ public class Client {
 		try {
 			client.run();
 			Client.send(new AddGameMessage("newb","Forest1","black"));
-			Client.pass(new PingMessage());
-			Client.send(new EndConnectionMessage());
-			client.close();
+			System.out.println("Waiting");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Sending");
+			SendMapMessage.send(client,
+					"data/maps/Forest1.map",
+					new StartGameMessage(false));
+			System.out.println("Sent");
+			//Client.endConnection();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -117,20 +125,11 @@ public class Client {
 	public String getPlayerName() {
 		return playerName+" ("+serverAddress+")";
 	}
-	public static void setHandler(int port) {
-		client.setHandler(new Handler(client,port));
-	}
 	public String getServerAddress() {
 		return serverAddress;
 	}
-	public static void clearGames() {
-		if(client!=null){
-			client.games.clear();
-		}
+	public void setMenu(IDuoMenu menu) {
+		this.handler.setMenu(menu);
 	}
-	public static void addGame(String[] game) {
-		if(client!=null){
-			client.games.add(game);
-		}
-	}
+	
 }

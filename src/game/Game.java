@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import duo.client.Client;
+import duo.messages.MoveHeroMessage;
 import game.environment.FunctionalSquare;
 import game.environment.Square;
 import game.environment.SquareAction;
@@ -31,8 +33,26 @@ public class Game extends GraphicView implements KeyBoardListener{
 	private boolean endGame = false;
 	public Game(boolean colourToControl){
 
-		black = new Hero(this,Hero.black);
-		white = new Hero(this,Hero.white);
+		if(colourToControl){
+			black = new Hero(this,Hero.black){
+				@Override
+				public void move(float x, float y){
+					super.move(x,y);
+					Client.pass(new MoveHeroMessage(x,y));
+				}
+			};
+			white = new Hero(this,Hero.white);
+		}
+		else {
+			black = new Hero(this,Hero.black);
+			white = new Hero(this,Hero.white){
+				@Override
+				public void move(float x, float y){
+					super.move(x,y);
+					Client.pass(new MoveHeroMessage(x,y));
+				}
+			};
+		}
 		black.setPartner(white);
 		white.setPartner(black);
 		
@@ -62,8 +82,8 @@ public class Game extends GraphicView implements KeyBoardListener{
 			focused = white;			
 		}
 		
-		addChild(new VisionBubble(black,white));
-		Hub.map.setVisibleSquares(0);
+		addChild(new VisionBubble(focused,wild));
+		Hub.map.setVisibleSquares(colourToControl?0:1);
 		Gui.giveOnType(this);
 	}	
 
@@ -140,6 +160,10 @@ public class Game extends GraphicView implements KeyBoardListener{
 			wild.setY(wild.getY()+(lowerViewBorder-focused.getY()));
 			focused.setY(lowerViewBorder);
 		}
+	}
+
+	public Hero getHero() {
+		return controlled;
 	}
 	
 	@Override
