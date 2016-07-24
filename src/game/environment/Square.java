@@ -264,4 +264,26 @@ public class Square extends GraphicEntity{
 		}
 		return ints.iterator();
 	}
+	
+	public static void addArgsFromSquare(Square square, final List<Integer> ints, final List<Float> floats){
+		List<Object> probe = new ArrayList<Object>(){
+			@Override
+			public boolean add(Object obj){
+				if(obj instanceof Integer){
+					return ints.add((Integer) obj);
+				}
+				else if(obj instanceof Float){
+					return floats.add((Float) obj);
+				}
+				return false;
+			}
+		};
+		square.saveTo(probe);
+	}
+	public static Square copy(Square square) {
+		List<Integer> ints = new ArrayList<Integer>();
+		List<Float> floats = new ArrayList<Float>();
+		Square.addArgsFromSquare(square, ints, floats);
+		return Square.create(ints.iterator(), floats.iterator());
+	}
 }

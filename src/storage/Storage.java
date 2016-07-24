@@ -149,6 +149,8 @@ public class Storage {
 				return ret;
 			}
 		};
+		toSave.add(map.getStartingPosition(0));
+		toSave.add(map.getStartingPosition(1));
 		for(Square square:map.getSquares()){
 			square.saveTo(toSave);
 		}

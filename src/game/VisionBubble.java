@@ -49,14 +49,20 @@ public class VisionBubble extends GraphicEntity{
 		float yx = you.getX()+you.getWidth()/2f;
 		float yy = you.getY()+you.getHeight()/2f;
 		
+		double yAngle = 0f;
+		double mAngle = Math.PI;
+		if(yy-my!=0||yx-mx!=0){
+			mAngle = Math.atan2(yy-my,yx-mx);
+			yAngle = Math.atan2(my-yy,mx-yx);
+		}
+		
+		
 		mine.setX(mx-0.2f);
-		mine.setY(my-0.2f);		
-		double mAngle = Math.atan2(yy-my,yx-mx);
+		mine.setY(my-0.2f);
 		mine.getGraphicElement().rotate((float) (mAngle*mpi));
 		
 		other.setX(yx-other.getWidth()/2f);
 		other.setY(yy-other.getHeight()/2f);
-		double yAngle = Math.atan2(my-yy,mx-yx);
 		other.getGraphicElement().rotate((float) (yAngle*mpi));
 		
 		float radius = (float) Math.sqrt(Math.pow(yx-mx, 2)+Math.pow(yy-my, 2));
@@ -72,8 +78,27 @@ public class VisionBubble extends GraphicEntity{
 		}
 		else {
 			other.adjust(0.4f, 0.4f);
-			other.setFrame((int) (6-(radius+0.1f)/0.4f));
-			mine.setFrame((int) (6-(radius+0.1f)/0.4f));
+			float r = radius;
+			if(r-0.1<0.4/4){
+				other.setFrame(6);
+				mine.setFrame(6);
+			}
+			else if(r-0.15f<0.4/4){
+				other.setFrame(5);
+				mine.setFrame(5);
+			}
+			else if(r-0.25f<0.4/4){
+				other.setFrame(4);
+				mine.setFrame(4);
+			}
+			else if(r-0.275f<0.4/4){
+				other.setFrame(3);
+				mine.setFrame(3);
+			}
+			else {				
+					other.setFrame(2);
+					mine.setFrame(2);
+			}
 		}
 
 		mUp.adjust(0.4f,1f);
@@ -126,6 +151,12 @@ public class VisionBubble extends GraphicEntity{
 		middle.setX((float) (mine.getX()-(mine.getWidth()-0.205f+ad/2f)*Math.cos(yAngle))+0.2f-ad/2f);
 		middle.setY((float) (mine.getY()-(mine.getHeight()-0.205f+ad/2f)*Math.sin(yAngle))-1.8f);
 		middle.getGraphicElement().rotate((float) (mAngle*mpi));
+	}
+	
+	public void swap(){
+		GraphicView temp = me;
+		me = you;
+		you = temp;
 	}
 
 }

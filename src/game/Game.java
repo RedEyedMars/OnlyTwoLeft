@@ -31,6 +31,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 	protected int tick = 1;
 
 	private boolean endGame = false;
+	private VisionBubble visionBubble;
 	public Game(boolean colourToControl){
 
 		if(colourToControl){
@@ -55,12 +56,6 @@ public class Game extends GraphicView implements KeyBoardListener{
 		}
 		black.setPartner(white);
 		white.setPartner(black);
-		
-		black.setX(0.45f);
-		black.setY(0.5f);
-
-		white.setX(0.55f);
-		white.setY(0.5f);
 
 		addChild(Hub.map);
 		Hub.map.onCreate();
@@ -68,6 +63,8 @@ public class Game extends GraphicView implements KeyBoardListener{
 			Hub.map.getSquares().get(0).setX(0f);
 			Hub.map.getSquares().get(0).setY(0f);
 		}
+		Hub.map.moveToStart(black);
+		Hub.map.moveToStart(white);
 		addChild(black);
 		addChild(white);
 
@@ -82,10 +79,13 @@ public class Game extends GraphicView implements KeyBoardListener{
 			focused = white;			
 		}
 		
-		addChild(new VisionBubble(focused,wild));
+		visionBubble = new VisionBubble(focused,wild);
+		addChild(visionBubble);
 		Hub.map.setVisibleSquares(colourToControl?0:1);
-		Gui.giveOnType(this);
-	}	
+	}
+	public KeyBoardListener getDefaultKeyBoardListener(){
+		return this;
+	}
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
@@ -218,11 +218,19 @@ public class Game extends GraphicView implements KeyBoardListener{
 					focused = white;
 					wild = black;
 					Hub.map.setVisibleSquares(1);
+					if(!Client.isConnected()){
+						controlled=white;
+						visionBubble.swap();
+					}
 				}
 				else if(focused==white){
 					focused = black;
 					wild = white;
 					Hub.map.setVisibleSquares(0);
+					if(!Client.isConnected()){
+						controlled=black;
+						visionBubble.swap();
+					}
 				}
 			}
 		}

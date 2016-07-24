@@ -1,13 +1,11 @@
 package gui.graphics;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
+import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
-import main.Hub;
 
 public class GraphicView implements Graphicable, MouseListener{
 	@SuppressWarnings("unused")
@@ -249,5 +247,8 @@ public class GraphicView implements Graphicable, MouseListener{
 
 	}
 	public void rotate(float f) {
+	}
+	public KeyBoardListener getDefaultKeyBoardListener(){
+		return null;
 	}
 }

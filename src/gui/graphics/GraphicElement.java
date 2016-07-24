@@ -17,7 +17,7 @@ public class GraphicElement implements Graphicable{
 	protected float x = 0f;
 	protected float y = 0f;
 	protected float angle = 0.0f;
-	protected FloatBuffer vertexBuffer;
+	protected static FloatBuffer vertexBuffer;
 	protected boolean isVisible = true;
 	protected boolean on = true;
 	protected int textureIndex = 0;
@@ -36,14 +36,16 @@ public class GraphicElement implements Graphicable{
 	}
 	public GraphicElement(String textureName, GraphicView view, float f, float g) {
 		this.view = view;
-		setupVertices();
 		adjust(width,height);
 		setTextureName(textureName);
 	}
 	public void onDraw(){
 		
 	}
-	protected void setupVertices(){
+	static {
+		setupVertices();
+	}
+	protected static void setupVertices(){
 		float[] vertices = new float[]{
 				0f, 0f,  0.0f,		// V1 - bottom left
 				0f,  1f,  0.0f,		// V2 - top left

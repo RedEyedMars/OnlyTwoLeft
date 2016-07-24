@@ -41,6 +41,7 @@ import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
+import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Hub;
 import main.Main;
@@ -103,7 +104,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 		addChild(nameButton);
 		addChild(name);
 		addChild(button);
-		Gui.giveOnType(name);
 
 		button = new GraphicText("impact","Map:",1){
 			{
@@ -254,6 +254,9 @@ public class HostMenu extends Menu implements IDuoMenu{
 		
 		new HostThread(this).start();
 	}
+	public KeyBoardListener getDefaultKeyBoardListener(){
+		return name;
+	}
 
 	public void progressGame() {
 		if("Create Game".equals(gameButton.getText())){
@@ -269,7 +272,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 					client,
 					mapFile.getAbsolutePath(),
 					new StartGameMessage(whiteButton.isVisible()));
-			Gui.removeOnType(name);
 			Game game = new Game(blackButton.isVisible());
 			client.getHandler().setHero(game.getHero());
 			Gui.setView(game);
@@ -314,7 +316,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 	}
 	public void returnToMain(){
 		client.close();
-		Gui.removeOnType(name);
 		Gui.setView(new DuoMenu(squares));
 	}
 

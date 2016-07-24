@@ -31,6 +31,8 @@ public class OnCreateSquareEditor extends Editor{
 
 	public OnCreateSquareEditor(MapEditor parent,float x, float y, float w, float h){
 		super();
+
+		setupButtons();
 		String text = "";
 		saveTo = Gui.userSave("ocs");
 		if(saveTo!=null){
@@ -74,8 +76,15 @@ public class OnCreateSquareEditor extends Editor{
 			}
 		});
 		writer = new TextWriter(this,text,ctrlCommands);
-		Gui.giveOnType(writer);
-		addChild(writer);		
+		Square square = new Square(7,0,square_w,square_h);
+		square.setX(square_x);
+		square.setY(square_y);
+		addChild(square);
+		addChild(writer);
+		mode = -1;
+	}
+	public KeyBoardListener getDefaultKeyBoardListener(){
+		return writer;
 	}
 	public void update(double seconds){
 		if(saveTo==null){
@@ -84,7 +93,6 @@ public class OnCreateSquareEditor extends Editor{
 			}
 			else {
 				editor.restartWith(null);
-				Gui.removeOnType(writer);
 				Gui.setView(editor);
 			}
 		}
@@ -134,7 +142,6 @@ public class OnCreateSquareEditor extends Editor{
 				square.removeChild(0);
 			}
 			editor.restartWith(square);
-			Gui.removeOnType(writer);
 			Gui.setView(editor);			
 		}
 	}
@@ -162,11 +169,11 @@ public class OnCreateSquareEditor extends Editor{
 								Integer last = Integer.parseInt(both[1]);
 								ints.add(new Integer(last-first+1));
 								for(int i=first;i<last+1;++i){
-									addArgsFromSquare(squares.get(i),ints,floats);
+									Square.addArgsFromSquare(squares.get(i),ints,floats);
 								}
 							}
 							else {
-								addArgsFromSquare(squares.get(Integer.parseInt(arg.substring(1))),ints,floats);
+								Square.addArgsFromSquare(squares.get(Integer.parseInt(arg.substring(1))),ints,floats);
 							}
 						}
 					}
@@ -180,20 +187,6 @@ public class OnCreateSquareEditor extends Editor{
 		}
 		else return null;
 	}
-	public void addArgsFromSquare(Square square, final List<Integer> ints, final List<Float> floats){
-		List<Object> probe = new ArrayList<Object>(){
-			@Override
-			public boolean add(Object obj){
-				if(obj instanceof Integer){
-					return ints.add((Integer) obj);
-				}
-				else if(obj instanceof Float){
-					return floats.add((Float) obj);
-				}
-				return false;
-			}
-		};
-		square.saveTo(probe);
-	}
+	
 
 }

@@ -86,6 +86,10 @@ public class Client {
 			client.handler.pass(msg);
 		}
 	}
+	
+	public static boolean isConnected(){
+		return client!=null;
+	}
 
 	public static void endConnection() {
 		if(client!=null){

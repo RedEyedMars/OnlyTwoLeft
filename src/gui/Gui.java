@@ -40,7 +40,6 @@ public class Gui extends GLApp {
 	private float[] cameraLook = new float[]{0f, 0f, 0f};
 	
 
-	public static GLFont font;
 	private static boolean drag = true;
     
     public Gui(){
@@ -79,7 +78,6 @@ public class Gui extends GLApp {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
 
-    	font = new GLFont( new Font("Trebuchet", Font.BOLD, 18) );
         Main.setup();
     }
 
@@ -190,7 +188,8 @@ public class Gui extends GLApp {
 	}
 	
 	public static void removeOnClick(MouseListener listener) {
-		mouseListener.pop();
+		while(!mouseListener.isEmpty()&&mouseListener.pop()!=listener){		
+		}
 		//System.out.println("pop"+mouseListener.size()+mouseListener.peek().getClass());
 	}
 	
@@ -222,12 +221,15 @@ public class Gui extends GLApp {
 
 	public static void setView(GraphicView view) {
 		if(Hub.currentView!=null){
-			Hub.currentView.onRemoveFromDrawable();
+			keyboardListener.clear();
+			mouseListener.clear();
+			Hub.currentView.onRemoveFromDrawable();			
 		}
 		Hub.currentView = view;
 		giveOnClick(view);
-		if(view instanceof KeyBoardListener){
-			Gui.giveOnType((KeyBoardListener) view);
+		KeyBoardListener keyListener = view.getDefaultKeyBoardListener();
+		if(keyListener!=null){
+			Gui.giveOnType(keyListener);
 		}
 		view.onAddToDrawable();
 	}

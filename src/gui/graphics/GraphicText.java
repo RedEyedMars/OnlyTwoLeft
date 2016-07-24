@@ -59,6 +59,7 @@ public class GraphicText extends GraphicEntity {
 	};
 	public GraphicText(String font, String text, int layer) {
 		super("blank");
+		Hub.renderer.loadFont(font);
 		this.font = font;
 		this.text = text;
 		this.layer = layer;

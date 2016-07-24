@@ -20,6 +20,7 @@ import game.Game;
 import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Main;
 
@@ -183,7 +184,6 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		ip.setY(0.58f);
 		addChild(ipButton);
 		addChild(ip);
-		Gui.giveOnType(name);
 
 		buttonList = new MenuButton(""){
 			private int botIndex = 1;
@@ -330,6 +330,9 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		}
 		this.squares = squares;
 	}
+	public KeyBoardListener getDefaultKeyBoardListener(){
+		return ip;
+	}
 
 	public void kick(){
 		if(joinButton.getText().startsWith("Waiting")){
@@ -346,8 +349,6 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	@Override
 	public void startGame(boolean colour) {
 		System.out.println("start game");
-		Gui.removeOnType(name);
-		Gui.removeOnType(ip);
 		Game game = new Game(colour);
 		client.getHandler().setHero(game.getHero());
 		Gui.setView(game);		

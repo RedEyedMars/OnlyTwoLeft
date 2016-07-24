@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
+import game.Hero;
 import gui.graphics.GraphicEntity;
 import main.Log;
 
@@ -19,6 +20,8 @@ public class Map extends GraphicEntity {
 	private List<FunctionalSquare> functionalSquares = new ArrayList<FunctionalSquare>();
 	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
 
+	private float[] startingXPosition = new float[2];
+	private float[] startingYPosition = new float[2];
 	public Map() {
 		super("blank");
 		this.setVisible(false);
@@ -72,12 +75,6 @@ public class Map extends GraphicEntity {
 
 	}
 
-	public void load(Object[] loaded) {
-		for(Square square:new MapLoader(loaded)){
-			addSquare(square);
-		}
-	}
-
 	private float xOffset = 0f;
 	private float yOffset = 0f;
 	@Override
@@ -109,6 +106,73 @@ public class Map extends GraphicEntity {
 		}
 	}
 
+	public boolean isMallible() {
+		return true;
+	}
+
+	public List<Square> getSquares() {
+		return allSquares;
+	}
+
+	public void onCreate() {
+		for(OnCreateSquare square:onCreates){
+			square.act();
+		}
+	}
+
+	public boolean isWithinWall(Square target) {
+		for(FunctionalSquare square:functionalSquares){
+			if(square.getActions().contains(SquareAction.actions.get(0))
+					&&(target.isCompletelyWithin(square)||
+						target.isCompletelyWithin(square))){
+				return false;
+			}
+		}
+		for(FunctionalSquare square:functionalSquares){
+			if(square.getActions().contains(SquareAction.actions.get(1))
+					&&(square.isWithin(target.getX(), target.getY())||
+					   square.isWithin(target.getX()+target.getWidth(), target.getY()+target.getHeight()))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void load(Object[] loaded) {
+		MapLoader loader = new MapLoader(loaded);
+		int i=0;
+		for(Iterator<String> itr=loader.getStrings();itr.hasNext();){
+			String[] pair = itr.next().split(",");
+			startingXPosition[i]=Float.parseFloat(pair[0]);
+			startingYPosition[i]=Float.parseFloat(pair[1]);
+			++i;
+		}
+		for(Square square:loader){
+			addSquare(square);
+		}
+		
+	}
+
+	public String getStartingPosition(int i) {
+		return startingXPosition[i]+","+startingYPosition[i];
+	}
+	
+	public void moveToStart(Hero hero){
+		hero.setX(startingXPosition[hero.getColour()]);
+		hero.setY(startingYPosition[hero.getColour()]);
+	}
+
+	public void setStartPosition(int colour, float x, float y) {
+		startingXPosition[colour]=x;
+		startingYPosition[colour]=y;
+	}
+	public float getStartingXPosition(int colour) {
+		return startingXPosition[colour];
+	}
+	public float getStartingYPosition(int colour) {
+		return startingYPosition[colour];
+	}
+	
 	private class MapLoader implements Iterable<Square>, Iterator<Square> {
 		private int maxIntegers;
 		private int integerIndex = 3;
@@ -198,38 +262,5 @@ public class Map extends GraphicEntity {
 		}
 
 	}
-
-	public boolean isMallible() {
-		return true;
-	}
-
-	public List<Square> getSquares() {
-		return allSquares;
-	}
-
-	public void onCreate() {
-		for(OnCreateSquare square:onCreates){
-			square.act();
-		}
-	}
-
-	public boolean isWithinWall(Square target) {
-		for(FunctionalSquare square:functionalSquares){
-			if(square.getActions().contains(SquareAction.actions.get(0))
-					&&(target.isCompletelyWithin(square)||
-						target.isCompletelyWithin(square))){
-				return false;
-			}
-		}
-		for(FunctionalSquare square:functionalSquares){
-			if(square.getActions().contains(SquareAction.actions.get(1))
-					&&(square.isWithin(target.getX(), target.getY())||
-					   square.isWithin(target.getX()+target.getWidth(), target.getY()+target.getHeight()))){
-				return true;
-			}
-		}
-		return false;
-	}
-
 
 }

@@ -33,6 +33,9 @@ public class Hero extends GraphicEntity{
 	public Hero getPartner(){
 		return partner;
 	}
+	public int getColour() {
+		return textureIndex();
+	}
 	@Override
 	public void update(double secondsSinceLastFrame){
 		xVel=xVel*0.9f+xAcc;
@@ -51,8 +54,8 @@ public class Hero extends GraphicEntity{
 		float dx = (q.getX()+q.getWidth() /2f)-(getX()+radius);
 		float dy = (q.getY()+q.getHeight()/2f)-(getY()+radius);
 		double angle = Math.atan2(dy, dx);
-		double x = Math.cos(angle)*radius+getX()+radius;
-		double y = Math.sin(angle)*radius+getY()+radius;
+		double x = Math.signum(Math.cos(angle))*radius+getX()+radius;
+		double y = Math.signum(Math.sin(angle))*radius+getY()+radius;
 		return (x>=q.getX()&&x<=q.getX()+q.getWidth()&&
 				y>=q.getY()&&y<=q.getY()+q.getHeight());
 	}

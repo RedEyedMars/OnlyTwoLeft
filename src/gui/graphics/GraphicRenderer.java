@@ -24,11 +24,16 @@ import java.util.Map;
 
 import org.lwjgl.opengl.GL11;
 
+import editor.ButtonAction;
+import editor.Editor;
+import game.Action;
+
 
 
 public class GraphicRenderer {
 	private float viewX,viewY,viewZ=0f;
 
+	private Map<String,ButtonAction> loadImageFromTextureName = new HashMap<String,ButtonAction>();
 	private Map<String,Integer> texMap = new HashMap<String,Integer>();
 	private Map<String,Integer> sizMap = new HashMap<String,Integer>();
 	private Map<Integer,FloatBuffer[]> textureBuffers = new HashMap<Integer,FloatBuffer[]>();
@@ -94,6 +99,9 @@ public class GraphicRenderer {
 	public void display(){
 		while(!Hub.addLayer.isEmpty()){
 			GraphicElement e = Hub.addLayer.remove(0);
+			if(loadImageFromTextureName.containsKey(e.getTextureName())){
+				loadImageFromTextureName.remove(e.getTextureName()).act(null);
+			}
 			if(e.getLayer()==1){
 				Hub.drawTopLayer.add(e);
 			}
@@ -173,17 +181,34 @@ public class GraphicRenderer {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			for(String filename:fileBuilder.toString().split("\n")){
+			for(final String filename:fileBuilder.toString().split("\n")){
 				if(filename.matches("\\s*"))continue;
 				String[] args = filename.split("\\Q"+File.separator+"\\E");
-				String name = args[1].substring(0,args[1].indexOf('.'));
-				Integer size = Integer.parseInt(args[0]);
-				loadImageFromPath("images/"+filename,size,name);
+				final String name = args[1].substring(0,args[1].indexOf('.'));
+				final Integer size = Integer.parseInt(args[0]);
+				loadImageFromTextureName.put(name,new ButtonAction(){
+					@Override
+					public void act(Editor subject) {
+						loadImageFromPath("images"+File.separator+filename,size,name);
+					}				
+				});
 			}
+			loadImageFromTextureName.put("timesnewroman",new ButtonAction(){
+				@Override
+				public void act(Editor subject) {					
+					loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
+				}});
+			loadImageFromTextureName.put("impact",new ButtonAction(){
+				@Override
+				public void act(Editor subject) {
+					loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
+				}});
+			loadImageFromTextureName.put("impactWhite",new ButtonAction(){
+				@Override
+				public void act(Editor subject) {
+					loadText("impactWhite",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{1f,1f,1f,1}, new float[]{0,0,0,0f});
+				}});
 
-			loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
-			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
-			loadText("impactWhite",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{1f,1f,1f,1}, new float[]{0,0,0,0f});
 			loaded = true;
 		}
 	}
@@ -194,8 +219,7 @@ public class GraphicRenderer {
 
 	public Map<String,List<Float>> letterWidths= new HashMap<String,List<Float>>();
 	private void loadText(String fontName,Font font, int size, float[] foregroundColour, float[] backgroundColour){
-		
-		letterWidths.put(fontName,new ArrayList<Float>());
+		letterWidths.put(fontName, new ArrayList<Float>());
 		loadImageFromGLImage(
 				GLFont.createCharImage(
 						fontName, 
@@ -265,5 +289,12 @@ public class GraphicRenderer {
 	}
 	public float getViewY() {
 		return viewY;
+	}
+
+	public void loadFont(String font) {
+
+		if(loadImageFromTextureName.containsKey(font)){
+			loadImageFromTextureName.remove(font).act(null);
+		}
 	}
 }

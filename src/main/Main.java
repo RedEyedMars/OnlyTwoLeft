@@ -15,11 +15,8 @@ public class Main {
 	public static long seed = new Random().nextLong();
 	public static Random randomizer = new Random(seed);
 
-	/**
-	 * @param args
-	 */
+	static long time;
 	public static void main(String[] args) {
-
 		Gui gui = null;
 		gui = new Gui();
 	}

@@ -372,6 +372,7 @@ public class GLApp {
         }
         // Initialize the Window
         try {
+        	long loadImagesTime = System.currentTimeMillis();
             Display.create(new PixelFormat(0, depthBufferBits, 8));  // set bits per buffer: alpha, depth, stencil
             Display.setTitle(window_title);
             Display.setFullscreen(fullScreen);

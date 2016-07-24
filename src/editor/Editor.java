@@ -59,8 +59,6 @@ public class Editor extends GraphicView {
 
 	public Editor(){
 		super();
-		setupButtons();
-
 		mode = 0;
 	}
 
@@ -350,7 +348,7 @@ public class Editor extends GraphicView {
 				if(mode==2){
 					mode=0;
 
-					if(squares.get(0)==builder1){
+					if(squares.get(0)==builder1&&this instanceof MapEditor){
 						squares.get(0).setX(0f);
 						squares.get(0).setY(0f);
 						squares.get(0).adjust(1f,1f);
@@ -581,7 +579,7 @@ public class Editor extends GraphicView {
 						}
 						Gui.setView(new OnCreateSquareEditor(
 								(MapEditor) subject,
-								ocs.getX(),ocs.getY(),ocs.getWidth(),ocs.getWidth()));
+								ocs.getX(),ocs.getY(),ocs.getWidth(),ocs.getHeight()));
 					}
 				});
 				button.setX(ocs.getX()+0.015f);
