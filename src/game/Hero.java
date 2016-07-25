@@ -21,8 +21,6 @@ public class Hero extends GraphicEntity{
 
 	private Game game;
 	private Hero partner;
-	private float previousY=0f;
-	private float previousX=0f;
 	public Hero(Game game, byte colour) {
 		super("circles");
 		this.setFrame(colour);
@@ -84,60 +82,17 @@ public class Hero extends GraphicEntity{
 	}
 
 	protected void move(float x, float y) {
-		previousX = getX();
-		previousY = getY();
 		setX(getX()+x);
 		setY(getY()+y);
 	}
 
+	public void moveToByPartner(float x, float y) {
+		setX(getPartner().getX()-x);
+		setY(getPartner().getX()-y);
+	}
+
 	public void backup(GraphicEntity e) {
 		setSafeties(false,e);
-		/*
-		boolean NW = true;
-		boolean NE = true;
-		boolean SW = true;
-		boolean SE = true;
-		if(getX()+getWidth()>=e.getX()&&getX()+getWidth()<=e.getX()+e.getWidth()){
-			if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
-				NE=false;
-			}
-			if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
-				SE=false;
-			}
-		}
-		if(getX()<=e.getX()+e.getWidth()&&getX()>=e.getX()){
-			if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
-				SW=false;
-			}
-			if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
-				NW=false;
-			}
-		}
-
-		boolean right = Math.signum(xAcc)>=0;
-		boolean left = Math.signum(xAcc)<=0;
-		boolean up = Math.signum(yAcc)>=0;
-		boolean down = Math.signum(yAcc)<=0;
-		if(!(NE&&NW&&SE&&SW)&&
-				((((NE&&SE&&SW)&&left&&up)    ||((NE&&NW&&SW)&&right&&down)||((NW&&SE&&SW)&&right&&up)  ||((NE&&NW&&SE)&&down&&left))||
-						(((!(NE||SE||SW)&&right&&down)||(!(NE||NW||SW)&&left&&up)  ||(!(NW||SE||SW)&&left&&down)||(!(NE||NW||SE)&&right&&up))))){
-			xAcc=0;
-			xVel=0;
-			setX(previousX);
-			yAcc=0;
-			yVel=0;
-			setY(previousY);
-		}
-		else if((!(NE||SE)&&right)||(!(NW||SW)&&left)){
-			xAcc=0;
-			xVel=0;
-			setX(previousX);
-		}
-		else if((!(NE||NW)&&up)||(!(SE||SW)&&down)){
-			yAcc=0;
-			yVel=0;
-			setY(previousY);
-		}*/
 	}
 	public void push(Square target) {
 
@@ -250,71 +205,57 @@ public class Hero extends GraphicEntity{
 				}
 			}
 
+			float x = 0f;
+			float y = 0f;
 			if(!(NE&&NW&&SE&&SW)){
 				if(NE&&SE&&SW){
-					if(W<N){
-						setX(getX()+W);						
+					if(W<=N){
+						x=W;						
 					}
-					else if(N<W){
-						setY(getY()-N);						
-					}
-					else {
-						setX(getX()+W);
-						setY(getY()-N);
+					if(N<=W){
+						y=-N;						
 					}
 				}
 				else if(NE&&NW&&SW){
-					if(E<S){
-						setX(getX()-E);						
+					if(E<=S){
+						x=-E;						
 					}
-					else if(S<E){
-						setY(getY()+S);
-					}
-					else {
-						setX(getX()-E);
-						setY(getY()+S);	
+					if(S<=E){
+						y=S;
 					}
 				}
 				else if(NW&&SE&&SW){
-					if(E<N){
-						setX(getX()-E);						
+					if(E<=N){
+						x=-E;						
 					}
-					else if(N<E){
-						setY(getY()-N);
-					}
-					else {
-						setX(getX()-E);
-						setY(getY()-N);
+					if(N<=E){
+						y=-N;
 					}
 				}
 				else if(NE&&NW&&SE){
-					if(W<S){
-						setX(getX()+W);
+					if(W<=S){
+						x=W;
 					}
-					else if(S<W){
-						setY(getY()+S);
-					}
-					else {
-						setX(getX()+W);
-						setY(getY()+S);
+					if(S<=W){
+						y=S;
 					}
 				}
 				else {
 					if((!(NE||SE))){
-						setX(getX()-E);
+						x=-E;
 					}
 					else if(!(NW||SW)){
-						setX(getX()+W);
+						x=W;
 					}
 					if((!(NE||NW))){
-						setY(getY()-N);
+						y=-N;
 					}
 					else if(!(SW||SE)){
-						setY(getY()+S);
+						y=S;
 					}
 				}
 			}
-
+			move(x,y);
 		}
 	}
 }

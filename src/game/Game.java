@@ -36,25 +36,39 @@ public class Game extends GraphicView implements KeyBoardListener{
 	private float xAcceleration;
 	public Game(boolean colourToControl){
 
-		if(colourToControl){
-			black = new Hero(this,Hero.black){
-				@Override
-				public void move(float x, float y){
-					super.move(x,y);
-					Client.pass(new MoveHeroMessage(x,y));
-				}
-			};
-			white = new Hero(this,Hero.white);
+		if(Client.isConnected()){
+			if(colourToControl){
+				black = new Hero(this,Hero.black){
+					@Override
+					public void move(float x, float y){
+						super.move(x,y);
+						Client.pass(new MoveHeroMessage(x,y));
+					}
+				};
+				white = new Hero(this,Hero.white){
+					@Override
+					public void move(float x, float y){
+					}
+				};
+			}
+			else {
+				black = new Hero(this,Hero.black){
+					@Override
+					public void move(float x, float y){
+					}
+				};
+				white = new Hero(this,Hero.white){
+					@Override
+					public void move(float x, float y){
+						super.move(x,y);
+						Client.pass(new MoveHeroMessage(x,y));
+					}
+				};
+			}
 		}
 		else {
 			black = new Hero(this,Hero.black);
-			white = new Hero(this,Hero.white){
-				@Override
-				public void move(float x, float y){
-					super.move(x,y);
-					Client.pass(new MoveHeroMessage(x,y));
-				}
-			};
+			white = new Hero(this,Hero.white);
 		}
 		black.setPartner(white);
 		white.setPartner(black);
