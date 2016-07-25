@@ -16,7 +16,6 @@ public abstract class SquareAction implements Action<Hero> {
 	public static final SquareAction safe = new SquareAction(true){
 		@Override
 		public void act(Hero subject) {
-			subject.safeSquare(target);
 		}
 		@Override
 		public int getIndex() {
@@ -115,14 +114,6 @@ public abstract class SquareAction implements Action<Hero> {
 	}
 	public SquareAction(boolean requireComplete){
 		this.requireComplete = requireComplete;
-	}
-	public boolean isWithin(Hero hero, FunctionalSquare e){
-		if(requireComplete){
-			return hero.isCompletelyWithin(e);
-		}
-		else {
-			return hero.isWithin(e);
-		}
 	}
 	protected Square target;
 	public void setTarget(Square target){

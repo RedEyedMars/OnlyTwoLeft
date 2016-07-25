@@ -164,8 +164,8 @@ public class GraphicElement implements Graphicable{
 	}
 
 	public boolean isWithin(float dx, float dy) {
-		return dx>visualX&&dx<visualX+visualW&&
-				dy>visualY&&dy<visualY+visualH;
+		return dx>=visualX&&dx<visualX+visualW&&
+				dy>=visualY&&dy<visualY+visualH;
 	}
 
 	public void setVisible(boolean b) {

@@ -52,12 +52,12 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				squares = Hub.map.getSquares();
 			}
 			myLoadedMap = Hub.map;
+			setupHeroButton(0);
+			setupHeroButton(1);
+			setupButtons();
+			this.readyToAddToDrawable  = true;
 		}
 
-		setupHeroButton(0);
-		setupHeroButton(1);
-		setupButtons();
-		this.readyToAddToDrawable  = true;
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return this;
@@ -206,6 +206,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		game.environment.Map map = new game.environment.Map();
 		for(Square square:squares){
 			map.addSquare(square);
+		}
+		for(Square square:Hub.map.getTemplateSquares()){
+			map.addTemplateSquare(square);
 		}
 		map.setStartPosition(0, myLoadedMap.getStartingXPosition(0), myLoadedMap.getStartingYPosition(0));
 		map.setStartPosition(1, myLoadedMap.getStartingXPosition(1), myLoadedMap.getStartingYPosition(1));

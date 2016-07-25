@@ -12,6 +12,7 @@ import game.environment.Square;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
@@ -33,6 +34,10 @@ public class OnCreateSquareEditor extends Editor{
 		super();
 
 		setupButtons();
+		Square guide = new Square(7,0,w,h);
+		guide.setX(x);
+		guide.setY(y);
+		addChild(guide);
 		String text = "";
 		saveTo = Gui.userSave("ocs");
 		if(saveTo!=null){
@@ -40,8 +45,17 @@ public class OnCreateSquareEditor extends Editor{
 				text = Storage.loadText(saveTo.getAbsolutePath());
 			}
 			//else {
-			Hub.map = new game.environment.Map();
-			squares = Hub.map.getSquares();
+			squares = Hub.map.getTemplateSquares();
+			int i=0;
+			for(Square square:squares){
+				while(!square.getChildren().isEmpty()){
+					square.removeChild(0);
+				}
+				addIconsToSquare(square,null);
+				addChild(square);
+				++i;
+			}
+			
 			//}
 		}
 
@@ -76,16 +90,28 @@ public class OnCreateSquareEditor extends Editor{
 			}
 		});
 		writer = new TextWriter(this,text,ctrlCommands);
-		Square square = new Square(7,0,square_w,square_h);
-		square.setX(square_x);
-		square.setY(square_y);
-		addChild(square);
 		addChild(writer);
 		mode = -1;
 	}
+	@Override
+	public void addIconsToSquare(Square square1, Square square2){
+		super.addIconsToSquare(square1, square2);
+		if(square2!=null){
+			GraphicEntity e = new GraphicText("impact",""+squares.indexOf(square2),0);
+			e.setX(square2.getX());
+			e.setY(square2.getY()+square2.getHeight()-0.03f);
+			square2.addChild(e);
+		}
+		GraphicEntity e = new GraphicText("impact",""+squares.indexOf(square1),0);
+		e.setX(square1.getX());
+		e.setY(square1.getY()+square1.getHeight()-0.03f);
+		square1.addChild(e);
+	}
+	@Override
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return writer;
 	}
+	@Override
 	public void update(double seconds){
 		if(saveTo==null){
 			if(editor==null){
@@ -108,7 +134,6 @@ public class OnCreateSquareEditor extends Editor{
 			}
 		}
 
-
 		final List<Integer> ints = new ArrayList<Integer>();
 		final List<Float> floats = new ArrayList<Float>();
 		List<Object> probe = new ArrayList<Object>(){
@@ -127,7 +152,13 @@ public class OnCreateSquareEditor extends Editor{
 		floats.add(square_y);
 		floats.add(square_w);
 		floats.add(square_h);
-		ints.add(actions.size());
+		int numberOfOffsets = 0;
+		for(OnCreateAction action:actions){
+			if(action.getIndex()==8){
+				++numberOfOffsets;
+			}
+		}
+		ints.add(actions.size()-numberOfOffsets);
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
 		}
@@ -169,11 +200,11 @@ public class OnCreateSquareEditor extends Editor{
 								Integer last = Integer.parseInt(both[1]);
 								ints.add(new Integer(last-first+1));
 								for(int i=first;i<last+1;++i){
-									Square.addArgsFromSquare(squares.get(i),ints,floats);
+									ints.add(i);
 								}
 							}
 							else {
-								Square.addArgsFromSquare(squares.get(Integer.parseInt(arg.substring(1))),ints,floats);
+								ints.add(Integer.parseInt(arg.substring(1)));
 							}
 						}
 					}

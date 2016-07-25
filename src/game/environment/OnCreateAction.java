@@ -16,11 +16,13 @@ import main.Main;
 public abstract class OnCreateAction implements Action<OnCreateSquare>{
 	public static Map<String,OnCreateAction> actions = new HashMap<String,OnCreateAction>();
 	public static List<OnCreateAction> actionList = new ArrayList<OnCreateAction>();
+	private static int squareIndexOffset = 0;
 
 	public static final OnCreateAction section = new OnCreateAction(){
 		private int numberOfActions = 0;
 		private List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
 		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			squareIndexOffset=0;
 			this.ints.clear();
 			this.actions.clear();
 			super.setArgs(ints, floats);
@@ -69,8 +71,8 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 	public static final OnCreateAction create_square = new OnCreateAction(){
 		private Square square;
 		@Override
-		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
-			square = Square.create(ints, floats);
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){			
+			square = Hub.map.getTemplateSquares().get(ints.next());
 		}
 		@Override
 		public void act(OnCreateSquare square) {
@@ -78,7 +80,10 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		}
 		@Override
 		protected void saveArgs(List<Object> saveTo){
-			square.saveTo(saveTo);
+			if(!Hub.map.getTemplateSquares().contains(square)){
+				Hub.map.addTemplateSquare(square);
+			}
+			saveTo.add(Hub.map.getTemplateSquares().indexOf(square));
 		}
 		@Override
 		public int getIndex() {
@@ -91,7 +96,9 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
 			int size = ints.next();
 			for(int i=0;i<size;++i){
-				list.add(Square.create(ints, floats));
+				int index = ints.next();
+				list.add(Hub.map.getTemplateSquares().get(index+squareIndexOffset));
+				
 			}
 		}
 		@Override
@@ -102,7 +109,7 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		protected void saveArgs(List<Object> saveTo){
 			saveTo.add(list.size());
 			for(int i=0;i<list.size();++i){
-				list.get(i).saveTo(saveTo);
+				saveTo.add(Hub.map.getTemplateSquares().indexOf(list.get(i)));
 			}
 		}
 		@Override
@@ -192,7 +199,7 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			dx=square.getX()-dx;
 			dy=square.getY()-dy;
 			for(Object sqr:list){
-				Square s = ((Square)sqr);
+				Square s = Square.copy((Square)sqr);
 				s.setX(s.getX()+dx);
 				s.setY(s.getY()+dy);
 				square.addChild(s);
@@ -208,6 +215,24 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		@Override
 		public int getIndex() {
 			return 7;
+		}
+	};
+	public static final OnCreateAction square_index_offset = new OnCreateAction(){
+		private int index;
+		@Override
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			index=ints.next();
+			squareIndexOffset = index;
+		}
+		@Override
+		public void act(OnCreateSquare square) {
+		}
+		@Override
+		public void saveTo(List<Object> saveTo){
+		}
+		@Override
+		public int getIndex() {
+			return 8;
 		}
 	};
 

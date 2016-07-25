@@ -10,6 +10,7 @@ import java.util.List;
 import game.Action;
 import game.Hero;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicView;
 import main.Log;
 
 public class Map extends GraphicEntity {
@@ -19,6 +20,9 @@ public class Map extends GraphicEntity {
 	private List<Square> whiteSquares = new ArrayList<Square>();
 	private List<FunctionalSquare> functionalSquares = new ArrayList<FunctionalSquare>();
 	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
+	private List<Square> templateSquares = new ArrayList<Square>();
+	
+	private java.util.Map<Square,List<FunctionalSquare>> adjacentSquares = new HashMap<Square,List<FunctionalSquare>>();
 
 	private float[] startingXPosition = new float[2];
 	private float[] startingYPosition = new float[2];
@@ -118,6 +122,26 @@ public class Map extends GraphicEntity {
 		for(OnCreateSquare square:onCreates){
 			square.act();
 		}
+		for(FunctionalSquare square:functionalSquares){
+			List<FunctionalSquare> list = new ArrayList<FunctionalSquare>();
+			for(FunctionalSquare adj:functionalSquares){
+				if(square!=adj){
+					if(square.isWithin(adj.getX(), adj.getY())||
+							square.isWithin(adj.getX()+adj.getWidth(), adj.getY()+adj.getHeight())||
+							square.isWithin(adj.getX()+adj.getWidth(), adj.getY())||
+							square.isWithin(adj.getX(), adj.getY()+adj.getHeight())){
+						list.add(adj);
+					}
+					else if(adj.isWithin(square.getX(), square.getY())||
+							adj.isWithin(square.getX()+square.getWidth(), square.getY()+square.getHeight())||
+							adj.isWithin(square.getX()+square.getWidth(), square.getY())||
+							adj.isWithin(square.getX(), square.getY()+square.getHeight())){
+						list.add(adj);
+					}
+				}
+			}
+			adjacentSquares.put(square,list);
+		}
 	}
 
 	public boolean isWithinWall(Square target) {
@@ -146,6 +170,13 @@ public class Map extends GraphicEntity {
 			startingXPosition[i]=Float.parseFloat(pair[0]);
 			startingYPosition[i]=Float.parseFloat(pair[1]);
 			++i;
+		}
+		if(loaded[3] instanceof Integer&&(Integer)loaded[3]==-1){
+			loader.nextInteger();
+			int size = loader.nextInteger();
+			for(i=0;i<size;++i){
+				templateSquares.add(Square.create(loader.getIntegers(), loader.getFloats()));
+			}
 		}
 		for(Square square:loader){
 			addSquare(square);
@@ -261,6 +292,18 @@ public class Map extends GraphicEntity {
 			return stringIterator;
 		}
 
+	}
+
+	public List<FunctionalSquare> getAdjacentSquares(FunctionalSquare q) {
+		return adjacentSquares.get(q);
+	}
+
+	public List<Square> getTemplateSquares() {
+		return templateSquares;
+	}
+
+	public void addTemplateSquare(Square square) {
+		templateSquares.add(square);
 	}
 
 }

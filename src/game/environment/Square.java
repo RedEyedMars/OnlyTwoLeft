@@ -101,7 +101,6 @@ public class Square extends GraphicEntity{
 	private float yOffset = 0f;
 	@Override
 	public void setX(float x){
-
 		xOffset = x-getX();
 		super.setX(x);
 	}

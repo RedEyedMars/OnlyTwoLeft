@@ -32,6 +32,8 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 	private boolean endGame = false;
 	private VisionBubble visionBubble;
+	private float yAcceleration;
+	private float xAcceleration;
 	public Game(boolean colourToControl){
 
 		if(colourToControl){
@@ -78,7 +80,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 			wild = black;
 			focused = white;			
 		}
-		
+
 		visionBubble = new VisionBubble(focused,wild);
 		addChild(visionBubble);
 		Hub.map.setVisibleSquares(colourToControl?0:1);
@@ -92,6 +94,8 @@ public class Game extends GraphicView implements KeyBoardListener{
 	@Override
 	public void update(double secondsSinceLastFrame){
 		super.update(secondsSinceLastFrame);
+		controlled.setXAcceleration(xAcceleration);
+		controlled.setYAcceleration(yAcceleration);
 		handleInterceptions();
 		handleViewMovement();
 	}
@@ -102,15 +106,44 @@ public class Game extends GraphicView implements KeyBoardListener{
 		List<FunctionalSquare> squares = new ArrayList<FunctionalSquare>();
 		List<FunctionalSquare> mapSquares = Hub.map.functionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
+			boolean foundSafety = false;
+			List<GraphicEntity> safetiesFound=new ArrayList<GraphicEntity>();
+			int trueIndexFound = 0;
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
-				if(action!=null&&action.isWithin(hero,mapSquares.get(i))){
+				if(action!=null&&
+						action.requiresComplete()&&
+						hero.isCompletelyWithin(mapSquares.get(i))){
 					action.act(hero);
-					if(action.requiresComplete()){
-						break;
+					foundSafety=true;
+					trueIndexFound = i;
+					safetiesFound.add(mapSquares.get(i));
+					break;
+				}
+			}
+			if(!foundSafety){
+				for(int i=mapSquares.size()-1;i>=0;--i){
+					SquareAction action = mapSquares.get(i).getOnHitAction(hero);
+					if(action!=null&&
+							action.requiresComplete()&&
+							hero.isWithin(mapSquares.get(i))){
+						action.act(hero);
+						safetiesFound.add(mapSquares.get(i));
 					}
 				}
 			}
+			for(int i=mapSquares.size()-1;i>trueIndexFound;--i){
+				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
+				if(action!=null&&!action.requiresComplete()&&
+						hero.isWithin(mapSquares.get(i))){
+					action.act(hero);
+					foundSafety=false;
+				}
+			}
+			if(!foundSafety){
+				hero.setSafeties(true,safetiesFound.toArray(new GraphicEntity[0]));
+			}
+
 			/*use if more than one square can be triggered currently just the top square
 				if(hero.isWithin(square)){
 					Action<FunctionalSquare> herosquare = hero.getOnHitAction(square);
@@ -143,7 +176,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 			Hub.map.setX(Hub.map.getX()-(focused.getX()-uppderViewBorder));
 			wild.setX(wild.getX()-(focused.getX()-uppderViewBorder));
 			focused.setX(uppderViewBorder);
-			
+
 		}
 		else if(focused.getX()<lowerViewBorder){
 			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));;
@@ -165,7 +198,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 	public Hero getHero() {
 		return controlled;
 	}
-	
+
 	@Override
 	public boolean onHover(MotionEvent event){
 		pointerX = event.getX();
@@ -184,34 +217,30 @@ public class Game extends GraphicView implements KeyBoardListener{
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
 			if('a'==c){
-				controlled.setXAcceleration(-standardAcceleration);
+				xAcceleration = -standardAcceleration;
 			}
 			if('d'==c){
-				controlled.setXAcceleration(standardAcceleration);
+				xAcceleration = standardAcceleration;
 			}
 			if('w'==c){
-				controlled.setYAcceleration(standardAcceleration);
+				yAcceleration = standardAcceleration;
 			}
 			if('s'==c){
-				controlled.setYAcceleration(-standardAcceleration);
+				yAcceleration = -standardAcceleration;
 			}
 		}
 		else if(b==KeyBoardListener.UP){
 			if(32==keycode){
-				if(controlled.getXAcceleration()==standardAcceleration)
-					controlled.setXAcceleration(0f);
+				xAcceleration = 0f;
 			}
 			else if(30==keycode){
-				if(controlled.getXAcceleration()==-standardAcceleration)
-					controlled.setXAcceleration(0f);
+				xAcceleration = 0f;
 			}
 			else if(17==keycode){
-				if(controlled.getYAcceleration()==standardAcceleration)
-					controlled.setYAcceleration(0f);
+				yAcceleration = 0f;
 			}
 			else if(31==keycode){
-				if(controlled.getYAcceleration()==-standardAcceleration)
-					controlled.setYAcceleration(0f);
+				yAcceleration = 0f;
 			}
 			else if(57==keycode){//space
 				if(focused==black){

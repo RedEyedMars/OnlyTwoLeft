@@ -208,8 +208,8 @@ public class GraphicView implements Graphicable, MouseListener{
 
 
 	public boolean isWithin(float dx, float dy) {
-		return dx>x&&dx<x+getWidth()&&
-			   dy>y&&dy<y+getHeight();
+		return dx>=getX()&&dx<=getX()+getWidth()&&
+			   dy>=getY()&&dy<=getY()+getHeight();
 	}
 	public int size() {
 		return children.size();

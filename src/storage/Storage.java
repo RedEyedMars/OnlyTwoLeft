@@ -1,19 +1,11 @@
 package storage;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +111,7 @@ public class Storage {
 
 	public static void saveMap(String filename, game.environment.Map map) {
 		List<Object> toSave = new ArrayList<Object>(){
+			private static final long serialVersionUID = -7081569172132958341L;
 			private Integer ints = 0;
 			private Integer floats = 0;
 			private Integer strings = 0;
@@ -151,9 +144,15 @@ public class Storage {
 		};
 		toSave.add(map.getStartingPosition(0));
 		toSave.add(map.getStartingPosition(1));
+		toSave.add(-1);
+		toSave.add(map.getTemplateSquares().size());
+		for(Square square:map.getTemplateSquares()){
+			square.saveTo(toSave);
+		}
 		for(Square square:map.getSquares()){
 			square.saveTo(toSave);
 		}
+		
 		save(filename,toSave.toArray(new Object[0]));
 	}
 	public static void save(String filename, Object... toSave) {

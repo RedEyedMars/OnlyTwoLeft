@@ -1,0 +1,8 @@
+square index offset:0
+create list
+create squares:#0-2
+put:0
+create squares:#3-5
+put:0
+get random:0
+display list:1

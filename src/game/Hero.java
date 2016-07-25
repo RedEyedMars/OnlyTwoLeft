@@ -1,14 +1,17 @@
 package game;
 
+import java.util.List;
+
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
 import game.environment.FunctionalSquare;
 import game.environment.Square;
 import gui.graphics.GraphicEntity;
+import main.Hub;
 
 public class Hero extends GraphicEntity{
 
-	private static float radius = 0.025f;
+	private static float radius = 0.020f;
 	public static byte black = 0;
 	public static byte white = 1;
 	private float xVel=0f;
@@ -17,10 +20,9 @@ public class Hero extends GraphicEntity{
 	private float yAcc=0f;
 
 	private Game game;
-	private float previousX=0f;
-	private float previousY=0f;
-	private Square safeSquare;
 	private Hero partner;
+	private float previousY=0f;
+	private float previousX=0f;
 	public Hero(Game game, byte colour) {
 		super("circles");
 		this.setFrame(colour);
@@ -54,16 +56,23 @@ public class Hero extends GraphicEntity{
 		float dx = (q.getX()+q.getWidth() /2f)-(getX()+radius);
 		float dy = (q.getY()+q.getHeight()/2f)-(getY()+radius);
 		double angle = Math.atan2(dy, dx);
-		double x = Math.signum(Math.cos(angle))*radius+getX()+radius;
-		double y = Math.signum(Math.sin(angle))*radius+getY()+radius;
-		return (x>=q.getX()&&x<=q.getX()+q.getWidth()&&
-				y>=q.getY()&&y<=q.getY()+q.getHeight());
+		double x1 = Math.signum(Math.cos(angle))*radius+getX()+radius;
+		double y1 = Math.signum(Math.sin(angle))*radius+getY()+radius;
+
+
+		double x2 = Math.cos(angle)*radius+getX()+radius;
+		double y2 = Math.sin(angle)*radius+getY()+radius;
+		return (x1>=q.getX()&&x1<=q.getX()+q.getWidth()&&
+				y2>=q.getY()&&y2<=q.getY()+q.getHeight())||
+				(x2>=q.getX()&&x2<=q.getX()+q.getWidth()&&
+				y1>=q.getY()&&y1<=q.getY()+q.getHeight());
 	}
-	public boolean isCompletelyWithin(GraphicEntity q) {
-		double x = getX()+radius+radius;
-		double y = getY()+radius+radius;
-		return (getX()>=q.getX()&&x<=q.getX()+q.getWidth()&&
-				getY()>=q.getY()&&y<=q.getY()+q.getHeight());
+	public boolean isCompletelyWithin(GraphicEntity e) {
+		if((getX()>e.getX()&&getX()+getWidth()<e.getX()+e.getWidth()&&
+				getY()>e.getY()&&getY()+getHeight()<e.getY()+e.getHeight())){
+			return true;
+		}
+		return false;
 	}
 
 	public Action<FunctionalSquare> getOnHitAction(FunctionalSquare q) {
@@ -82,45 +91,53 @@ public class Hero extends GraphicEntity{
 	}
 
 	public void backup(GraphicEntity e) {
-		if(safeSquare!=null){
-			float leftBorder = safeSquare.getX();
-			float rightBorder = safeSquare.getX()+safeSquare.getWidth();
-			float leftBorderSafe = leftBorder;
-			float rightBorderSafe = rightBorder-getWidth();
-			if(e.getX()>leftBorder){
-				leftBorder=e.getX();
-				leftBorderSafe = e.getX()-getWidth();
+		setSafeties(false,e);
+		/*
+		boolean NW = true;
+		boolean NE = true;
+		boolean SW = true;
+		boolean SE = true;
+		if(getX()+getWidth()>=e.getX()&&getX()+getWidth()<=e.getX()+e.getWidth()){
+			if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
+				NE=false;
 			}
-			if(e.getX()+e.getWidth()<rightBorder){
-				rightBorder=e.getX()+e.getWidth();
-				rightBorderSafe= e.getX()+e.getWidth();
-			}			
-
-			float downBorder = safeSquare.getY();
-			float upBorder = safeSquare.getY()+safeSquare.getHeight();
-			float downBorderSafe = downBorder;
-			float upBorderSafe = upBorder-getHeight();
-			if(e.getY()>downBorder){
-				downBorder=e.getY();
-				downBorderSafe = e.getY()-getHeight();
-			}
-			if(e.getY()+e.getWidth()<upBorder){
-				upBorder=e.getY()+e.getHeight();
-				upBorderSafe= e.getY()+e.getHeight();
-			}
-			if(getX()<=leftBorder){
-				setX(leftBorderSafe);
-			}
-			else if(getX()+getWidth()>=rightBorder){
-				setX(rightBorderSafe);
-			}
-			if(getY()<=downBorder){
-				setY(downBorderSafe);
-			}
-			else if(getY()+getHeight()>=upBorder){
-				setY(upBorderSafe);
+			if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
+				SE=false;
 			}
 		}
+		if(getX()<=e.getX()+e.getWidth()&&getX()>=e.getX()){
+			if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
+				SW=false;
+			}
+			if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
+				NW=false;
+			}
+		}
+
+		boolean right = Math.signum(xAcc)>=0;
+		boolean left = Math.signum(xAcc)<=0;
+		boolean up = Math.signum(yAcc)>=0;
+		boolean down = Math.signum(yAcc)<=0;
+		if(!(NE&&NW&&SE&&SW)&&
+				((((NE&&SE&&SW)&&left&&up)    ||((NE&&NW&&SW)&&right&&down)||((NW&&SE&&SW)&&right&&up)  ||((NE&&NW&&SE)&&down&&left))||
+						(((!(NE||SE||SW)&&right&&down)||(!(NE||NW||SW)&&left&&up)  ||(!(NW||SE||SW)&&left&&down)||(!(NE||NW||SE)&&right&&up))))){
+			xAcc=0;
+			xVel=0;
+			setX(previousX);
+			yAcc=0;
+			yVel=0;
+			setY(previousY);
+		}
+		else if((!(NE||SE)&&right)||(!(NW||SW)&&left)){
+			xAcc=0;
+			xVel=0;
+			setX(previousX);
+		}
+		else if((!(NE||NW)&&up)||(!(SE||SW)&&down)){
+			yAcc=0;
+			yVel=0;
+			setY(previousY);
+		}*/
 	}
 	public void push(Square target) {
 
@@ -153,7 +170,7 @@ public class Hero extends GraphicEntity{
 		yVel = dy;
 	}
 	public void setXAcceleration(float dx) {
-		xAcc=dx;		
+		xAcc=dx;
 	}
 	public void setYAcceleration(float dy) {
 		yAcc=dy;
@@ -167,7 +184,137 @@ public class Hero extends GraphicEntity{
 	public void endGame() {
 		game.endGame();
 	}
-	public void safeSquare(Square target) {
-		this.safeSquare = target;
+	public void setSafeties(boolean safe, GraphicEntity... safetiesFound) {
+		if(safetiesFound.length>0){
+			boolean NW=!safe,NE=!safe,SW=!safe,SE=!safe;
+			float N=1000f,E=1000f,S=1000f,W=1000f;
+			
+			for(GraphicEntity e:safetiesFound){
+				if(getX()+getWidth()>=e.getX()&&getX()+getWidth()<=e.getX()+e.getWidth()){
+					if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
+						NE=safe;
+					}
+					if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
+						SE=safe;
+					}
+				}
+				if(getX()<=e.getX()+e.getWidth()&&getX()>=e.getX()){
+					if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
+						SW=safe;
+					}
+					if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
+						NW=safe;
+					}
+					
+				}
+				
+				float dx=0f;
+				float dy=0f;
+				if(safe){
+					dx = (getX()+getWidth())-(e.getX()+e.getWidth());
+				}
+				else {
+					dx = (getX()+getWidth())-(e.getX());
+				}					
+				if(dx>=0&&dx<E){
+					E=dx;
+				}
+
+				if(safe){
+					dx = e.getX()-getX();
+				}
+				else {
+					dx = e.getX()-getX()+e.getWidth();
+				}
+				if(dx>=0&&dx<W){
+					W=dx;
+				}
+
+				if(safe){
+					dy=(getY()+getHeight())-(e.getY()+e.getHeight());
+				}
+				else {
+					dy=(getY()+getHeight())-(e.getY());
+				}
+				if(dy>=0&&dy<N){
+					N=dy;
+				}
+				if(safe){
+					dy=-(getY())+(e.getY());
+				}
+				else {
+					dy=-(getY())+(e.getY()+e.getHeight());
+				}
+				if(dy>=0&&dy<S){
+					S=dy;
+				}
+			}
+
+			if(!(NE&&NW&&SE&&SW)){
+				if(NE&&SE&&SW){
+					if(W<N){
+						setX(getX()+W);						
+					}
+					else if(N<W){
+						setY(getY()-N);						
+					}
+					else {
+						setX(getX()+W);
+						setY(getY()-N);
+					}
+				}
+				else if(NE&&NW&&SW){
+					if(E<S){
+						setX(getX()-E);						
+					}
+					else if(S<E){
+						setY(getY()+S);
+					}
+					else {
+						setX(getX()-E);
+						setY(getY()+S);	
+					}
+				}
+				else if(NW&&SE&&SW){
+					if(E<N){
+						setX(getX()-E);						
+					}
+					else if(N<E){
+						setY(getY()-N);
+					}
+					else {
+						setX(getX()-E);
+						setY(getY()-N);
+					}
+				}
+				else if(NE&&NW&&SE){
+					if(W<S){
+						setX(getX()+W);
+					}
+					else if(S<W){
+						setY(getY()+S);
+					}
+					else {
+						setX(getX()+W);
+						setY(getY()+S);
+					}
+				}
+				else {
+					if((!(NE||SE))){
+						setX(getX()-E);
+					}
+					else if(!(NW||SW)){
+						setX(getX()+W);
+					}
+					if((!(NE||NW))){
+						setY(getY()-N);
+					}
+					else if(!(SW||SE)){
+						setY(getY()+S);
+					}
+				}
+			}
+
+		}
 	}
 }

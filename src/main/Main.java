@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.util.Random;
 
 import duo.client.Client;
@@ -27,7 +28,7 @@ public class Main {
 		Gui.setView(menu);
 	}
 	
-	public static void loadMap(){
+	public static boolean loadMap(){
 		//StoryScene.setupScenes();
 		//Storage.loadMap("./data/1.map");
 		/*Hub.map.load(new Object[]{
@@ -37,7 +38,12 @@ public class Main {
 				"void","hazard"
 		});*/
 
-		Storage.loadMap("data/maps/forest1.map");
+		File file = Gui.userSave("maps");
+		if(file!=null){
+			Storage.loadMap(file.getAbsolutePath());
+			return true;
+		}
+		else return false;
 	}
 
 	public static void cleanup() {

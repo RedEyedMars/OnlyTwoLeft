@@ -66,8 +66,9 @@ public class MainMenu extends Menu{
 	}
 	
 	public void solo(){
-		Main.loadMap();
-		Gui.setView(new Game(true));
+		if(Main.loadMap()){
+			Gui.setView(new Game(true));
+		}
 	}
 	
 	public void editor(){
