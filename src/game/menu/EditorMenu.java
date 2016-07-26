@@ -15,10 +15,7 @@ import main.Main;
 
 public class EditorMenu extends Menu {
 	public EditorMenu(List<Square> squares) {
-		super();		
-		this.listenToRelease = true;
-		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(7);
+		super();
 		GraphicEntity button = new MenuButton("Map"){
 			@Override
 			public void performOnRelease(MotionEvent e){

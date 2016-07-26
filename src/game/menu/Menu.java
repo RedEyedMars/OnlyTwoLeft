@@ -3,6 +3,7 @@ package game.menu;
 import java.util.List;
 
 import game.environment.Square;
+import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 
@@ -11,6 +12,13 @@ public class Menu extends GraphicView{
 	protected double since = 0;
 	private float mouseX = 0;
 	private float mouseY = 0;
+	
+	public Menu(){
+		super();		
+		this.listenToRelease = true;
+		addChild(new GraphicEntity("squares"));
+		getChild(0).setFrame(15);
+	}
 	@Override
 	public boolean onHover(MotionEvent e){
 		mouseX = e.getX();

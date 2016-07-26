@@ -281,8 +281,8 @@ public class Editor extends GraphicView {
 				if(mode==0){
 					if(handleButtons(e))return true;
 					mode=2;
-					int x = (int) (e.getX()*gridSize);
-					int y = (int) (e.getY()*gridSize);
+					int x = (int) (e.getX()*gridSize+0.5f);
+					int y = (int) (e.getY()*gridSize+0.5f);
 
 					List<Float> floats = new ArrayList<Float>();
 					floats.add(((float)x)/gridSize);
@@ -325,8 +325,8 @@ public class Editor extends GraphicView {
 					squares.add(builder1);
 				}
 				else if(mode==2){
-					int x = (int) (e.getX()*gridSize);
-					int y = (int) (e.getY()*gridSize);					
+					int x = (int) (e.getX()*gridSize+0.5f);
+					int y = (int) (e.getY()*gridSize+0.5f);					
 					builder1.adjust(((float)x)/gridSize-builder1.getX(), ((float)y)/gridSize-builder1.getY());
 					removeChild(builder1);
 					if(builder2!=null){
@@ -403,8 +403,8 @@ public class Editor extends GraphicView {
 			@Override
 			public boolean onHover(MotionEvent event) {
 
-				int x = (int) (event.getX()*gridSize);
-				int y = (int) (event.getY()*gridSize);
+				int x = (int) (event.getX()*gridSize+0.5f);
+				int y = (int) (event.getY()*gridSize+0.5f);
 				float dx = ((float)x)/gridSize-square.getX();
 				float dy = ((float)y)/gridSize-square.getY();
 				square.setX(square.getX()+dx);
@@ -448,8 +448,8 @@ public class Editor extends GraphicView {
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-				int x = (int) (event.getX()*gridSize);
-				int y = (int) (event.getY()*gridSize);
+				int x = (int) (event.getX()*gridSize+0.5f);
+				int y = (int) (event.getY()*gridSize+0.5f);
 				square.adjust(((float)x)/gridSize-square.getX(), ((float)y)/gridSize-square.getY());
 				if(square2!=null){
 					square2.adjust(((float)x)/gridSize-square2.getX(), ((float)y)/gridSize-square2.getY());					

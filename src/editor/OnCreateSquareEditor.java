@@ -34,10 +34,10 @@ public class OnCreateSquareEditor extends Editor{
 		super();
 
 		setupButtons();
-		Square guide = new Square(7,0,w,h);
-		guide.setX(x);
-		guide.setY(y);
-		addChild(guide);
+		Square guide2 = new Square(15,0,w,h);
+		guide2.setX(x);
+		guide2.setY(y);
+		addChild(guide2);
 		String text = "";
 		saveTo = Gui.userSave("ocs");
 		if(saveTo!=null){
@@ -87,6 +87,31 @@ public class OnCreateSquareEditor extends Editor{
 					visibleToShower.setFrame(3);
 				}
 				setVisibleSquares(visibleTo);
+			}
+		});
+		ctrlCommands.put(17,  new ButtonAction(){
+			@Override
+			public void act(Editor subject){
+				moveView(0,-0.25f);
+			}
+		});
+		ctrlCommands.put(30, new ButtonAction(){
+			@Override
+			public void act(Editor subject){
+				moveView(0.25f,0);
+			
+			}
+		});
+		ctrlCommands.put(31, new ButtonAction(){
+			@Override
+			public void act(Editor subject){
+				moveView(0,0.25f);			
+			}
+		});
+		ctrlCommands.put(32, new ButtonAction(){
+			@Override
+			public void act(Editor subject){
+				moveView(-0.25f,0);
 			}
 		});
 		writer = new TextWriter(this,text,ctrlCommands);
@@ -218,6 +243,11 @@ public class OnCreateSquareEditor extends Editor{
 		}
 		else return null;
 	}
-	
+	private void moveView(float x, float y){
+		for(int i=0;i<squares.size();++i){
+			squares.get(i).setX(squares.get(i).getX()+x);
+			squares.get(i).setY(squares.get(i).getY()+y);
+		}
+	}
 
 }

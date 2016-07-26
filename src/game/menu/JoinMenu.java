@@ -53,9 +53,6 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	private String officialGame;
 	public JoinMenu(List<Square> squares) {
 		super();
-		this.listenToRelease = true;
-		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(7);
 
 		GraphicEntity nameButton = new MenuButton("Name:"){
 			@Override

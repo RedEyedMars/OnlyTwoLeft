@@ -120,42 +120,28 @@ public class Game extends GraphicView implements KeyBoardListener{
 		List<FunctionalSquare> squares = new ArrayList<FunctionalSquare>();
 		List<FunctionalSquare> mapSquares = Hub.map.functionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
-			boolean foundSafety = false;
-			List<GraphicEntity> safetiesFound=new ArrayList<GraphicEntity>();
-			int trueIndexFound = 0;
+			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
+			List<Boolean> safeties            = new ArrayList<Boolean>();
+			boolean isWithinSafety = true;
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
-				if(action!=null&&
-						action.requiresComplete()&&
-						hero.isCompletelyWithin(mapSquares.get(i))){
-					action.act(hero);
-					foundSafety=true;
-					trueIndexFound = i;
-					safetiesFound.add(mapSquares.get(i));
-					break;
-				}
-			}
-			if(!foundSafety){
-				for(int i=mapSquares.size()-1;i>=0;--i){
-					SquareAction action = mapSquares.get(i).getOnHitAction(hero);
-					if(action!=null&&
-							action.requiresComplete()&&
-							hero.isWithin(mapSquares.get(i))){
-						action.act(hero);
+				if(action!=null){
+					if(hero.isWithin(mapSquares.get(i))){
+						action.act(hero);			
 						safetiesFound.add(mapSquares.get(i));
+						safeties.add(action.isSafe());			
+						if(action.isSafe()&&
+								hero.isCompletelyWithin(mapSquares.get(i))){
+							break;
+						}
+						else {
+							isWithinSafety = false;
+						}
 					}
 				}
 			}
-			for(int i=mapSquares.size()-1;i>trueIndexFound;--i){
-				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
-				if(action!=null&&!action.requiresComplete()&&
-						hero.isWithin(mapSquares.get(i))){
-					action.act(hero);
-					foundSafety=false;
-				}
-			}
-			if(!foundSafety){
-				hero.setSafeties(true,safetiesFound.toArray(new GraphicEntity[0]));
+			if(!isWithinSafety){
+				hero.setSafeties(safetiesFound,safeties);
 			}
 
 			/*use if more than one square can be triggered currently just the top square

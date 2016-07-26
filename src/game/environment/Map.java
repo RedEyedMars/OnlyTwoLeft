@@ -144,17 +144,19 @@ public class Map extends GraphicEntity {
 		}
 	}
 
-	public boolean isWithinWall(Square target) {
-		for(FunctionalSquare square:functionalSquares){
-			if(square.getActions().contains(SquareAction.actions.get(0))
-					&&(target.isCompletelyWithin(square)||
-						target.isCompletelyWithin(square))){
-				return false;
+	public boolean isWithinWall(Square target, Hero accordingTo) {
+		for(int i=functionalSquares.size()-1;i>=0;--i){
+			FunctionalSquare square = functionalSquares.get(i);
+			if(square==target){
+				continue;
 			}
-		}
-		for(FunctionalSquare square:functionalSquares){
-			if(square.getActions().contains(SquareAction.actions.get(1))
+			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isSafe()){					
+					return false;
+			}
+			else if(!square.getOnHitAction(accordingTo).isSafe()
 					&&(square.isWithin(target.getX(), target.getY())||
+						square.isWithin(target.getX()+target.getWidth(), target.getY())||
+						square.isWithin(target.getX(), target.getY()+target.getHeight())||
 					   square.isWithin(target.getX()+target.getWidth(), target.getY()+target.getHeight()))){
 				return true;
 			}

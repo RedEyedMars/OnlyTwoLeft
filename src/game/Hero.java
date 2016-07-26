@@ -90,10 +90,6 @@ public class Hero extends GraphicEntity{
 		setX(getPartner().getX()-x);
 		setY(getPartner().getX()-y);
 	}
-
-	public void backup(GraphicEntity e) {
-		setSafeties(false,e);
-	}
 	public void push(Square target) {
 
 		float dx = (target.getX()+target.getWidth() /2f)-(getX()+radius);
@@ -139,123 +135,128 @@ public class Hero extends GraphicEntity{
 	public void endGame() {
 		game.endGame();
 	}
-	public void setSafeties(boolean safe, GraphicEntity... safetiesFound) {
-		if(safetiesFound.length>0){
-			boolean NW=!safe,NE=!safe,SW=!safe,SE=!safe;
-			float N=1000f,E=1000f,S=1000f,W=1000f;
-			
-			for(GraphicEntity e:safetiesFound){
-				if(getX()+getWidth()>=e.getX()&&getX()+getWidth()<=e.getX()+e.getWidth()){
-					if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
-						NE=safe;
+	public void setSafeties(List<GraphicEntity> safetiesFound, List<Boolean> isSafes) {
+		if(safetiesFound.size()==0)return;
+		boolean NW=true,NE=true,SW=true,SE=true;
+		float N=1000f,E=1000f,S=1000f,W=1000f;
+
+		for(int i=safetiesFound.size()-1;i>=0;--i){
+			GraphicEntity entity = safetiesFound.get(i);
+			boolean safe = isSafes.get(i);
+			if(getX()+getWidth()>=entity.getX()&&getX()+getWidth()<=entity.getX()+entity.getWidth()){
+				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
+					if(safe){
+						NE=true;
 					}
-					if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
-						SE=safe;
+					else {
+						NE=false;
 					}
 				}
-				if(getX()<=e.getX()+e.getWidth()&&getX()>=e.getX()){
-					if(getY()<=e.getY()+e.getHeight()&&getY()>=e.getY()){
-						SW=safe;
+				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
+					if(safe){
+						SE=true;
 					}
-					if(getY()+getHeight()>=e.getY()&&getY()+getHeight()<=e.getY()+e.getHeight()){
-						NW=safe;
+					else {
+						SE=false;
 					}
-					
 				}
-				
-				float dx=0f;
-				float dy=0f;
-				if(safe){
-					dx = (getX()+getWidth())-(e.getX()+e.getWidth());
+			}
+			if(getX()<=entity.getX()+entity.getWidth()&&getX()>=entity.getX()){
+				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
+					if(safe){
+						SW=true;
+					}
+					else {
+						SW = false;
+					}
 				}
-				else {
-					dx = (getX()+getWidth())-(e.getX());
+				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
+					if(safe){
+						NW = true;
+					}
+					else {
+						NW = false;
+					}
 				}					
-				if(dx>=0&&dx<E){
-					E=dx;
-				}
-
-				if(safe){
-					dx = e.getX()-getX();
-				}
-				else {
-					dx = e.getX()-getX()+e.getWidth();
-				}
-				if(dx>=0&&dx<W){
-					W=dx;
-				}
-
-				if(safe){
-					dy=(getY()+getHeight())-(e.getY()+e.getHeight());
-				}
-				else {
-					dy=(getY()+getHeight())-(e.getY());
-				}
-				if(dy>=0&&dy<N){
-					N=dy;
-				}
-				if(safe){
-					dy=-(getY())+(e.getY());
-				}
-				else {
-					dy=-(getY())+(e.getY()+e.getHeight());
-				}
-				if(dy>=0&&dy<S){
-					S=dy;
-				}
 			}
 
-			float x = 0f;
-			float y = 0f;
-			if(!(NE&&NW&&SE&&SW)){
-				if(NE&&SE&&SW){
-					if(W<=N){
-						x=W;						
-					}
-					if(N<=W){
-						y=-N;						
-					}
+			float e=0f,w=0f,n=0f,s=0f;
+			if(safe){
+				e = (getX()+getWidth())-(entity.getX()+entity.getWidth());
+				w = entity.getX()-getX();
+				n =(getY()+getHeight())-(entity.getY()+entity.getHeight());
+				s =-(getY())+(entity.getY());
+			}
+			else {
+				e = (getX()+getWidth())-(entity.getX());
+				w = entity.getX()-getX()+entity.getWidth();
+				n =(getY()+getHeight())-(entity.getY());
+				s =-(getY())+(entity.getY()+entity.getHeight());
+			}					
+			if(e>=0&&e<E){
+				E=e;
+			}
+			if(w>=0&&w<W){
+				W=w;
+			}
+			if(n>=0&&n<N){
+				N=n;
+			}
+			if(s>=0&&s<S){
+				S=s;
+			}
+		}		
+		float x = 0f;
+		float y = 0f;
+		if(!(NE&&NW&&SE&&SW)){
+			if(NE&&SE&&SW){
+				if(W<=N){
+					x=W;						
 				}
-				else if(NE&&NW&&SW){
-					if(E<=S){
-						x=-E;						
-					}
-					if(S<=E){
-						y=S;
-					}
-				}
-				else if(NW&&SE&&SW){
-					if(E<=N){
-						x=-E;						
-					}
-					if(N<=E){
-						y=-N;
-					}
-				}
-				else if(NE&&NW&&SE){
-					if(W<=S){
-						x=W;
-					}
-					if(S<=W){
-						y=S;
-					}
-				}
-				else {
-					if((!(NE||SE))){
-						x=-E;
-					}
-					else if(!(NW||SW)){
-						x=W;
-					}
-					if((!(NE||NW))){
-						y=-N;
-					}
-					else if(!(SW||SE)){
-						y=S;
-					}
+				if(N<=W){
+					y=-N;						
 				}
 			}
-			move(x,y);
+			else if(NE&&NW&&SW){
+				if(E<=S){
+					x=-E;						
+				}
+				if(S<=E){
+					y=S;
+				}
+			}
+			else if(NW&&SE&&SW){
+				if(E<=N){
+					x=-E;						
+				}
+				if(N<=E){
+					y=-N;
+				}
+			}
+			else if(NE&&NW&&SE){
+				if(W<=S){
+					x=W;
+				}
+				if(S<=W){
+					y=S;
+				}
+			}
+			else {
+				if((!(NE||SE))){
+					x=-E;
+				}
+				else if(!(NW||SW)){
+					x=W;
+				}
+				if((!(NE||NW))){
+					y=-N;
+				}
+				else if(!(SW||SE)){
+					y=S;
+				}
+			}
 		}
+		move(x,y);
+
 	}
 }

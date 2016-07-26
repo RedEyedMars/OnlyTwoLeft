@@ -23,9 +23,6 @@ public class MainMenu extends Menu{
 	}
 	public MainMenu(List<Square> squares) {
 		super();
-		this.listenToRelease = true;
-		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(7);
 		GraphicEntity button = new MenuButton("Solo"){
 			@Override
 			public void performOnRelease(MotionEvent e){

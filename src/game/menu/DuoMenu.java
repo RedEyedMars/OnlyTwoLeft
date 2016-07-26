@@ -16,9 +16,6 @@ import main.Main;
 public class DuoMenu extends Menu {
 	public DuoMenu(List<Square> squares) {
 		super();
-		this.listenToRelease = true;
-		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(7);
 		GraphicEntity button = new MenuButton("Host"){
 			@Override
 			public void performOnRelease(MotionEvent e){

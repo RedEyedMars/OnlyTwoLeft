@@ -59,9 +59,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 	private MenuButton gameButton;
 	public HostMenu(List<Square> squares) {
 		super();
-		this.listenToRelease = true;
-		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(7);
 		GraphicEntity button = new GraphicText("impact","Name:",1){
 			{
 				setWidthFactor(1.4f);

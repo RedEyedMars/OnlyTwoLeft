@@ -25,7 +25,6 @@ public abstract class SquareAction implements Action<Hero> {
 	public static final SquareAction impassible = new SquareAction(){
 		@Override
 		public void act(Hero subject) {
-			subject.backup((FunctionalSquare) target);
 		}
 
 		@Override
@@ -92,10 +91,9 @@ public abstract class SquareAction implements Action<Hero> {
 			float x = target.getX();
 			float y = target.getY();
 			subject.push(target);
-			if(Hub.map.isWithinWall(target)||subject.getPartner().isWithin(target)){
+			if(Hub.map.isWithinWall(target,subject)||subject.getPartner().isWithin(target)){
 				target.setX(x);
 				target.setY(y);
-				subject.backup(target);
 			}
 		}
 		@Override
@@ -108,12 +106,12 @@ public abstract class SquareAction implements Action<Hero> {
 		}
 	};
 
-	private boolean requireComplete;
+	private boolean safety;
 	public SquareAction(){
 		this(false);
 	}
-	public SquareAction(boolean requireComplete){
-		this.requireComplete = requireComplete;
+	public SquareAction(boolean safe){
+		this.safety = safe;
 	}
 	protected Square target;
 	public void setTarget(Square target){
@@ -122,8 +120,8 @@ public abstract class SquareAction implements Action<Hero> {
 	public int numberOfTargets(){
 		return 0;
 	}
-	public boolean requiresComplete(){
-		return requireComplete;
+	public boolean isSafe(){
+		return safety;
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
