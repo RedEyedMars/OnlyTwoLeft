@@ -11,11 +11,12 @@ import javax.swing.JFileChooser;
 
 import game.Action;
 import game.Hero;
-import game.environment.FunctionalSquare;
+import game.environment.OnStepSquare;
 import game.environment.OnCreateAction;
 import game.environment.OnCreateSquare;
 import game.environment.Square;
 import game.environment.SquareAction;
+import game.environment.OnStepAction;
 import game.environment.UpdatableSquare;
 import game.environment.UpdateAction;
 import game.menu.MainMenu;
@@ -55,7 +56,6 @@ public class Editor extends GraphicView {
 
 	protected List<Square> squares;
 	protected Square builder1;
-	protected Square builder2;
 
 	public Editor(){
 		super();
@@ -280,46 +280,10 @@ public class Editor extends GraphicView {
 			if(e.getAction()==MotionEvent.ACTION_DOWN){
 				if(mode==0){
 					if(handleButtons(e))return true;
-					mode=2;
 					int x = (int) (e.getX()*gridSize+0.5f);
 					int y = (int) (e.getY()*gridSize+0.5f);
-
-					List<Float> floats = new ArrayList<Float>();
-					floats.add(((float)x)/gridSize);
-					floats.add(((float)y)/gridSize);
-					floats.add(0.05f);					
-
-					if(action3>=0){
-						for(int i=0;i<UpdateAction.actions.get(action3).numberOfFloats();++i){
-							floats.add(0f);
-						}
-					}
-					builder1=null;
-					builder2=null;
-					if(colour2!=colour){
-						if(colour!=-1){
-							Iterator<Integer> ints = Square.makeInts(action1,action2,action3,onCreateAction.isSelected(),colour,1,3);
-							builder1 = Square.create(ints, floats.iterator());
-						}
-						if(colour2!=-1) {
-							Iterator<Integer> ints = Square.makeInts(action1,action2,action3,onCreateAction.isSelected(),colour2,2,3);
-							if(builder1==null){
-								builder1 = Square.create(ints, floats.iterator());
-							}
-							else {
-								builder2 = Square.create(ints, floats.iterator());
-							}
-						}
-					}
-					else {
-						Iterator<Integer> ints = Square.makeInts(action1,action2,action3,onCreateAction.isSelected(),colour,0,3);
-						builder1 = Square.create(ints, floats.iterator());
-					}
-					if(builder2!=null){
-						addChild(builder2);
-						builder2.onAddToDrawable();
-						squares.add(builder2);
-					}
+					builder1 = createSquare(((float)x)/gridSize,((float)y)/gridSize,colour,colour2,action1,action2,action3,onCreateAction.isSelected());				
+					
 					addChild(builder1);
 					builder1.onAddToDrawable();
 					squares.add(builder1);
@@ -328,17 +292,10 @@ public class Editor extends GraphicView {
 					int x = (int) (e.getX()*gridSize+0.5f);
 					int y = (int) (e.getY()*gridSize+0.5f);					
 					builder1.adjust(((float)x)/gridSize-builder1.getX(), ((float)y)/gridSize-builder1.getY());
-					removeChild(builder1);
-					if(builder2!=null){
-						builder2.adjust(((float)x)/gridSize-builder2.getX(), ((float)y)/gridSize-builder2.getY());
-						removeChild(builder2);
-						addChild(builder2);
-					}
-					addChild(builder1);
+					//removeChild(builder1);
+					builder1.onRemoveFromDrawable();
+					//addChild(builder1);
 					builder1.onAddToDrawable();
-					if(builder2!=null){
-						builder2.onAddToDrawable();
-					}
 				}
 			}
 			else if(e.getAction()==MotionEvent.ACTION_UP){
@@ -353,16 +310,11 @@ public class Editor extends GraphicView {
 						squares.get(0).setY(0f);
 						squares.get(0).adjust(1f,1f);
 					}
-					removeChild(builder1);
-					if(builder2!=null){
-						removeChild(builder2);
-					}
-					addIconsToSquare(builder1,builder2);
-					if(builder2!=null){
-						addChild(builder2);
-						builder2.onAddToDrawable();
-					}
-					addChild(builder1);
+
+					//removeChild(builder1);
+					builder1.onRemoveFromDrawable();
+					addIconsToSquare(builder1);
+					//addChild(builder1);
 					builder1.onAddToDrawable();
 				}
 			}
@@ -372,22 +324,49 @@ public class Editor extends GraphicView {
 				for(int i=squares.size()-1;i>=0;--i){
 					if(squares.get(i).isWithin(e.getX(), e.getY())){
 						Square square = squares.remove(i);
-						removeChild(square);						
+						removeChild(square);
 						return true;
+					}
+					else if(squares.get(i) instanceof UpdatableSquare){
+						List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
+						for(int j=depends.size()-1;j>=0;--j){
+							if(depends.get(j).isWithin(e.getX(), e.getY())){
+								squares.get(i).removeChild(depends.remove(j));
+								return true;
+							}
+						}
 					}
 				}
 			}
 		}
 		return false;
 	}
-	protected void addIconsToSquare(Square square,Square square2) {
+	protected Square createSquare(float x, float y, int colour, int colour2, int a1, int a2, int ua, boolean oc){
+		mode=2;
+		List<Float> floats = new ArrayList<Float>();
+		floats.add(x);
+		floats.add(y);
+		floats.add(0.05f);
+
+		if(action3>=0){
+			for(int i=0;i<UpdateAction.actions.get(ua).numberOfFloats();++i){
+				floats.add(0f);
+			}
+		}
+		Iterator<Integer> ints = Square.makeInts(a1,a2,ua,oc,colour,colour2,3);
+		return Square.create(ints, floats.iterator());
+	}
+
+	protected void addIconsToSquare(Square square) {
 		addActionIconToSquare(square,square.getX()+square.getWidth()-0.05f,square.getY(),0.05f);
-		addAdjustPositionButtonToSquare(square,square2);
-		addAdjustSizeButtonToSquare(square,square2);
-		addButtonToSquare(square);
+		addAdjustPositionButtonToSquare(square);
+		addAdjustSizeButtonToSquare(square);
+		if(square instanceof UpdatableSquare){
+			addUpdateButtonToSquare((UpdatableSquare) square);
+		}
 		addOnCreateButtonToSquare(square);
 	}
-	private void addAdjustPositionButtonToSquare(final Square square, final Square square2) {
+	private void addAdjustPositionButtonToSquare(final Square square) {
 		final Button<Editor> button = new Button<Editor>(this,null);
 
 		final MouseListener mouseListener = new MouseListener(){
@@ -409,10 +388,6 @@ public class Editor extends GraphicView {
 				float dy = ((float)y)/gridSize-square.getY();
 				square.setX(square.getX()+dx);
 				square.setY(square.getY()+dy);
-				if(square2!=null){
-					square2.setX(square2.getX()+dx);
-					square2.setY(square2.getY()+dy);
-				}
 				return false;
 			}
 
@@ -434,7 +409,7 @@ public class Editor extends GraphicView {
 		buttons.add(button);
 		square.addChild(button);
 	}
-	private void addAdjustSizeButtonToSquare(final Square square, final Square square2) {
+	private void addAdjustSizeButtonToSquare(final Square square) {
 		final Button<Editor> button = new Button<Editor>(this,null);
 		final MouseListener mouseListener = new MouseListener(){
 			@Override
@@ -451,9 +426,6 @@ public class Editor extends GraphicView {
 				int x = (int) (event.getX()*gridSize+0.5f);
 				int y = (int) (event.getY()*gridSize+0.5f);
 				square.adjust(((float)x)/gridSize-square.getX(), ((float)y)/gridSize-square.getY());
-				if(square2!=null){
-					square2.adjust(((float)x)/gridSize-square2.getX(), ((float)y)/gridSize-square2.getY());					
-				}
 				button.setX(square.getX()+square.getWidth()-0.015f);
 				button.setY(square.getY()+square.getHeight()-0.015f);
 
@@ -464,14 +436,7 @@ public class Editor extends GraphicView {
 				}
 				if(children.contains(square)){
 					removeChild(square);
-					if(square2!=null){
-						removeChild(square2);
-					}
-					addIconsToSquare(square,square2);
-					if(square2!=null){
-						addChild(square2);
-						square2.onAddToDrawable();
-					}
+					addIconsToSquare(square);
 					addChild(square);
 					square.onAddToDrawable();
 				}
@@ -498,13 +463,13 @@ public class Editor extends GraphicView {
 	}
 	private void addActionIconToSquare(Square fsq, float x, float y,float size){
 		GraphicEntity e = null;
-		List<Action> actions = fsq.getActions();
-		for(Action action:actions){
+		List<SquareAction> actions = fsq.getActions();
+		for(SquareAction action:actions){
 			if(action == null){
 				e = new GraphicEntity("editor_button");
 				e.setFrame(1);
 			}
-			else if(action instanceof SquareAction){
+			else if(action instanceof OnStepAction){
 				e = new GraphicEntity("editor_icons");
 				e.setFrame(action.getIndex());
 			}
@@ -523,12 +488,13 @@ public class Editor extends GraphicView {
 			fsq.addChild(e);
 		}
 	}
-	private void addButtonToSquare(final Square usq){
-		List<Action> actions = usq.getActions();
-		for(Action temp:actions){
+	private void addUpdateButtonToSquare(final UpdatableSquare usq){
+		List<SquareAction> actions = usq.getActions();
+		for(SquareAction temp:actions){
 			if(temp instanceof UpdateAction){
 				final UpdateAction action= ((UpdateAction)temp);
 				final Button<Editor> button = new Button<Editor>("editor_update_icons",action.getIndex(),this,null);
+				final Button<Editor> activator = new Button<Editor>("editor_icons",3,this,null);
 				final MouseListener listener = new MouseListener(){
 					@Override
 					public boolean onClick(MotionEvent event) {
@@ -542,13 +508,14 @@ public class Editor extends GraphicView {
 					public boolean onHover(MotionEvent event) {
 						button.setX(event.getX());
 						button.setY(event.getY());
+						activator.setX(button.getX()+0.05f);
+						activator.setY(button.getY());
 						action.addFloats(event.getX()-usq.getX(),event.getY()-usq.getY());	
 						return false;
 					}
 
 					@Override
 					public void onMouseScroll(int distance) {
-
 					}
 				};
 				button.setAction(new ButtonAction(){
@@ -562,12 +529,26 @@ public class Editor extends GraphicView {
 				button.adjust(0.05f, 0.05f);
 				usq.addChild(button);
 				buttons.add(button);
+
+				activator.setAction(new ButtonAction(){
+					@Override
+					public void act(Editor subject) {
+						builder1 = createSquare(usq.getX(),usq.getY()+usq.getHeight(),colour,colour2,3,3,action3,false);
+						usq.addDependant(builder1);
+						builder1.onAddToDrawable();
+					}
+				});
+				activator.setX(button.getX()+0.05f);
+				activator.setY(button.getY());
+				activator.adjust(0.05f, 0.05f);
+				usq.addChild(activator);
+				buttons.add(activator);
 			}
 		}
 	}
 	private void addOnCreateButtonToSquare(final Square ocs){
-		List<Action> actions = ocs.getActions();
-		for(Action temp:actions){
+		List<SquareAction> actions = ocs.getActions();
+		for(SquareAction temp:actions){
 			if(temp instanceof OnCreateAction){
 				final OnCreateAction action= ((OnCreateAction)temp);
 				final Button<Editor> button = new Button<Editor>("editor_oncreate_icon",0,this,new ButtonAction(){
@@ -593,23 +574,7 @@ public class Editor extends GraphicView {
 
 	public void setVisibleSquares(int colour){
 		for(Square square:squares){
-			if(square.visibleToBlack()&&(colour==2)){
-				square.turnOff();
-			}
-			else if(square.visibleToWhite()&&(colour==1)){
-				square.turnOff();
-			}
-		}
-		for(Square square:squares){
-			if(colour==0){
-				square.turnOn();
-			}
-			else if(square.visibleToBlack()&&(colour<2)){
-				square.turnOn();
-			}
-			else if(square.visibleToWhite()&&(colour!=1)){
-				square.turnOn();
-			}
+			square.displayFor(colour);
 		}
 	}
 

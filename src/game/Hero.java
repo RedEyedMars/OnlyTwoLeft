@@ -4,7 +4,7 @@ import java.util.List;
 
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
-import game.environment.FunctionalSquare;
+import game.environment.OnStepSquare;
 import game.environment.Square;
 import gui.graphics.GraphicEntity;
 import main.Hub;
@@ -73,7 +73,7 @@ public class Hero extends GraphicEntity{
 		return false;
 	}
 
-	public Action<FunctionalSquare> getOnHitAction(FunctionalSquare q) {
+	public Action<OnStepSquare> getOnHitAction(OnStepSquare q) {
 		return null;
 	}
 

@@ -28,6 +28,7 @@ public class Handler {
 	private Socket socket;
 	private List<Message> outgoingMail = new ArrayList<Message>();
 	private Client client;
+	private boolean readMessages = true;
 	public Handler(Client client) {
 		this.client = client;		
 	}
@@ -97,8 +98,17 @@ public class Handler {
 		public void run(){
 			while(connected){
 				try {
-					Message message = ((Message)input.readObject());
-					message.act(handler);
+					while(readMessages){
+						Message message = ((Message)input.readObject());
+						message.act(handler);
+					}
+					while(!readMessages){
+						float x = input.readFloat();
+						float y = input.readFloat();
+
+						handler.getHero().getPartner().setX(handler.getHero().getPartner().getX()+x);
+						handler.getHero().getPartner().setY(handler.getHero().getPartner().getY()+y);
+					}
 					//System.out.println(message);
 				} catch(SocketException s){
 					client.close();

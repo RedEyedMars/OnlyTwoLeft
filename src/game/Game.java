@@ -6,9 +6,9 @@ import java.util.List;
 
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
-import game.environment.FunctionalSquare;
+import game.environment.OnStepSquare;
 import game.environment.Square;
-import game.environment.SquareAction;
+import game.environment.OnStepAction;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -97,7 +97,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 		visionBubble = new VisionBubble(focused,wild);
 		addChild(visionBubble);
-		Hub.map.setVisibleSquares(colourToControl?0:1);
+		Hub.map.setVisibleSquares(colourToControl?1:2);
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return this;
@@ -116,15 +116,15 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 	private void handleInterceptions(){
 		List<Action<Hero>> onHandle = new ArrayList<Action<Hero>>();
-		List<Action<FunctionalSquare>> onHandleSquare = new ArrayList<Action<FunctionalSquare>>();
-		List<FunctionalSquare> squares = new ArrayList<FunctionalSquare>();
-		List<FunctionalSquare> mapSquares = Hub.map.functionalSquares();
+		List<Action<OnStepSquare>> onHandleSquare = new ArrayList<Action<OnStepSquare>>();
+		List<OnStepSquare> squares = new ArrayList<OnStepSquare>();
+		List<OnStepSquare> mapSquares = Hub.map.functionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
 			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
 			List<Boolean> safeties            = new ArrayList<Boolean>();
 			boolean isWithinSafety = true;
 			for(int i=mapSquares.size()-1;i>=0;--i){
-				SquareAction action = mapSquares.get(i).getOnHitAction(hero);
+				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
 					if(hero.isWithin(mapSquares.get(i))){
 						action.act(hero);			
@@ -246,7 +246,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 				if(focused==black){
 					focused = white;
 					wild = black;
-					Hub.map.setVisibleSquares(1);
+					Hub.map.setVisibleSquares(2);
 					if(!Client.isConnected()){
 						controlled=white;
 						visionBubble.swap();
@@ -255,7 +255,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 				else if(focused==white){
 					focused = black;
 					wild = white;
-					Hub.map.setVisibleSquares(0);
+					Hub.map.setVisibleSquares(1);
 					if(!Client.isConnected()){
 						controlled=black;
 						visionBubble.swap();

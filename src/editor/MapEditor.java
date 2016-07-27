@@ -8,7 +8,8 @@ import java.util.List;
 
 import game.Action;
 import game.environment.Square;
-import game.environment.SquareAction;
+import game.environment.UpdatableSquare;
+import game.environment.OnStepAction;
 import game.environment.UpdateAction;
 import game.menu.MainMenu;
 import gui.Gui;
@@ -39,8 +40,13 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				Storage.loadMap(saveTo.getAbsolutePath());
 				squares = Hub.map.getSquares();
 				for(Square square:Hub.map.getSquares()){
-					addIconsToSquare(square,null);
-					addChild(square);
+					addIconsToSquare(square);
+					if(square instanceof UpdatableSquare){
+						for(Square dependant:((UpdatableSquare)square).getDependants()){
+							addIconsToSquare(dependant);
+						}
+					}
+					addChild(square);					
 				}
 				if(squares.size()>0){
 					squares.get(0).setX(0f);
@@ -134,7 +140,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			public void onMouseScroll(int distance) {				
 			}
 		};
-		addIconsToSquare(copy,null);
+		addIconsToSquare(copy);
 		squares.add(copy);
 		addChild(copy);
 		copy.onAddToDrawable();
@@ -241,7 +247,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		setupButtons();
 		for(Square sqr:squares){
 			addChild(sqr);
-			addIconsToSquare(sqr,null);
+			addIconsToSquare(sqr);
 		}
 
 		reset = true;

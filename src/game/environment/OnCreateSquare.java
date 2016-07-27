@@ -12,8 +12,8 @@ public class OnCreateSquare extends Square{
 	private OnCreateAction action;
 	private List<Object> data = new ArrayList<Object>();
 
-	public OnCreateSquare(int colour, int visibleTo, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats) {
-		super(colour, visibleTo, bufferSize,ints, floats);
+	public OnCreateSquare(int blackColour, int whiteColour, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats) {
+		super(blackColour,whiteColour, bufferSize,ints, floats);
 		actionType = 6;
 		this.action = OnCreateAction.section.create();
 		this.action.setArgs(ints, floats);
@@ -36,8 +36,8 @@ public class OnCreateSquare extends Square{
 		return data.remove(data.size()-1);
 	}
 	@Override
-	public List<Action> getActions() {
-		List<Action> list = super.getActions();
+	public List<SquareAction> getActions() {
+		List<SquareAction> list = super.getActions();
 		list.add(action);
 		return list;
 	}

@@ -13,7 +13,7 @@ import main.Hub;
 import main.Main;
 
 
-public abstract class OnCreateAction implements Action<OnCreateSquare>{
+public abstract class OnCreateAction implements SquareAction<OnCreateSquare>{
 	public static Map<String,OnCreateAction> actions = new HashMap<String,OnCreateAction>();
 	public static List<OnCreateAction> actionList = new ArrayList<OnCreateAction>();
 	private static int squareIndexOffset = 0;
@@ -97,8 +97,9 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 			int size = ints.next();
 			for(int i=0;i<size;++i){
 				int index = ints.next();
-				list.add(Hub.map.getTemplateSquares().get(index+squareIndexOffset));
-				
+				if(index>=0){
+					list.add(Hub.map.getTemplateSquares().get(index+squareIndexOffset));				
+				}
 			}
 		}
 		@Override
@@ -236,6 +237,13 @@ public abstract class OnCreateAction implements Action<OnCreateSquare>{
 		}
 	};
 
+	@Override
+	public int numberOfTargets() {
+		return 0;
+	}
+	@Override
+	public void setTarget(Square square) {			
+	}
 	protected List<Float> floats = new ArrayList<Float>();
 	public int numberOfFloats(){
 		return 0;

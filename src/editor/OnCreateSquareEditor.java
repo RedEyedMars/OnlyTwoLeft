@@ -51,7 +51,7 @@ public class OnCreateSquareEditor extends Editor{
 				while(!square.getChildren().isEmpty()){
 					square.removeChild(0);
 				}
-				addIconsToSquare(square,null);
+				addIconsToSquare(square);
 				addChild(square);
 				++i;
 			}
@@ -119,14 +119,8 @@ public class OnCreateSquareEditor extends Editor{
 		mode = -1;
 	}
 	@Override
-	public void addIconsToSquare(Square square1, Square square2){
-		super.addIconsToSquare(square1, square2);
-		if(square2!=null){
-			GraphicEntity e = new GraphicText("impact",""+squares.indexOf(square2),0);
-			e.setX(square2.getX());
-			e.setY(square2.getY()+square2.getHeight()-0.03f);
-			square2.addChild(e);
-		}
+	public void addIconsToSquare(Square square1){
+		super.addIconsToSquare(square1);
 		GraphicEntity e = new GraphicText("impact",""+squares.indexOf(square1),0);
 		e.setX(square1.getX());
 		e.setY(square1.getY()+square1.getHeight()-0.03f);
@@ -187,7 +181,7 @@ public class OnCreateSquareEditor extends Editor{
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
 		}
-		OnCreateSquare square = new OnCreateSquare(0,0,4,ints.iterator(),floats.iterator());
+		OnCreateSquare square = new OnCreateSquare(-1,-1,4,ints.iterator(),floats.iterator());
 		if(editor==null){
 			for(GraphicEntity child:square.getChildren()){
 				child.onAddToDrawable();

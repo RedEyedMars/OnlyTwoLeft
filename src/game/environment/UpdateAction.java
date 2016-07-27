@@ -15,7 +15,7 @@ import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 import game.Action;
 
-public abstract class UpdateAction implements Action<Double>{
+public abstract class UpdateAction implements SquareAction<Double>{
 	public static List<UpdateAction> actions = new ArrayList<UpdateAction>();
 	public static List<String> actionNames = new ArrayList<String>();
 
@@ -65,6 +65,13 @@ public abstract class UpdateAction implements Action<Double>{
 			saveTo.add(flt);			
 		}
 	}
+	@Override
+	public int numberOfTargets() {
+		return 0;
+	}
+	@Override
+	public void setTarget(Square square) {
+	}
 	static {
 		try {
 			for(Field field:UpdateAction.class.getFields()){
@@ -93,5 +100,13 @@ public abstract class UpdateAction implements Action<Double>{
 		if(data.size()<numberOfFloats()){
 			data.add(y);
 		}
+	}
+	public UpdateAction create() {
+		try {
+			return this.getClass().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		};
+		return null;
 	}
 }

@@ -21,15 +21,14 @@ public class Square extends GraphicEntity{
 	public static final byte black = 6;
 	public static final byte white = 7;
 
-	private int visibleTo = 0;//0=both,1=black,2=white
-	private int colour;
+	private int blackColour=-1;
+	private int whiteColour=-1;
 	protected int actionType = 0;
-	public Square(int colour, int visibleTo,int bufferSize, Iterator<Integer> ints, Iterator<Float> floats) {
+	public Square(int blackColour,int whiteColour,int bufferSize, Iterator<Integer> ints, Iterator<Float> floats) {
 		super("squares");
-		this.colour = colour;
-		this.setFrame(colour);
-		this.visibleTo = visibleTo;
-		bufferSize = bufferSize;
+		this.blackColour = blackColour;
+		this.whiteColour = whiteColour;
+		this.displayFor(0);
 		if(bufferSize==1){
 			float size = floats.next();
 			adjust(size,size);
@@ -66,31 +65,53 @@ public class Square extends GraphicEntity{
 			}},floats);
 	}
 
-	public Square(int colour,int visibleTo, float width, float height) {
+	public Square(int colour, float width, float height){
+		this(colour,colour,width,height);
+	}
+	public Square(int blackColour, int whiteColour, float width, float height) {
 		super("squares");
 		adjust(width,height);
-		this.setFrame(colour);
-		this.visibleTo = visibleTo;
-	}
-	public Square(int colour,float width, float height) {
-		this(colour,0,width,height);
-	}
-	public Square(int colour,int visibleTo, float size) {
-		this(colour,visibleTo,size,size);
-	}
-	public Square(int colour,float size) {
-		this(colour,0,size,size);
+		this.blackColour = blackColour;
+		this.whiteColour = whiteColour;
+		displayFor(0);
 	}
 	public boolean isFunctional() {
 		return false;
 	}
 	public boolean visibleToBlack() {
-		return visibleTo<2;
+		return blackColour>=0;
 	}
 	public boolean visibleToWhite() {
-		return visibleTo!=1&&visibleTo!=3;
+		return whiteColour>=0;
 	}
-
+	public void displayFor(int colour){
+		if(colour==0){
+			if(blackColour>=0){
+				turnOn();
+				setFrame(blackColour);
+			}
+			else if(whiteColour>=0){
+				turnOn();
+				setFrame(whiteColour);
+			}
+			else turnOff();
+		}
+		else if(colour==1){
+			if(blackColour>=0){
+				turnOn();
+				setFrame(blackColour);
+			}
+			else turnOff();
+		}
+		else if(colour==2){
+			if(whiteColour>=0){
+				turnOn();
+				setFrame(whiteColour);
+			}
+			else turnOff();
+		}
+		else turnOff();
+	}
 
 	@Override
 	public void adjust(float x, float y){
@@ -138,77 +159,77 @@ public class Square extends GraphicEntity{
 			floats = 4;
 		}
 		toSave.add(actionType);
-		toSave.add(this.textureIndex());
-		toSave.add(visibleTo);
+		toSave.add(blackColour);
+		toSave.add(whiteColour);
 		toSave.add(floats);	
-		for(Action action:getActions()){
+		for(SquareAction action:getActions()){
 			action.saveTo(toSave);
 		}
 	}
-	public List<Action> getActions() {
-		return new ArrayList<Action>();
+	public List<SquareAction> getActions() {
+		return new ArrayList<SquareAction>();
 	}
 	public static Square create(Iterator<Integer> ints, Iterator<Float> floats){		
 		Square square = null;
 		int actionType = ints.next();
-		int colour = ints.next();
-		if(!ints.hasNext())return null;
-		int visibleTo = ints.next();
+		int blackColour = ints.next();
+		int whiteColour = ints.next();
 		int bufferSize = ints.next();
 		if(actionType==0){
-			square = new Square(colour,visibleTo,bufferSize,ints,floats);
+			square = new Square(blackColour,whiteColour,bufferSize,ints,floats);
 		}
 		else if(actionType==1){
-			SquareAction action = SquareAction.getAction(ints.next());
-			square = new FunctionalSquare(colour,visibleTo,bufferSize,ints,floats,action);
+			OnStepAction action = OnStepAction.getAction(ints.next());
+			square = new OnStepSquare(blackColour,whiteColour,bufferSize,ints,floats,action);
 		}
 		else if(actionType==2){
-			SquareAction action1 = SquareAction.getAction(ints.next());
-			SquareAction action2 = SquareAction.getAction(ints.next());
-			square = new FunctionalSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2);
+			OnStepAction action1 = OnStepAction.getAction(ints.next());
+			OnStepAction action2 = OnStepAction.getAction(ints.next());
+			square = new OnStepSquare(blackColour,whiteColour,bufferSize,ints,floats,action1,action2);
 		}
 		else if(actionType==3){
 			UpdateAction action = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,null,action);
+			if(action==null)return null;
+			square = new UpdatableSquare(blackColour,whiteColour,bufferSize,ints,floats,null,action);
 		}
 		else if(actionType==4){
-			SquareAction action1 = SquareAction.getAction(ints.next());
+			OnStepAction action1 = OnStepAction.getAction(ints.next());
 			UpdateAction action2 = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2);
+			square = new UpdatableSquare(blackColour,whiteColour,bufferSize,ints,floats,action1,action2);
 		}
 		else if(actionType==5){
-			SquareAction action1 = SquareAction.getAction(ints.next());
-			SquareAction action2 = SquareAction.getAction(ints.next());
+			OnStepAction action1 = OnStepAction.getAction(ints.next());
+			OnStepAction action2 = OnStepAction.getAction(ints.next());
 			UpdateAction action3 = UpdateAction.getAction(ints.next());
-			square = new UpdatableSquare(colour,visibleTo,bufferSize,ints,floats,action1,action2,action3);
+			square = new UpdatableSquare(blackColour,whiteColour,bufferSize,ints,floats,action1,action2,action3);
 		}
 		else if(actionType==6){
-			square = new OnCreateSquare(colour,visibleTo,bufferSize,ints,floats);
+			square = new OnCreateSquare(blackColour,whiteColour,bufferSize,ints,floats);
 		}
 		return square;
 	}
 	public static Iterator<Integer> makeInts(int squareAction1, int squareAction2, int updateAction, boolean onCreateAction,
-			int colour, int visibleTo,int bufferSize) {		
+			int colour, int colour2,int bufferSize) {		
 		List<Integer> ints = new ArrayList<Integer>();
 		if(!onCreateAction){
 			if(squareAction1==-1&&squareAction2==-1&&updateAction==-1){
 				ints.add(0);
 				ints.add(colour);
-				ints.add(visibleTo);
+				ints.add(colour2);
 				ints.add(bufferSize);
 			}
 			else if(squareAction1>=0&&updateAction==-1){
 				if(squareAction2==-1||squareAction1==squareAction2){
 					ints.add(1);
 					ints.add(colour);
-					ints.add(visibleTo);
+					ints.add(colour2);
 					ints.add(bufferSize);
 					ints.add(squareAction1);
 				}
 				else {
 					ints.add(2);
 					ints.add(colour);
-					ints.add(visibleTo);
+					ints.add(colour2);
 					ints.add(bufferSize);
 					ints.add(squareAction1);
 					ints.add(squareAction2);
@@ -218,14 +239,14 @@ public class Square extends GraphicEntity{
 				if(squareAction1==-1&&squareAction2==-1){
 					ints.add(3);
 					ints.add(colour);
-					ints.add(visibleTo);
+					ints.add(colour2);
 					ints.add(bufferSize);
 					ints.add(updateAction);
 				}
 				else if(squareAction2==-1||squareAction1==squareAction2){
 					ints.add(4);
 					ints.add(colour);
-					ints.add(visibleTo);
+					ints.add(colour2);
 					ints.add(bufferSize);
 					ints.add(squareAction1);
 					ints.add(updateAction);
@@ -233,7 +254,7 @@ public class Square extends GraphicEntity{
 				else {
 					ints.add(5);
 					ints.add(colour);
-					ints.add(visibleTo);
+					ints.add(colour2);
 					ints.add(bufferSize);
 					ints.add(squareAction1);
 					ints.add(squareAction2);
@@ -244,22 +265,13 @@ public class Square extends GraphicEntity{
 		else{
 			ints.add(6);
 			ints.add(colour);
-			ints.add(visibleTo);
+			ints.add(colour);
 			ints.add(bufferSize);
 			ints.add(0);
 		}
-
-		int lastUpdatableSquare=Hub.map.getSquares().size()-1;
-		for(;lastUpdatableSquare>=0;--lastUpdatableSquare){
-			if(Hub.map.getSquares().get(lastUpdatableSquare) instanceof UpdatableSquare){
-				break;
-			}
-		}
-		if(squareAction1!=-1&&SquareAction.getAction(squareAction1).numberOfTargets()==1){			
-			ints.add(lastUpdatableSquare);
-		}
-		if(squareAction1!=squareAction2&&squareAction2!=-1&&SquareAction.getAction(squareAction2).numberOfTargets()==1){
-			ints.add(lastUpdatableSquare);
+		
+		if(updateAction!=-1){
+			ints.add(0);
 		}
 		return ints.iterator();
 	}

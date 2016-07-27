@@ -142,9 +142,10 @@ public class Storage {
 				return ret;
 			}
 		};
-		toSave.add(map.getStartingPosition(0));
-		toSave.add(map.getStartingPosition(1));
-		toSave.add(-1);
+		toSave.add(map.getStartingXPosition(0));
+		toSave.add(map.getStartingYPosition(0));
+		toSave.add(map.getStartingXPosition(1));
+		toSave.add(map.getStartingYPosition(1));
 		toSave.add(map.getTemplateSquares().size());
 		for(Square square:map.getTemplateSquares()){
 			square.saveTo(toSave);
