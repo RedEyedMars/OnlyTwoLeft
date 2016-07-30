@@ -16,13 +16,16 @@ import main.Log;
 public class Map extends GraphicEntity {
 
 	private List<Square> allSquares = new ArrayList<Square>();
-	private List<Square> blackSquares = new ArrayList<Square>();
-	private List<Square> whiteSquares = new ArrayList<Square>();
 	private List<OnStepSquare> functionalSquares = new ArrayList<OnStepSquare>();
+	private List<UpdatableSquare> updateSquares = new ArrayList<UpdatableSquare>();
 	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
 	private List<Square> templateSquares = new ArrayList<Square>();
 
 	private java.util.Map<Square,List<OnStepSquare>> adjacentSquares = new HashMap<Square,List<OnStepSquare>>();
+	
+
+	protected static final float gridSizeX = 20f;
+	protected static final float gridSizeY = 20f;
 
 	private float[] startingXPosition = new float[2];
 	private float[] startingYPosition = new float[2];
@@ -31,8 +34,12 @@ public class Map extends GraphicEntity {
 		this.setVisible(false);
 	}
 
-	public List<OnStepSquare> functionalSquares() {
+	public List<OnStepSquare> getFunctionalSquares() {
 		return functionalSquares;
+	}
+
+	public List<UpdatableSquare> getUpdateSquares() {
+		return updateSquares;
 	}
 
 	public void addSquare(Square square){
@@ -48,11 +55,8 @@ public class Map extends GraphicEntity {
 		if(square.isFunctional()){
 			functionalSquares.add((OnStepSquare)square);
 		}
-		if(square.visibleToBlack()&&!square.visibleToWhite()){
-			blackSquares.add(square);
-		}
-		else if(square.visibleToWhite()&&!square.visibleToBlack()){
-			whiteSquares.add(square);
+		if(square instanceof UpdatableSquare){
+			updateSquares.add((UpdatableSquare)square);
 		}
 		if(square instanceof OnCreateSquare){
 			onCreates.add((OnCreateSquare) square);
@@ -130,7 +134,17 @@ public class Map extends GraphicEntity {
 			adjacentSquares.put(square,list);
 		}
 	}
+	public List<OnStepSquare> getAdjacentSquares(OnStepSquare q) {
+		return adjacentSquares.get(q);
+	}
 
+	public List<Square> getTemplateSquares() {
+		return templateSquares;
+	}
+
+	public void addTemplateSquare(Square square) {
+		templateSquares.add(square);
+	}
 	public boolean isWithinWall(Square target, Hero accordingTo) {
 		for(int i=functionalSquares.size()-1;i>=0;--i){
 			OnStepSquare square = functionalSquares.get(i);
@@ -162,7 +176,6 @@ public class Map extends GraphicEntity {
 		for(i=0;i<size;++i){
 			templateSquares.add(Square.create(loader.getIntegers(), loader.getFloats()));
 		}
-
 		for(Square square:loader){
 			addSquare(square);
 		}
@@ -184,6 +197,25 @@ public class Map extends GraphicEntity {
 	public float getStartingYPosition(int colour) {
 		return startingYPosition[colour];
 	}
+	public float getRealX(int x){
+		return ((float)x)/gridSizeX;
+	}
+	public int getIntXHigh(float x){
+		return (int) (x*gridSizeX+0.5f);
+	}
+	public int getIntXLow(float x){
+		return (int) (x*gridSizeX+0.5f);
+	}
+	
+	public float getRealY(int y){
+		return ((float)y)/gridSizeY;
+	}
+	public int getIntYHigh(float y){
+		return (int) (y*gridSizeY+0.5f);
+	}
+	public int getIntYLow(float y){
+		return (int) (y*gridSizeY+0.5f);
+	}	
 
 	private class MapLoader implements Iterable<Square>, Iterator<Square> {
 		private int maxIntegers;
@@ -275,16 +307,6 @@ public class Map extends GraphicEntity {
 
 	}
 
-	public List<OnStepSquare> getAdjacentSquares(OnStepSquare q) {
-		return adjacentSquares.get(q);
-	}
-
-	public List<Square> getTemplateSquares() {
-		return templateSquares;
-	}
-
-	public void addTemplateSquare(Square square) {
-		templateSquares.add(square);
-	}
+	
 
 }

@@ -12,32 +12,21 @@ public class UpdatableSquare extends OnStepSquare {
 	private UpdateAction updateAction;
 	private boolean activated = false;
 	private List<Square> dependants = new ArrayList<Square>();
-	public UpdatableSquare(int colour, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnStepAction bothAction, UpdateAction updateAction) {
-		this(colour, colour, bufferSize,ints, floats, bothAction, bothAction, updateAction);
-	}
-	public UpdatableSquare(int blackColour, int whiteColour, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnStepAction bothAction, UpdateAction updateAction) {
-		this(blackColour, whiteColour, bufferSize,ints, floats, bothAction, bothAction, updateAction);
-	}
-	public UpdatableSquare(int colour, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, OnStepAction blackAction, OnStepAction whiteAction, UpdateAction updateAction) {
-		this(colour,colour,bufferSize,ints,floats,blackAction,whiteAction,updateAction);
-	}
-	public UpdatableSquare(int blackColour, int whiteColour, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, OnStepAction blackAction, OnStepAction whiteAction, UpdateAction updateAction) {
-		super(blackColour, whiteColour, bufferSize,ints, floats, blackAction, whiteAction);
-		if(blackAction==null&&whiteAction==null){
-			actionType=3;
+	public UpdatableSquare(int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats, int actionType) {
+		super(blackColour, whiteColour,ints, floats, actionType-3);
+		this.actionType=actionType;
+		this.updateAction = UpdateAction.getAction(ints.next()).create();
+		this.updateAction.setFloats(floats);
+		this.updateAction.setSelf(this);
+
+		int depends = ints.next();
+		for(int i=0;i<depends;++i){
+			addDependant(Square.create(ints, floats));
 		}
-		else {
-			actionType+=3;//it's set to 1 or 2 by FunctionalSquare, so +=3 means 4 or 5
-		}
-		if(updateAction!=null){
-			this.updateAction = updateAction.create();
-			this.updateAction.setFloats(floats);
-			this.updateAction.setSelf(this);
-			int depends = ints.next();
-			for(int i=0;i<depends;++i){
-				addDependant(Square.create(ints, floats));
-			}
-		}
+	}
+	@Override
+	public void setY(float y){
+		super.setY(y);
 	}
 	public UpdateAction getAction(){
 		return updateAction;
@@ -76,6 +65,10 @@ public class UpdatableSquare extends OnStepSquare {
 				square.displayFor(colour);
 			}
 		}
+	}
+
+	public void run(){
+		activated = this.updateAction.defaultState();
 	}
 
 	@Override

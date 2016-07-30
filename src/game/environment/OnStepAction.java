@@ -50,7 +50,6 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction activate = new OnStepAction(){
 		@Override
 		public void act(Hero subject) {
-			//System.out.println(target);
 			if(target instanceof UpdatableSquare){
 				((UpdatableSquare)target).activate();
 			}
@@ -148,7 +147,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	}
 	public static OnStepAction getAction(Integer i) {
 		if(i==-1||i>=actions.size()){
-			return null;
+			return actions.get(5);
 		}
 		else {
 			return actions.get(i);

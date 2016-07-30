@@ -44,19 +44,20 @@ public class OnCreateSquareEditor extends Editor{
 			if(saveTo.exists()){
 				text = Storage.loadText(saveTo.getAbsolutePath());
 			}
-			//else {
 			squares = Hub.map.getTemplateSquares();
-			int i=0;
 			for(Square square:squares){
-				while(!square.getChildren().isEmpty()){
-					square.removeChild(0);
+				for(int i=0;i<square.size();++i){
+					if(!(square.getChild(i) instanceof Square)){
+						square.removeChild(i);
+						--i;
+					}
+					else {
+						addIconsToSquare((Square) square.getChild(i));
+					}
 				}
 				addIconsToSquare(square);
 				addChild(square);
-				++i;
 			}
-			
-			//}
 		}
 
 		this.editor = parent;
@@ -167,10 +168,10 @@ public class OnCreateSquareEditor extends Editor{
 				return false;
 			}
 		};
-		floats.add(square_x);
-		floats.add(square_y);
-		floats.add(square_w);
-		floats.add(square_h);
+		ints.add(Hub.map.getIntXLow(square_x));
+		ints.add(Hub.map.getIntYLow(square_y));
+		ints.add(Hub.map.getIntXHigh(square_w));
+		ints.add(Hub.map.getIntXHigh(square_h));
 		int numberOfOffsets = 0;
 		for(OnCreateAction action:actions){
 			if(action.getIndex()==8){
@@ -181,7 +182,7 @@ public class OnCreateSquareEditor extends Editor{
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
 		}
-		OnCreateSquare square = new OnCreateSquare(-1,-1,4,ints.iterator(),floats.iterator());
+		OnCreateSquare square = new OnCreateSquare(-1,-1,ints.iterator(),floats.iterator());
 		if(editor==null){
 			for(GraphicEntity child:square.getChildren()){
 				child.onAddToDrawable();
@@ -197,7 +198,7 @@ public class OnCreateSquareEditor extends Editor{
 	}
 
 	public OnCreateAction createFromString(String toParse){
-		String[] split = toParse.split(":");
+		String[] split = toParse.trim().split(":");
 		String name = split[0];
 		List<Integer> ints = new ArrayList<Integer>();
 		List<Float> floats = new ArrayList<Float>();

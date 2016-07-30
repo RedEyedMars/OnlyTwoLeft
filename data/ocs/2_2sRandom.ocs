@@ -1,0 +1,7 @@
+create list
+create squares:#0-1
+put:0
+create squares:#2-3
+put:0
+get random:0
+display list:1

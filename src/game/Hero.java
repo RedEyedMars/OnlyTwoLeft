@@ -145,53 +145,33 @@ public class Hero extends GraphicEntity{
 			boolean safe = isSafes.get(i);
 			if(getX()+getWidth()>=entity.getX()&&getX()+getWidth()<=entity.getX()+entity.getWidth()){
 				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
-					if(safe){
-						NE=true;
-					}
-					else {
-						NE=false;
-					}
+					NE=safe;
 				}
 				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
-					if(safe){
-						SE=true;
-					}
-					else {
-						SE=false;
-					}
+					SE=safe;
 				}
 			}
 			if(getX()<=entity.getX()+entity.getWidth()&&getX()>=entity.getX()){
 				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
-					if(safe){
-						SW=true;
-					}
-					else {
-						SW = false;
-					}
+					SW=safe;
 				}
 				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
-					if(safe){
-						NW = true;
-					}
-					else {
-						NW = false;
-					}
+					NW = safe;
 				}					
 			}
 
 			float e=0f,w=0f,n=0f,s=0f;
 			if(safe){
-				e = (getX()+getWidth())-(entity.getX()+entity.getWidth());
-				w = entity.getX()-getX();
+				e =(getX()+getWidth())-(entity.getX()+entity.getWidth());
+				w =entity.getX()-getX();
 				n =(getY()+getHeight())-(entity.getY()+entity.getHeight());
 				s =-(getY())+(entity.getY());
 			}
 			else {
 				e = (getX()+getWidth())-(entity.getX());
-				w = entity.getX()-getX()+entity.getWidth();
-				n =(getY()+getHeight())-(entity.getY());
-				s =-(getY())+(entity.getY()+entity.getHeight());
+				w = entity.getX()+entity.getWidth()-getX();
+				n = (getY()+getHeight())-(entity.getY());
+				s = -(getY())+(entity.getY()+entity.getHeight());
 			}					
 			if(e>=0&&e<E){
 				E=e;
@@ -205,9 +185,10 @@ public class Hero extends GraphicEntity{
 			if(s>=0&&s<S){
 				S=s;
 			}
-		}		
+		}
 		float x = 0f;
 		float y = 0f;
+		//System.out.println(NE+" "+SE+" "+SW+" "+NW);
 		if(!(NE&&NW&&SE&&SW)){
 			if(NE&&SE&&SW){
 				if(W<=N){
@@ -242,18 +223,59 @@ public class Hero extends GraphicEntity{
 				}
 			}
 			else {
-				if((!(NE||SE))){
+				if(!NE&&!SE){
 					x=-E;
+					if(!NE&&!NW){
+						y=-N;
+					}
+					else if(!SW&&!SE){
+						y=S;
+					}
 				}
-				else if(!(NW||SW)){
+				else if(!NW&&!SW){
 					x=W;
+					if(!NE&&!NW){
+						y=-N;
+					}
+					else if(!SW&&!SE){
+						y=S;
+					}
 				}
-				if((!(NE||NW))){
+				else if(!NE&&!NW){
 					y=-N;
 				}
-				else if(!(SW||SE)){
+				else if(!SW&&!SE){
 					y=S;
+				}//
+				else if(!NW&&!SE){
+					if(N<=S){
+						y=-N;
+					}
+					else {
+						y=S;
+					}
+					if(E<=W){
+						x=-E;
+					}
+					else {
+						x=W;
+					}
 				}
+				else if(!SW&&!NE){
+					if(N<=S){
+						y=-N;
+					}
+					else {
+						y=S;
+					}
+					if(E<=W){
+						x=-E;
+					}
+					else {
+						x=W;
+					}
+				}
+				System.out.println();
 			}
 		}
 		move(x,y);

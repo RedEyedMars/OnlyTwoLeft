@@ -83,10 +83,11 @@ public class MapEditor extends Editor implements KeyBoardListener{
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-				int x = (int) (event.getX()*gridSize);
-				int y = (int) (event.getY()*gridSize);
-				float dx = ((float)x)/gridSize-button.getX();
-				float dy = ((float)y)/gridSize-button.getY();
+
+				int x = Hub.map.getIntXLow(event.getX());
+				int y = Hub.map.getIntYLow(event.getY());
+				float dx = Hub.map.getRealX(x)-button.getX();
+				float dy = Hub.map.getRealY(y)-button.getY();
 				button.setX(button.getX()+dx);
 				button.setY(button.getY()+dy);
 				myLoadedMap.setStartPosition(colour,button.getX()-screenX,button.getY()-screenY);
@@ -127,10 +128,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-				int x = (int) (event.getX()*gridSize);
-				int y = (int) (event.getY()*gridSize);
-				float dx = ((float)x)/gridSize-copy.getX();
-				float dy = ((float)y)/gridSize-copy.getY();
+				int x = Hub.map.getIntXLow(event.getX());
+				int y = Hub.map.getIntYLow(event.getY());
+				float dx = Hub.map.getRealX(x)-copy.getX();
+				float dy = Hub.map.getRealY(y)-copy.getY();
 				copy.setX(copy.getX()+dx);
 				copy.setY(copy.getY()+dy);
 				return true;

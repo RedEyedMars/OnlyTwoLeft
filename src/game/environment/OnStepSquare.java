@@ -23,31 +23,24 @@ public class OnStepSquare extends Square{
 	public OnStepSquare(int blackColour, int whiteColour, float size, OnStepAction blackAction,OnStepAction whiteAction) {
 		this(blackColour, whiteColour, size,size, blackAction, whiteAction);
 	}
-	public OnStepSquare(int colour,int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnStepAction bothAction) {
-		this(colour, colour, bufferSize,ints, floats, bothAction, bothAction);
-	}
-	public OnStepSquare(int blackColour, int whiteColour, int bufferSize,Iterator<Integer> ints, Iterator<Float> floats, OnStepAction bothAction) {
-		this(blackColour, whiteColour, bufferSize,ints, floats, bothAction, bothAction);
-	}
-	public OnStepSquare(int colour, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, OnStepAction blackAction, OnStepAction whiteAction) {
-		this(colour,colour,bufferSize,ints,floats,blackAction,whiteAction);
-	}
-	public OnStepSquare(int blackColour,int whiteColour, int bufferSize, Iterator<Integer> ints, Iterator<Float> floats, OnStepAction blackAction, OnStepAction whiteAction) {
-		super(blackColour,whiteColour,bufferSize,ints, floats);
-		this.blackAction = blackAction.create();
-		this.whiteAction = whiteAction.create();
-		if(whiteAction==blackAction){
-			actionType=1;
+	public OnStepSquare(int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats, int actionType) {
+		super(blackColour,whiteColour,ints, floats);
+		if(actionType==1){
+			this.actionType=1;
+			this.blackAction = OnStepAction.getAction(ints.next()).create();
+			this.whiteAction = blackAction;
 		}
-		else {
-			actionType=2;
+		else if(actionType==2){
+			this.actionType=2;
+			this.blackAction = OnStepAction.getAction(ints.next()).create();
+			this.whiteAction = OnStepAction.getAction(ints.next()).create();
 		}
 	}
 	public OnStepSquare(int blackColour, int whiteColour, float width, float height, OnStepAction blackAction, OnStepAction whiteAction) {
 		super(blackColour, whiteColour, width, height);
 		this.blackAction = blackAction.create();
 		this.whiteAction = whiteAction.create();
-		if(whiteAction==blackAction){
+		if(this.whiteAction==this.blackAction){
 			actionType=1;
 		}
 		else {

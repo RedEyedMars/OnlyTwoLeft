@@ -8,6 +8,7 @@ import duo.client.Client;
 import duo.messages.MoveHeroMessage;
 import game.environment.OnStepSquare;
 import game.environment.Square;
+import game.environment.UpdatableSquare;
 import game.environment.OnStepAction;
 import game.menu.MainMenu;
 import gui.Gui;
@@ -34,6 +35,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 	private VisionBubble visionBubble;
 	private float yAcceleration;
 	private float xAcceleration;
+	private OnStepSquare wildWall=new OnStepSquare(1,0.5f,OnStepAction.getAction(1));
 	public Game(boolean colourToControl){
 
 		if(Client.isConnected()){
@@ -74,7 +76,12 @@ public class Game extends GraphicView implements KeyBoardListener{
 		white.setPartner(black);
 
 		addChild(Hub.map);
+		
+		Hub.map.getFunctionalSquares().add(0,wildWall);
 		Hub.map.onCreate();
+		for(UpdatableSquare square:Hub.map.getUpdateSquares()){
+			square.run();
+		}
 		if(Hub.map.getSquares().size()>0){
 			Hub.map.getSquares().get(0).setX(0f);
 			Hub.map.getSquares().get(0).setY(0f);
@@ -118,7 +125,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 		List<Action<Hero>> onHandle = new ArrayList<Action<Hero>>();
 		List<Action<OnStepSquare>> onHandleSquare = new ArrayList<Action<OnStepSquare>>();
 		List<OnStepSquare> squares = new ArrayList<OnStepSquare>();
-		List<OnStepSquare> mapSquares = Hub.map.functionalSquares();
+		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
 			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
 			List<Boolean> safeties            = new ArrayList<Boolean>();
@@ -127,9 +134,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
 					if(hero.isWithin(mapSquares.get(i))){
-						action.act(hero);			
+						action.act(hero);
 						safetiesFound.add(mapSquares.get(i));
-						safeties.add(action.isSafe());			
+						safeties.add(action.isSafe());
 						if(action.isSafe()&&
 								hero.isCompletelyWithin(mapSquares.get(i))){
 							break;
@@ -140,7 +147,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 					}
 				}
 			}
+			
 			if(!isWithinSafety){
+				
 				hero.setSafeties(safetiesFound,safeties);
 			}
 
@@ -176,10 +185,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 			Hub.map.setX(Hub.map.getX()-(focused.getX()-uppderViewBorder));
 			wild.setX(wild.getX()-(focused.getX()-uppderViewBorder));
 			focused.setX(uppderViewBorder);
-
 		}
 		else if(focused.getX()<lowerViewBorder){
-			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));;
+			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));
 			wild.setX(wild.getX()+(lowerViewBorder-focused.getX()));
 			focused.setX(lowerViewBorder);
 		}
@@ -193,6 +201,8 @@ public class Game extends GraphicView implements KeyBoardListener{
 			wild.setY(wild.getY()+(lowerViewBorder-focused.getY()));
 			focused.setY(lowerViewBorder);
 		}
+		wildWall.setX(wild.getX()-0.1f);
+		wildWall.setY(wild.getY()-0.1f);
 	}
 
 	public Hero getHero() {
@@ -228,6 +238,20 @@ public class Game extends GraphicView implements KeyBoardListener{
 			if('s'==c){
 				yAcceleration = -standardAcceleration;
 			}
+			else if(!Client.isConnected()){
+				if(keycode==200){//up
+					controlled.getPartner().setYAcceleration(standardAcceleration);
+				}
+				else if(keycode==203){//left
+					controlled.getPartner().setXAcceleration(-standardAcceleration);
+				}
+				else if(keycode==208){//down
+					controlled.getPartner().setYAcceleration(-standardAcceleration);
+				}
+				else if(keycode==205){//right
+					controlled.getPartner().setXAcceleration(standardAcceleration);
+				}
+			}
 		}
 		else if(b==KeyBoardListener.UP){
 			if(32==keycode){
@@ -248,7 +272,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 					wild = black;
 					Hub.map.setVisibleSquares(2);
 					if(!Client.isConnected()){
-						controlled=white;
+						//controlled=white;
 						visionBubble.swap();
 					}
 				}
@@ -257,9 +281,23 @@ public class Game extends GraphicView implements KeyBoardListener{
 					wild = white;
 					Hub.map.setVisibleSquares(1);
 					if(!Client.isConnected()){
-						controlled=black;
+						//controlled=black;
 						visionBubble.swap();
 					}
+				}
+			}
+			else if(!Client.isConnected()){
+				if(keycode==200){//up
+					controlled.getPartner().setYAcceleration(0f);
+				}
+				else if(keycode==203){//left
+					controlled.getPartner().setXAcceleration(0f);
+				}
+				else if(keycode==208){//down
+					controlled.getPartner().setYAcceleration(0f);
+				}
+				else if(keycode==205){//right
+					controlled.getPartner().setXAcceleration(0f);
 				}
 			}
 		}

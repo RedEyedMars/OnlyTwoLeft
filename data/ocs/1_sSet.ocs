@@ -1,2 +1,4 @@
-create squares:#34-35
+create list
+create square:#24
+put:0
 display list:0

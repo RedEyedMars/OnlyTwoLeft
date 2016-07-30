@@ -31,7 +31,6 @@ import storage.Storage;
 
 public class Editor extends GraphicView {
 
-	protected static final float gridSize = 20f;
 
 	protected int visibleTo=0;
 	protected int mode=-1;
@@ -72,16 +71,13 @@ public class Editor extends GraphicView {
 				}
 				@Override
 				public void act(Editor subject) {
-					if(colour2>=0){
-						colourMenu.get(colour+1).setSelected(false);
-						colourMenu.get(id+1).setSelected(true);
-						colour=id;
-					}
-					if(colour>=0){
-						colour2Menu.get(colour2+1).setSelected(false);
-						colour2Menu.get(id+1).setSelected(true);
-						colour2=id;
-					}
+					colourMenu.get(colour+1).setSelected(false);
+					colourMenu.get(id+1).setSelected(true);
+					colour=id;
+
+					colour2Menu.get(colour2+1).setSelected(false);
+					colour2Menu.get(id+1).setSelected(true);
+					colour2=id;
 				}
 
 			}){
@@ -110,11 +106,9 @@ public class Editor extends GraphicView {
 				}
 				@Override
 				public void act(Editor subject) {
-					if(colour>=0){
-						colour2Menu.get(colour2+1).setSelected(false);
-						colour2Menu.get(id+1).setSelected(true);
-						colour2=id;
-					}
+					colour2Menu.get(colour2+1).setSelected(false);
+					colour2Menu.get(id+1).setSelected(true);
+					colour2=id;
 				}
 
 			}){
@@ -182,7 +176,7 @@ public class Editor extends GraphicView {
 			addChild(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<1;++i){
+		for(int i=-1;i<3;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_update_icons",i,this,new ButtonAction(){
 				private int id;
@@ -280,18 +274,18 @@ public class Editor extends GraphicView {
 			if(e.getAction()==MotionEvent.ACTION_DOWN){
 				if(mode==0){
 					if(handleButtons(e))return true;
-					int x = (int) (e.getX()*gridSize+0.5f);
-					int y = (int) (e.getY()*gridSize+0.5f);
-					builder1 = createSquare(((float)x)/gridSize,((float)y)/gridSize,colour,colour2,action1,action2,action3,onCreateAction.isSelected());				
+					int x = Hub.map.getIntXLow(e.getX());
+					int y = Hub.map.getIntYLow(e.getY());
+					builder1 = createSquare(x,y,colour,colour2,action1,action2,action3,onCreateAction.isSelected());				
 					
 					addChild(builder1);
 					builder1.onAddToDrawable();
 					squares.add(builder1);
 				}
 				else if(mode==2){
-					int x = (int) (e.getX()*gridSize+0.5f);
-					int y = (int) (e.getY()*gridSize+0.5f);					
-					builder1.adjust(((float)x)/gridSize-builder1.getX(), ((float)y)/gridSize-builder1.getY());
+					int x = Hub.map.getIntXHigh(e.getX());
+					int y = Hub.map.getIntYHigh(e.getY());				
+					builder1.adjust(Hub.map.getRealX(x)-builder1.getX(), Hub.map.getRealY(y)-builder1.getY());
 					//removeChild(builder1);
 					builder1.onRemoveFromDrawable();
 					//addChild(builder1);
@@ -324,6 +318,7 @@ public class Editor extends GraphicView {
 				for(int i=squares.size()-1;i>=0;--i){
 					if(squares.get(i).isWithin(e.getX(), e.getY())){
 						Square square = squares.remove(i);
+						removeButtonsFromSquare(square);
 						removeChild(square);
 						return true;
 					}
@@ -331,7 +326,9 @@ public class Editor extends GraphicView {
 						List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
 						for(int j=depends.size()-1;j>=0;--j){
 							if(depends.get(j).isWithin(e.getX(), e.getY())){
-								squares.get(i).removeChild(depends.remove(j));
+								Square square = depends.remove(j);
+								removeButtonsFromSquare(square);
+								squares.get(i).removeChild(square);
 								return true;
 							}
 						}
@@ -341,20 +338,28 @@ public class Editor extends GraphicView {
 		}
 		return false;
 	}
-	protected Square createSquare(float x, float y, int colour, int colour2, int a1, int a2, int ua, boolean oc){
+	protected Square createSquare(int x, int y, int colour, int colour2, int a1, int a2, int ua, boolean oc){
 		mode=2;
 		List<Float> floats = new ArrayList<Float>();
-		floats.add(x);
-		floats.add(y);
-		floats.add(0.05f);
 
 		if(action3>=0){
 			for(int i=0;i<UpdateAction.actions.get(ua).numberOfFloats();++i){
 				floats.add(0f);
 			}
 		}
-		Iterator<Integer> ints = Square.makeInts(a1,a2,ua,oc,colour,colour2,3);
+		Iterator<Integer> ints = Square.makeInts(a1,a2,ua,oc,colour,colour2,x,y,1,1);
 		return Square.create(ints, floats.iterator());
+	}
+	
+	protected void removeButtonsFromSquare(Square square){
+		for(GraphicEntity e:square.getChildren()){
+			if(e instanceof Button){
+				buttons.remove((Button<Editor>)e);
+			}
+			else if(e instanceof Square){
+				removeButtonsFromSquare((Square)e);
+			}
+		}
 	}
 
 	protected void addIconsToSquare(Square square) {
@@ -381,11 +386,10 @@ public class Editor extends GraphicView {
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-
-				int x = (int) (event.getX()*gridSize+0.5f);
-				int y = (int) (event.getY()*gridSize+0.5f);
-				float dx = ((float)x)/gridSize-square.getX();
-				float dy = ((float)y)/gridSize-square.getY();
+				int x = Hub.map.getIntXLow(event.getX());
+				int y = Hub.map.getIntYLow(event.getY());
+				float dx = Hub.map.getRealX(x)-square.getX();
+				float dy = Hub.map.getRealY(y)-square.getY();
 				square.setX(square.getX()+dx);
 				square.setY(square.getY()+dy);
 				return false;
@@ -423,23 +427,12 @@ public class Editor extends GraphicView {
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-				int x = (int) (event.getX()*gridSize+0.5f);
-				int y = (int) (event.getY()*gridSize+0.5f);
-				square.adjust(((float)x)/gridSize-square.getX(), ((float)y)/gridSize-square.getY());
+
+				int x = Hub.map.getIntXHigh(event.getX());
+				int y = Hub.map.getIntYHigh(event.getY());
+				square.adjust(Hub.map.getRealX(x)-square.getX(), Hub.map.getRealY(y)-square.getY());
 				button.setX(square.getX()+square.getWidth()-0.015f);
 				button.setY(square.getY()+square.getHeight()-0.015f);
-
-				for(GraphicEntity e:square.getChildren()){
-					if(e instanceof Button){
-						buttons.remove(e);
-					}
-				}
-				if(children.contains(square)){
-					removeChild(square);
-					addIconsToSquare(square);
-					addChild(square);
-					square.onAddToDrawable();
-				}
 				return false;
 			}
 
@@ -533,7 +526,7 @@ public class Editor extends GraphicView {
 				activator.setAction(new ButtonAction(){
 					@Override
 					public void act(Editor subject) {
-						builder1 = createSquare(usq.getX(),usq.getY()+usq.getHeight(),colour,colour2,3,3,action3,false);
+						builder1 = createSquare(Hub.map.getIntXLow(usq.getX()),Hub.map.getIntYLow(usq.getY()+usq.getHeight()),colour,colour2,action1==4?4:3,action2==4?4:3,action3,false);
 						usq.addDependant(builder1);
 						builder1.onAddToDrawable();
 					}

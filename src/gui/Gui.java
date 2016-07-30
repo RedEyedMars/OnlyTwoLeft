@@ -246,7 +246,7 @@ public class Gui extends GLApp {
 	public static File userSave(String sub){
 		JFileChooser  fc = new JFileChooser("data"+File.separator+sub);
 		int returnVal = fc.showOpenDialog(new JPanel());
-        if (returnVal == JFileChooser.APPROVE_OPTION) {            
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             return fc.getSelectedFile();
         } else {
             return null;
