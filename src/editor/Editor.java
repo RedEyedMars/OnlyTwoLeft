@@ -176,7 +176,7 @@ public class Editor extends GraphicView {
 			addChild(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<3;++i){
+		for(int i=-1;i<4;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_update_icons",i,this,new ButtonAction(){
 				private int id;

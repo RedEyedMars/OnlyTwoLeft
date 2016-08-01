@@ -71,8 +71,15 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare>{
 	public static final OnCreateAction create_square = new OnCreateAction(){
 		private Square square;
 		@Override
-		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){			
-			square = Hub.map.getTemplateSquares().get(ints.next());
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			int index = ints.next();
+			if(index<Hub.map.size()){
+				square = Hub.map.getTemplateSquares().get(index);
+			}
+			else {
+				square = new Square(2,2,0.05f,0.05f);	
+			}
+			
 		}
 		@Override
 		public void act(OnCreateSquare square) {

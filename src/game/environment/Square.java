@@ -128,7 +128,12 @@ public class Square extends GraphicEntity{
 	public float offsetY(int index){
 		return getChild(index).getY()+yOffset-getY();
 	}
-
+	public boolean isWithin(GraphicEntity target){
+		return isWithin(target.getX()+0.0001f, target.getY()+0.0001f)||
+				isWithin(target.getX()-0.0001f+target.getWidth(), target.getY()+0.0001f)||
+				isWithin(target.getX()+0.0001f, target.getY()-0.0001f+target.getHeight())||
+				isWithin(target.getX()-0.0001f+target.getWidth(), target.getY()-0.0001f+target.getHeight());
+	}
 	public boolean isCompletelyWithin(Square q) {
 		double x = getX()+getWidth();
 		double y = getY()+getHeight();
@@ -252,13 +257,13 @@ public class Square extends GraphicEntity{
 			ints.add(h);
 			ints.add(0);
 		}
-		
+
 		if(updateAction!=-1){
 			ints.add(0);
 		}
 		return ints.iterator();
 	}
-	
+
 	public static void addArgsFromSquare(Square square, final List<Integer> ints, final List<Float> floats){
 		List<Object> probe = new ArrayList<Object>(){
 			@Override

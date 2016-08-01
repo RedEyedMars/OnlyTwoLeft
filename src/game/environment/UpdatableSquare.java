@@ -15,7 +15,7 @@ public class UpdatableSquare extends OnStepSquare {
 	public UpdatableSquare(int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats, int actionType) {
 		super(blackColour, whiteColour,ints, floats, actionType-3);
 		this.actionType=actionType;
-		this.updateAction = UpdateAction.getAction(ints.next()).create();
+		this.updateAction = UpdateAction.getAction(ints.next()).create();		
 		this.updateAction.setFloats(floats);
 		this.updateAction.setSelf(this);
 
@@ -23,6 +23,10 @@ public class UpdatableSquare extends OnStepSquare {
 		for(int i=0;i<depends;++i){
 			addDependant(Square.create(ints, floats));
 		}
+	}
+
+	public void recycle() {
+		this.updateAction.undo();
 	}
 	@Override
 	public void setY(float y){

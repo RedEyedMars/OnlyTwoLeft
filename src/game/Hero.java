@@ -21,6 +21,10 @@ public class Hero extends GraphicEntity{
 
 	private Game game;
 	private Hero partner;
+
+	private boolean southWallFound=false;
+	private boolean northWallFound=false;
+	private boolean onCorner=false;
 	public Hero(Game game, byte colour) {
 		super("circles");
 		this.setFrame(colour);
@@ -60,10 +64,10 @@ public class Hero extends GraphicEntity{
 
 		double x2 = Math.cos(angle)*radius+getX()+radius;
 		double y2 = Math.sin(angle)*radius+getY()+radius;
-		return (x1>=q.getX()&&x1<=q.getX()+q.getWidth()&&
-				y2>=q.getY()&&y2<=q.getY()+q.getHeight())||
-				(x2>=q.getX()&&x2<=q.getX()+q.getWidth()&&
-				y1>=q.getY()&&y1<=q.getY()+q.getHeight());
+		return (x1>q.getX()&&x1<q.getX()+q.getWidth()&&
+				y2>q.getY()&&y2<q.getY()+q.getHeight())||
+				(x2>q.getX()&&x2<q.getX()+q.getWidth()&&
+						y1>q.getY()&&y1<q.getY()+q.getHeight());
 	}
 	public boolean isCompletelyWithin(GraphicEntity e) {
 		if((getX()>e.getX()&&getX()+getWidth()<e.getX()+e.getWidth()&&
@@ -84,11 +88,6 @@ public class Hero extends GraphicEntity{
 	protected void move(float x, float y) {
 		setX(getX()+x);
 		setY(getY()+y);
-	}
-
-	public void moveToByPartner(float x, float y) {
-		setX(getPartner().getX()-x);
-		setY(getPartner().getX()-y);
 	}
 	public void push(Square target) {
 
@@ -132,30 +131,51 @@ public class Hero extends GraphicEntity{
 	public float getYAcceleration() {
 		return yAcc;
 	}
+	public float getYVelocity() {
+		return yVel;
+	}
+	public boolean foundSouthWall() {
+		if(southWallFound){
+			southWallFound = false;
+			return true;
+		} else return false;
+	}
+	public boolean foundNorthWall() {
+		if(northWallFound){
+			northWallFound = false;
+			return true;
+		} else return false;
+	}
+	public boolean isOnCorner() {
+		if(onCorner){
+			onCorner = false;
+			return true;
+		} else return false;
+	}
 	public void endGame() {
 		game.endGame();
 	}
-	public void setSafeties(List<GraphicEntity> safetiesFound, List<Boolean> isSafes) {
-		if(safetiesFound.size()==0)return;
+	public boolean handleWalls(List<GraphicEntity> safetiesFound, List<Boolean> isSafes) {
+		if(safetiesFound.size()==0)return false;
 		boolean NW=true,NE=true,SW=true,SE=true;
 		float N=1000f,E=1000f,S=1000f,W=1000f;
 
 		for(int i=safetiesFound.size()-1;i>=0;--i){
 			GraphicEntity entity = safetiesFound.get(i);
 			boolean safe = isSafes.get(i);
-			if(getX()+getWidth()>=entity.getX()&&getX()+getWidth()<=entity.getX()+entity.getWidth()){
-				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
+			if(getX()+getWidth()>entity.getX()&&getX()+getWidth()<entity.getX()+entity.getWidth()){
+				if(getY()+getHeight()>entity.getY()&&getY()+getHeight()<entity.getY()+entity.getHeight()){
 					NE=safe;
 				}
-				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
+				if(getY()<entity.getY()+entity.getHeight()&&getY()>entity.getY()){
 					SE=safe;
 				}
 			}
-			if(getX()<=entity.getX()+entity.getWidth()&&getX()>=entity.getX()){
-				if(getY()<=entity.getY()+entity.getHeight()&&getY()>=entity.getY()){
+			if(getX()<entity.getX()+entity.getWidth()&&getX()>entity.getX()){
+				if(getY()<=entity.getY()+entity.getHeight()&&getY()>entity.getY()){
 					SW=safe;
 				}
-				if(getY()+getHeight()>=entity.getY()&&getY()+getHeight()<=entity.getY()+entity.getHeight()){
+				if(getY()+getHeight()>entity.getY()&&getY()+getHeight()<entity.getY()+entity.getHeight()){
 					NW = safe;
 				}					
 			}
@@ -174,29 +194,30 @@ public class Hero extends GraphicEntity{
 				s = -(getY())+(entity.getY()+entity.getHeight());
 			}					
 			if(e>=0&&e<E){
-				E=e;
+				E=e+0.001f;
 			}
 			if(w>=0&&w<W){
-				W=w;
+				W=w+0.001f;
 			}
 			if(n>=0&&n<N){
-				N=n;
+				N=n+0.001f;
 			}
 			if(s>=0&&s<S){
-				S=s;
+				S=s+0.001f;
 			}
 		}
-		float x = 0f;
-		float y = 0f;
 		//System.out.println(NE+" "+SE+" "+SW+" "+NW);
-		if(!(NE&&NW&&SE&&SW)){
+		if(!(NE&&NW&&SE&&SW)&&(NE||NW||SE||SW)){
+			float x = 0f;
+			float y = 0f;
 			if(NE&&SE&&SW){
 				if(W<=N){
 					x=W;						
 				}
 				if(N<=W){
-					y=-N;						
+					y=-N;
 				}
+				onCorner = true;
 			}
 			else if(NE&&NW&&SW){
 				if(E<=S){
@@ -205,6 +226,7 @@ public class Hero extends GraphicEntity{
 				if(S<=E){
 					y=S;
 				}
+				onCorner = true;
 			}
 			else if(NW&&SE&&SW){
 				if(E<=N){
@@ -213,6 +235,7 @@ public class Hero extends GraphicEntity{
 				if(N<=E){
 					y=-N;
 				}
+				onCorner = true;
 			}
 			else if(NE&&NW&&SE){
 				if(W<=S){
@@ -221,6 +244,7 @@ public class Hero extends GraphicEntity{
 				if(S<=W){
 					y=S;
 				}
+				onCorner = true;
 			}
 			else {
 				if(!NE&&!SE){
@@ -275,10 +299,25 @@ public class Hero extends GraphicEntity{
 						x=W;
 					}
 				}
-				System.out.println();
 			}
-		}
-		move(x,y);
+			move(x,y);
 
+			if(y!=0){
+				yVel=0;
+				if(y>0){
+					southWallFound=true;
+				}
+				if(y<0){
+					northWallFound=true;
+				}
+			}
+			if(x!=0){
+				xVel=0;
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }

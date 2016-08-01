@@ -26,9 +26,19 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	protected UpdatableSquare self;
 
 	public static final UpdateAction grow = new UpdateAction(){
+		private float growthW = 0f;
+		private float growthH = 0f;
 		@Override
 		public void act(Double seconds) {
+			growthW += data.get(0)*seconds;
+			growthH += data.get(1)*seconds;
 			self.adjust((float) (self.getWidth()+data.get(0)*seconds), (float) (self.getHeight()+data.get(1)*seconds));
+		}
+		@Override
+		public void undo(){
+			self.adjust(self.getWidth()-growthW, self.getHeight()-growthH);
+			growthW=0f;
+			growthH=0f;
 		}
 		@Override
 		public int getIndex() {
@@ -41,10 +51,30 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	};
 	
 	public static final UpdateAction move = new UpdateAction(){
+		private float movementX = 0f;
+		private float movementY = 0f;
+		private float origXvel = 0f;
+		private float origYvel = 0f;
 		@Override
 		public void act(Double seconds) {
+			movementX += data.get(0)*seconds;
+			movementY += data.get(1)*seconds;
 			self.setX((float) (self.getX()+data.get(0)*seconds));
 			self.setY((float) (self.getY()+data.get(1)*seconds));
+		}
+		@Override
+		public void undo(){
+			self.setX(self.getX()-movementX);
+			self.setY(self.getY()-movementY);
+			movementX=0f;
+			movementY=0f;
+			addFloats(origXvel,origYvel);
+		}
+		@Override
+		public void setFloats(Iterator<Float> floats){
+			super.setFloats(floats);
+			origXvel=getFloat(0);
+			origYvel=getFloat(1);
 		}
 		@Override
 		public int getIndex() {
@@ -121,8 +151,32 @@ public abstract class UpdateAction implements SquareAction<Double>{
 			return true;
 		}
 	};
+	
+	public static final UpdateAction recycle = new UpdateAction(){
+		@Override
+		public void act(Double seconds) {
+			for(UpdatableSquare square:Hub.map.getUpdateSquares()){
+				if(square==self)continue;
+				if(self.isWithin(square)){
+					square.recycle();
+				}
+			}
+
+		}
+		@Override
+		public int getIndex() {
+			return 3;
+		}
+		@Override
+		public boolean defaultState(){
+			return true;
+		}
+	};
 
 	protected ArrayList<Float> data = new ArrayList<Float>();
+
+	public void undo() {
+	}
 	public int numberOfFloats(){
 		return 2;
 	}

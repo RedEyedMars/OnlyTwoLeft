@@ -153,10 +153,9 @@ public class VisionBubble extends GraphicEntity{
 		middle.getGraphicElement().rotate((float) (mAngle*mpi));
 	}
 	
-	public void swap(){
-		GraphicView temp = me;
-		me = you;
-		you = temp;
+	public void setHeroes(GraphicView focused, GraphicView wild){
+		me = focused;
+		you = wild;
 	}
 
 }

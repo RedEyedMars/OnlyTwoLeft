@@ -7,14 +7,76 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import duo.client.Client;
 import game.Action;
 import game.Hero;
+import game.VisionBubble;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
+import main.Hub;
 import main.Log;
 
 public class Map extends GraphicEntity {
 
+	private static Map overhead = new Map(){
+		private VisionBubble visionBubble;
+		@Override 
+		public void setup(boolean colourToControl, Hero black, Hero white){
+			visionBubble = new VisionBubble(colourToControl?black:white,colourToControl?white:black);
+			auxillaryChildren.add(visionBubble);
+			super.setup(colourToControl, black, white);
+		}
+		@Override
+		public void setVisibleSquares(int colour, Hero focused, Hero wild){
+			super.setVisibleSquares(colour, focused, wild);
+			if(!Client.isConnected()){
+				visionBubble.setHeroes(focused,wild);
+			}
+		}
+	};
+	private static Map platform = new Map(){
+		private boolean blackCanJump = false;
+		private boolean whiteCanJump = true;
+		private float blackAcc;
+		private Hero black;
+		private Hero white;
+		@Override 
+		public void setup(boolean colourToControl, Hero black, Hero white){
+			this.black = black;
+			this.white = white;
+			blackAcc=black.getYAcceleration();
+			super.setup(colourToControl, black, white);
+		}
+		@Override 
+		public void update(double secondsSinceLastFrame){
+			if(blackCanJump&&(black.getYVelocity()!=0f)){
+				blackCanJump = false;
+			}
+			if(black.foundSouthWall()&&!black.isOnCorner()){
+				blackCanJump=true;
+			}
+			if(!blackCanJump){
+				if(black.foundNorthWall()){
+					black.setYAcceleration(-0.075f);
+				}
+				else if(blackAcc>0&&black.getYAcceleration()>0){
+					black.setYAcceleration(blackAcc-0.00175f);
+				}
+				else if(blackAcc>-0.075f){
+					black.setYAcceleration(blackAcc-0.003f);
+				}
+				else {
+					black.setYAcceleration(-0.075f);
+				}
+			}
+			blackAcc=black.getYAcceleration();
+			super.update(secondsSinceLastFrame);			
+		}
+		@Override
+		public void setVisibleSquares(int colour, Hero focused, Hero wild){
+			super.setVisibleSquares(colour, focused, wild);
+		}
+	};
 	private List<Square> allSquares = new ArrayList<Square>();
 	private List<OnStepSquare> functionalSquares = new ArrayList<OnStepSquare>();
 	private List<UpdatableSquare> updateSquares = new ArrayList<UpdatableSquare>();
@@ -22,16 +84,36 @@ public class Map extends GraphicEntity {
 	private List<Square> templateSquares = new ArrayList<Square>();
 
 	private java.util.Map<Square,List<OnStepSquare>> adjacentSquares = new HashMap<Square,List<OnStepSquare>>();
-	
+
 
 	protected static final float gridSizeX = 20f;
 	protected static final float gridSizeY = 20f;
 
 	private float[] startingXPosition = new float[2];
 	private float[] startingYPosition = new float[2];
+
+
+	protected List<GraphicEntity> auxillaryChildren = new ArrayList<GraphicEntity>();
 	public Map() {
 		super("blank");
 		this.setVisible(false);
+	}
+	public void setup(boolean colourToControl, Hero black, Hero white){		
+		onCreate();
+		for(UpdatableSquare square:Hub.map.getUpdateSquares()){
+			square.run();
+		}
+		if(getSquares().size()>0){
+			getSquares().get(0).setX(0f);
+			getSquares().get(0).setY(0f);
+		}
+		moveToStart(black);
+		moveToStart(white);
+		addChild(black);
+		addChild(white);		
+
+
+		setVisibleSquares(colourToControl?1:2,colourToControl?black:white,colourToControl?white:black);
 	}
 
 	public List<OnStepSquare> getFunctionalSquares() {
@@ -63,11 +145,13 @@ public class Map extends GraphicEntity {
 		}
 	}
 
-	public void setVisibleSquares(int colour){
+	public void setVisibleSquares(int colour, Hero focused, Hero wild){
 		for(Square square:allSquares){
 			square.displayFor(colour);
 		}
-
+	}
+	public List<GraphicEntity> getAuxillaryChildren(){
+		return auxillaryChildren;
 	}
 
 	private float xOffset = 0f;
@@ -155,31 +239,43 @@ public class Map extends GraphicEntity {
 				return false;
 			}
 			else if(!square.getOnHitAction(accordingTo).isSafe()
-					&&(square.isWithin(target.getX()+0.0001f, target.getY()+0.0001f)||
-							square.isWithin(target.getX()-0.0001f+target.getWidth(), target.getY()+0.0001f)||
-							square.isWithin(target.getX()+0.0001f, target.getY()-0.0001f+target.getHeight())||
-							square.isWithin(target.getX()-0.0001f+target.getWidth(), target.getY()-0.0001f+target.getHeight()))){
+					&&(square.isWithin(target))){
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void load(Object[] loaded) {
-		MapLoader loader = new MapLoader(loaded);
+	public static void load(Object[] loaded) {
+		Hub.map = null;
+		MapLoader loader = null;
+		try {
+			//if(loaded[3] instanceof Integer){
+				//if(((Integer)loaded[0])==-40){
+				//	Hub.map = platform.getClass().newInstance();
+				//	loader = Hub.map.new MapLoader(loaded);
+				//	loader.nextInteger();
+				//}
+			//}
+			if(Hub.map==null){
+				Hub.map = overhead.getClass().newInstance();
+				loader = Hub.map.new MapLoader(loaded);
+			}
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 		int i=0;
 		for(Iterator<Float> itr=loader.getFloats();i<2;++i){
-			startingXPosition[i]=itr.next();
-			startingYPosition[i]=itr.next();			
+			Hub.map.startingXPosition[i]=itr.next();
+			Hub.map.startingYPosition[i]=itr.next();
 		}
 		int size = loader.nextInteger();
 		for(i=0;i<size;++i){
-			templateSquares.add(Square.create(loader.getIntegers(), loader.getFloats()));
+			Hub.map.templateSquares.add(Square.create(loader.getIntegers(), loader.getFloats()));
 		}
 		for(Square square:loader){
-			addSquare(square);
+			Hub.map.addSquare(square);
 		}
-
 	}
 
 	public void moveToStart(Hero hero){
@@ -206,7 +302,7 @@ public class Map extends GraphicEntity {
 	public int getIntXLow(float x){
 		return (int) (x*gridSizeX+0.5f);
 	}
-	
+
 	public float getRealY(int y){
 		return ((float)y)/gridSizeY;
 	}
@@ -307,6 +403,6 @@ public class Map extends GraphicEntity {
 
 	}
 
-	
+
 
 }

@@ -26,8 +26,7 @@ public class Storage {
 		Map<Integer,String> strings = loadStringMap(file);
 		Object[] loaded = Coder.decode(file, index+1, strings,3,0,0);
 		loaded = Coder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
-		Hub.map = new game.environment.Map();
-		Hub.map.load(loaded);
+		game.environment.Map.load(loaded);
 	}
 
 	private static Map<Integer,String> loadStringMap(byte[] file) {

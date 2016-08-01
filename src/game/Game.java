@@ -19,6 +19,11 @@ import gui.inputs.MotionEvent;
 import main.Hub;
 
 public class Game extends GraphicView implements KeyBoardListener{
+
+	private static final float uppderViewBorder = 0.6f;
+	private static final float lowerViewBorder = 0.4f;
+	private static final float standardAcceleration = 0.075f;
+
 	protected Hero black;
 	protected Hero white;
 
@@ -32,7 +37,6 @@ public class Game extends GraphicView implements KeyBoardListener{
 	protected int tick = 1;
 
 	private boolean endGame = false;
-	private VisionBubble visionBubble;
 	private float yAcceleration;
 	private float xAcceleration;
 	private OnStepSquare wildWall=new OnStepSquare(1,0.5f,OnStepAction.getAction(1));
@@ -76,21 +80,11 @@ public class Game extends GraphicView implements KeyBoardListener{
 		white.setPartner(black);
 
 		addChild(Hub.map);
-		
 		Hub.map.getFunctionalSquares().add(0,wildWall);
-		Hub.map.onCreate();
-		for(UpdatableSquare square:Hub.map.getUpdateSquares()){
-			square.run();
+		Hub.map.setup(colourToControl,black,white);
+		for(GraphicEntity e:Hub.map.getAuxillaryChildren()){
+			addChild(e);
 		}
-		if(Hub.map.getSquares().size()>0){
-			Hub.map.getSquares().get(0).setX(0f);
-			Hub.map.getSquares().get(0).setY(0f);
-		}
-		Hub.map.moveToStart(black);
-		Hub.map.moveToStart(white);
-		addChild(black);
-		addChild(white);
-
 		if(colourToControl==true/*black*/){
 			controlled = black;
 			wild = white;
@@ -101,17 +95,10 @@ public class Game extends GraphicView implements KeyBoardListener{
 			wild = black;
 			focused = white;			
 		}
-
-		visionBubble = new VisionBubble(focused,wild);
-		addChild(visionBubble);
-		Hub.map.setVisibleSquares(colourToControl?1:2);
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return this;
 	}
-
-	private static final float uppderViewBorder = 0.6f;
-	private static final float lowerViewBorder = 0.4f;
 	@Override
 	public void update(double secondsSinceLastFrame){
 		super.update(secondsSinceLastFrame);
@@ -122,60 +109,41 @@ public class Game extends GraphicView implements KeyBoardListener{
 	}
 
 	private void handleInterceptions(){
-		List<Action<Hero>> onHandle = new ArrayList<Action<Hero>>();
-		List<Action<OnStepSquare>> onHandleSquare = new ArrayList<Action<OnStepSquare>>();
-		List<OnStepSquare> squares = new ArrayList<OnStepSquare>();
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
 			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
+			List<OnStepAction> onHandle = new ArrayList<OnStepAction>();
 			List<Boolean> safeties            = new ArrayList<Boolean>();
 			boolean isWithinSafety = true;
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
 					if(hero.isWithin(mapSquares.get(i))){
-						action.act(hero);
+
 						safetiesFound.add(mapSquares.get(i));
 						safeties.add(action.isSafe());
-						if(action.isSafe()&&
-								hero.isCompletelyWithin(mapSquares.get(i))){
-							break;
+						if(action.isSafe()){
+							action.act(hero);
+							if(hero.isCompletelyWithin(mapSquares.get(i))){
+								break;
+							}
 						}
 						else {
-							isWithinSafety = false;
+							onHandle.add(action);
 						}
+						isWithinSafety = false;
 					}
 				}
-			}
-			
-			if(!isWithinSafety){
-				
-				hero.setSafeties(safetiesFound,safeties);
 			}
 
-			/*use if more than one square can be triggered currently just the top square
-				if(hero.isWithin(square)){
-					Action<FunctionalSquare> herosquare = hero.getOnHitAction(square);
-					if(herosquare!=null){
-						onHandleSquare.add(herosquare);
-					}
-					Action<Hero> squarehero = square.getOnHitAction(hero);
-					if(squarehero!=null){
-						onHandle.add(squarehero);
-					}
+			if(!isWithinSafety){
+				if(hero.handleWalls(safetiesFound,safeties)){// is bumping
+					onHandle.get(0).act(hero);
+				}
+				else {// is Safe
+
 				}
 			}
-			/* 
-			while(!onHandleSquare.isEmpty()){
-				if(!endGame){
-					//onHandleSquare.remove(0).act(squares.get(i));
-				}
-			}
-			while(!onHandle.isEmpty()){
-				if(!endGame){
-					onHandle.remove(0).act(hero);
-				}
-			}*/
 		}
 
 	}
@@ -222,7 +190,6 @@ public class Game extends GraphicView implements KeyBoardListener{
 		Gui.setView(new MainMenu());
 	}
 
-	private static final float standardAcceleration = 0.075f;
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
@@ -270,20 +237,12 @@ public class Game extends GraphicView implements KeyBoardListener{
 				if(focused==black){
 					focused = white;
 					wild = black;
-					Hub.map.setVisibleSquares(2);
-					if(!Client.isConnected()){
-						//controlled=white;
-						visionBubble.swap();
-					}
+					Hub.map.setVisibleSquares(2,white,black);
 				}
 				else if(focused==white){
 					focused = black;
 					wild = white;
-					Hub.map.setVisibleSquares(1);
-					if(!Client.isConnected()){
-						//controlled=black;
-						visionBubble.swap();
-					}
+					Hub.map.setVisibleSquares(1,black,white);
 				}
 			}
 			else if(!Client.isConnected()){
