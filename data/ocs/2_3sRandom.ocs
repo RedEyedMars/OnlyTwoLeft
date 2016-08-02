@@ -1,12 +1,8 @@
-square index offset:25
+square index offset:0
 create list
-create squares:#0-2
+create squares:#0-3
 put:0
-create squares:#3-5
-put:0
-create squares:#6-7
-put:0
-create squares:#8-9
+create squares:#4-7
 put:0
 get random:0
 display list:1

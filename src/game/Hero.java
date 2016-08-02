@@ -11,7 +11,7 @@ import main.Hub;
 
 public class Hero extends GraphicEntity{
 
-	private static float radius = 0.020f;
+	private static float radius = 0.010f;
 	public static byte black = 0;
 	public static byte white = 1;
 	private float xVel=0f;

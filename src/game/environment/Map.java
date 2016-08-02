@@ -238,7 +238,7 @@ public class Map extends GraphicEntity {
 			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isSafe()){					
 				return false;
 			}
-			else if(!square.getOnHitAction(accordingTo).isSafe()
+			else if(square.getOnHitAction(accordingTo).getIndex()!=1
 					&&(square.isWithin(target))){
 				return true;
 			}
@@ -300,6 +300,9 @@ public class Map extends GraphicEntity {
 		return (int) (x*gridSizeX+0.5f);
 	}
 	public int getIntXLow(float x){
+		if(x<=0){
+			return (int) (x*gridSizeX-0.5f);
+		}
 		return (int) (x*gridSizeX+0.5f);
 	}
 

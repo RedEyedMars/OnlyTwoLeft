@@ -22,12 +22,13 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
-	private static final float standardAcceleration = 0.075f;
+	private static final float standardAcceleration = 0.03f;
 
 	protected Hero black;
 	protected Hero white;
 
 	protected Hero controlled;
+	
 	protected Hero wild;
 	protected Hero focused;
 
@@ -119,17 +120,20 @@ public class Game extends GraphicView implements KeyBoardListener{
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
 					if(hero.isWithin(mapSquares.get(i))){
-
-						safetiesFound.add(mapSquares.get(i));
-						safeties.add(action.isSafe());
 						if(action.isSafe()){
-							action.act(hero);
+							safetiesFound.add(mapSquares.get(i));
+							safeties.add(action.isSafe());
 							if(hero.isCompletelyWithin(mapSquares.get(i))){
+								action.act(hero);
 								break;
 							}
 						}
 						else {
-							onHandle.add(action);
+							if(!action.resolve(hero)){
+								safetiesFound.add(mapSquares.get(i));
+								safeties.add(action.isSafe());
+								onHandle.add(action);
+							}
 						}
 						isWithinSafety = false;
 					}
@@ -138,7 +142,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 
 			if(!isWithinSafety){
 				if(hero.handleWalls(safetiesFound,safeties)){// is bumping
-					onHandle.get(0).act(hero);
+					for(OnStepAction action:onHandle){
+						action.act(hero);
+					}
 				}
 				else {// is Safe
 

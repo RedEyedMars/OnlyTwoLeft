@@ -89,6 +89,18 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	};
 	public static final OnStepAction move = new OnStepAction(){
 		@Override
+		public boolean resolve(Hero subject){
+			float x = target.getX();
+			float y = target.getY();
+			subject.push(target);
+			if(Hub.map.isWithinWall(target,subject)||subject.getPartner().isWithin(target)){
+				target.setX(x);
+				target.setY(y);
+				return false;
+			}
+			return true;
+		}
+		@Override
 		public void act(Hero subject) {
 			float x = target.getX();
 			float y = target.getY();
@@ -101,6 +113,28 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		@Override
 		public int getIndex() {
 			return 5;
+		}
+	};
+	public static final OnStepAction move_ignore_walls = new OnStepAction(){
+		@Override
+		public boolean resolve(Hero subject){
+			float x = target.getX();
+			float y = target.getY();
+			subject.push(target);
+			if(subject.getPartner().isWithin(target)){
+				target.setX(x);
+				target.setY(y);
+				return false;
+			}
+			return true;
+		}
+		@Override
+		public void act(Hero subject) {
+			
+		}
+		@Override
+		public int getIndex() {
+			return 6;
 		}
 	};
 
@@ -116,6 +150,9 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
+	}
+	public boolean resolve(Hero subject){
+		return false;
 	}
 	public OnStepAction create() {
 		try {

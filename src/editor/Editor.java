@@ -128,7 +128,7 @@ public class Editor extends GraphicView {
 			colour2Menu.add(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<6;++i){
+		for(int i=-1;i<7;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons",i,this,new ButtonAction(){
 				private int id;
@@ -153,7 +153,7 @@ public class Editor extends GraphicView {
 			buttons.add(button);
 			addChild(button);
 		}
-		for(int i=-1;i<6;++i){
+		for(int i=-1;i<7;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_icons",i,this,new ButtonAction(){
 				private int id;
@@ -363,7 +363,7 @@ public class Editor extends GraphicView {
 	}
 
 	protected void addIconsToSquare(Square square) {
-		addActionIconToSquare(square,square.getX()+square.getWidth()-0.05f,square.getY(),0.05f);
+		addActionIconToSquare(square,square.getX()+square.getWidth()-0.025f,square.getY(),0.025f);
 		addAdjustPositionButtonToSquare(square);
 		addAdjustSizeButtonToSquare(square);
 		if(square instanceof UpdatableSquare){
