@@ -259,6 +259,8 @@ public class Square extends GraphicEntity{
 		}
 
 		if(updateAction!=-1){
+			ints.add(UpdateAction.getAction(updateAction).getDefaultState()?1:0);
+			ints.add(-1);
 			ints.add(0);
 		}
 		return ints.iterator();

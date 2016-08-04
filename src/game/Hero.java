@@ -89,29 +89,6 @@ public class Hero extends GraphicEntity{
 		setX(getX()+x);
 		setY(getY()+y);
 	}
-	public void push(Square target) {
-
-		float dx = (target.getX()+target.getWidth() /2f)-(getX()+radius);
-		float dy = (target.getY()+target.getHeight()/2f)-(getY()+radius);
-		double angle = Math.atan2(dy, dx);
-		if((angle<=Math.PI*3f/4f&&angle>=Math.PI/4f)||(angle>=-Math.PI*3f/4f&&angle<=-Math.PI/4f)){
-			if(getY()+getHeight()<target.getY()+target.getHeight()){
-				target.setY(getY()+getHeight());
-			}
-			else if(getY()>target.getY()){
-				target.setY(getY()-target.getHeight());
-			}
-		}
-		else {
-			if(getX()+getWidth()<target.getX()+target.getWidth()){
-				target.setX(getX()+getWidth());
-			}
-			else if(getX()>target.getX()){
-				target.setX(getX()-target.getWidth());
-			}
-		}
-
-	}
 
 	public void setXVelocity(float dx) {
 		xVel = dx;
@@ -318,6 +295,22 @@ public class Hero extends GraphicEntity{
 		}
 		else {
 			return false;
+		}
+	}
+	public static void push(GraphicEntity subject, GraphicEntity target) {
+		if(subject.getY()<target.getY()+target.getHeight()&&
+			subject.getY()+subject.getHeight()>target.getY()+target.getHeight()){
+			target.setY(subject.getY()-target.getHeight());	
+		}
+		else if(subject.getY()<target.getY()&&subject.getY()+subject.getHeight()>target.getY()){
+			target.setY(subject.getY()+subject.getHeight());
+		}
+		else if(subject.getX()<target.getX()+target.getWidth()&&
+				subject.getX()+subject.getWidth()>target.getX()+target.getWidth()){
+			target.setX(subject.getX()-target.getWidth());	
+		}
+		else if(subject.getX()<target.getX()&&subject.getX()+subject.getWidth()>target.getX()){
+			target.setX(subject.getX()+subject.getWidth());
 		}
 	}
 }

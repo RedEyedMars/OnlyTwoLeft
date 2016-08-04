@@ -142,6 +142,31 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 		}
 
 	}
+	
+	public void changeTextOnLine(String text, int line){
+		if(line<lines.size()){
+			index =0;
+			for(int i=0;i<line;++i){
+				index+=lines.get(i).length();
+			}
+			index+=line;
+			if(index<text.length()){
+				if(index==0){
+					change(text+getText().substring(index+lines.get(line).length()));
+				}
+				else {
+
+					change(getText().substring(0, index)+text+getText().substring(index+lines.get(line).length()));
+				}
+			}
+			else {
+				change(getText().substring(0, lines.get(line).length())+text);
+			}
+			charIndex=lines.get(line).length();
+			lineIndex=line;
+			index+=text.length();
+		}
+	}
 
 	private void insert(char c) {
 		if(index<text.length()){

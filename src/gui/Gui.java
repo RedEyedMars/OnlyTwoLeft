@@ -45,7 +45,7 @@ public class Gui extends GLApp {
     public Gui(){
     	super();
 
-        window_title = "Scrambooooooooooooooooooooooooooooo";
+        window_title = "OTL";
         displayWidth = 800;
         displayHeight = 600;
         Hub.width = displayWidth;
@@ -196,6 +196,7 @@ public class Gui extends GLApp {
 
     public static void giveOnType(KeyBoardListener listener) {
     	keyboardListener.push(listener);
+
 		continuousKeyboard = listener.continuousKeyboard();
     	
 	}
@@ -205,12 +206,13 @@ public class Gui extends GLApp {
     			keyboardListener.pop();
     		}
     	}
+
 		if(!keyboardListener.empty()){
 			continuousKeyboard = keyboardListener.peek().continuousKeyboard();
 		}
 		//System.out.println("pop"+mouseListener.size()+mouseListener.peek().getClass());
 	}
-    
+   
 	@Override
 	public void cleanup(){
 		Gui.running = false;
@@ -252,4 +254,5 @@ public class Gui extends GLApp {
             return null;
         }
 	}
+
 }

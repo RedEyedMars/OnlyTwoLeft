@@ -186,7 +186,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			private int botIndex = 1;
 			GraphicEntity selectorSquare = new GraphicEntity("squares",1);
 			{
-				selectorSquare.setFrame(14);
+				selectorSquare.setFrame(6);
 				selectorSquare.setVisible(false);
 				children.remove(text);
 				addChild(selectorSquare);

@@ -92,23 +92,21 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		public boolean resolve(Hero subject){
 			float x = target.getX();
 			float y = target.getY();
-			subject.push(target);
-			if(Hub.map.isWithinWall(target,subject)||subject.getPartner().isWithin(target)){
+			Hero.push(subject,target);
+			if(subject.getPartner().isWithin(target)){
 				target.setX(x);
 				target.setY(y);
+				return false;
+			}
+			Square wall = Hub.map.isWithinWall(target,subject);
+			if(wall!=null){
+				Hero.push(wall,target);
 				return false;
 			}
 			return true;
 		}
 		@Override
 		public void act(Hero subject) {
-			float x = target.getX();
-			float y = target.getY();
-			subject.push(target);
-			if(Hub.map.isWithinWall(target,subject)||subject.getPartner().isWithin(target)){
-				target.setX(x);
-				target.setY(y);
-			}
 		}
 		@Override
 		public int getIndex() {
@@ -120,7 +118,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		public boolean resolve(Hero subject){
 			float x = target.getX();
 			float y = target.getY();
-			subject.push(target);
+			Hero.push(subject,target);
 			if(subject.getPartner().isWithin(target)){
 				target.setX(x);
 				target.setY(y);

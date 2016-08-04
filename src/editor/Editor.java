@@ -20,6 +20,7 @@ import game.environment.OnStepAction;
 import game.environment.UpdatableSquare;
 import game.environment.UpdateAction;
 import game.menu.MainMenu;
+import game.menu.MenuButton;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
@@ -53,6 +54,14 @@ public class Editor extends GraphicView {
 	protected List<GraphicEntity> buttons = new ArrayList<GraphicEntity>();
 
 
+	private UpdatableSquare updatableSquareFocused;
+	private MenuButton updatableSquareDataField;
+	private TextWriter updatableSquareXField;
+	private TextWriter updatableSquareYField;
+	private TextWriter updatableSquareLimitField;
+	private GraphicEntity updatableSquareDefaultStateIndicator;
+	private GraphicEntity updatableSquareLimiterIndicator;
+	
 	protected List<Square> squares;
 	protected Square builder1;
 
@@ -176,7 +185,7 @@ public class Editor extends GraphicView {
 			addChild(button);
 			buttons.add(button);
 		}
-		for(int i=-1;i<4;++i){
+		for(int i=-1;i<2;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_update_icons",i,this,new ButtonAction(){
 				private int id;
@@ -255,6 +264,184 @@ public class Editor extends GraphicView {
 		visibleToShower.adjust(0.05f, 0.05f);
 		visibleToShower.setFrame(3);
 		addChild(visibleToShower);
+		
+		updatableSquareDataField = new MenuButton("X:\nY:\nLimit:"){
+			{
+				text.setWidthFactor(1f);
+				text.setHeightFactor(1f);
+			}
+			@Override
+			public void adjust(float x, float y){
+				super.adjust(x, y);
+				if(6<size()){
+					getChild(6).adjust(0.04f, 0.04f);
+				}
+				if(7<size()){
+					getChild(7).adjust(0.04f, 0.04f);
+				}
+			}
+			@Override
+			public float offsetX(int index){
+				if(index<3){
+					return super.offsetX(index);
+				}
+				else if(index==3){
+					return 0.065f;
+				}
+				else if(index<6){
+					return 0.0925f;
+				}
+				else if(index==8){
+					return 0.14f;
+				}
+				else {
+					return 0.02f;
+				}
+			}
+			@Override
+			public float offsetY(int index){
+				if(index<3){
+					return super.offsetY(index);
+				}
+				else if(index<=4){
+					return 0.055f;
+				}
+				else if(index==5){
+					return 0.03f;
+				}
+				else if(index==6){
+					return 0.055f;
+				}
+				else if(index==8){
+					return 0.005f;
+				}
+				else return 0f;
+			}
+		};
+
+		updatableSquareXField = new TextWriter("impact"," "){
+			{
+				charIndex=0;
+				index=0;
+			}
+			@Override
+			public void keyCommand(boolean b, char c, int keycode){
+				if(c>=48&&c<=57||c==46||c==45||keycode==14){
+					super.keyCommand(b, c, keycode);
+				}
+				else if(b==KeyBoardListener.UP&&(keycode==15||keycode==28)){
+					Gui.removeOnType(this);
+					Gui.giveOnType(updatableSquareYField);
+				}
+			}
+		};
+		updatableSquareYField = new TextWriter("impact"," "){
+			{
+				charIndex=0;
+				index=0;
+			}
+			@Override
+			public void keyCommand(boolean b, char c, int keycode){
+				if(c>=48&&c<=57||c==46||c==45||keycode==14){
+					super.keyCommand(b, c, keycode);
+				}
+				else if(b==KeyBoardListener.UP&&(keycode==15||keycode==28)){
+					Gui.removeOnType(this);
+					if(updatableSquareFocused.getAction().getLimiter()==-1){
+						Gui.removeOnClick(updatableSquareDataField);
+						updatableSquareDataField.setVisible(false);
+					}
+					else {
+						Gui.giveOnType(updatableSquareLimitField);
+					}
+					try {
+						updatableSquareFocused.getAction().addFloats(
+							Float.parseFloat(updatableSquareXField.getText()),
+							Float.parseFloat(updatableSquareYField.getText()));
+					}
+					catch(NumberFormatException e){
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		updatableSquareLimitField = new TextWriter("impact"," "){
+			{
+				charIndex=0;
+				index=0;
+			}
+			@Override
+			public void keyCommand(boolean b, char c, int keycode){
+				if(c>=48&&c<=57||c==46||c==45||keycode==14){
+					super.keyCommand(b, c, keycode);
+				}
+				else if(b==KeyBoardListener.UP&&(keycode==15||keycode==28)){
+					try {
+						updatableSquareFocused.getAction().setLimit(
+								Float.parseFloat(updatableSquareLimitField.getText()));
+					}
+					catch(NumberFormatException e){
+						e.printStackTrace();
+					}
+					Gui.removeOnType(this);
+					Gui.removeOnClick(updatableSquareDataField);
+					updatableSquareDataField.setVisible(false);
+				}
+			}
+		};
+		updatableSquareDefaultStateIndicator = new GraphicEntity("editor_icons",1){
+			{
+				this.listenToRelease=true;
+			}
+			@Override
+			public void performOnRelease(MotionEvent e){
+				if(!updatableSquareDataField.isVisible())return;
+				updatableSquareFocused.getAction().
+									setDefaultState(!updatableSquareFocused.getAction().getDefaultState());
+				this.setFrame(updatableSquareFocused.getAction().getDefaultState()?3:4);
+			}
+		};
+		updatableSquareDefaultStateIndicator.setFrame(3);
+		updatableSquareLimiterIndicator = new GraphicEntity("editor_button",1){			
+			{
+				this.listenToRelease=true;
+				this.addChild(new GraphicEntity("editor_update_limiter_icons",1));
+				this.getChild(0).turnOff();
+			}
+			@Override
+			public void performOnRelease(MotionEvent e){
+				if(!updatableSquareDataField.isVisible())return;
+				updatableSquareFocused.getAction().setLimiter(
+						updatableSquareFocused.getAction().getLimiter()+1);
+				if(updatableSquareFocused.getAction().getLimiter()>=3){
+					updatableSquareFocused.getAction().setLimiter(-1);
+				}
+				setFrame(1);
+			}
+			@Override
+			public void setFrame(int i){
+				super.setFrame(1);
+				if(updatableSquareFocused==null)return;
+				if(updatableSquareFocused.getAction().getLimiter()==-1){
+					turnOn();
+					getChild(0).turnOff();
+				}
+				else {
+					turnOff();
+					getChild(0).turnOn();
+					getChild(0).setFrame(updatableSquareFocused.getAction().getLimiter());
+				}
+			}
+		};
+		updatableSquareLimiterIndicator.setFrame(1);
+		updatableSquareDataField.addChild(updatableSquareXField);
+		updatableSquareDataField.addChild(updatableSquareYField);
+		updatableSquareDataField.addChild(updatableSquareDefaultStateIndicator);
+		updatableSquareDataField.addChild(updatableSquareLimiterIndicator);
+		updatableSquareDataField.addChild(updatableSquareLimitField);
+		addChild(updatableSquareDataField);
+		updatableSquareDataField.adjust(0.3f, 0.1f);
+		updatableSquareDataField.setVisible(false);
 	}
 
 	protected boolean handleButtons(MotionEvent e){
@@ -341,11 +528,9 @@ public class Editor extends GraphicView {
 	protected Square createSquare(int x, int y, int colour, int colour2, int a1, int a2, int ua, boolean oc){
 		mode=2;
 		List<Float> floats = new ArrayList<Float>();
-
-		if(action3>=0){
-			for(int i=0;i<UpdateAction.actions.get(ua).numberOfFloats();++i){
-				floats.add(0f);
-			}
+		if(action3>=0){			
+			floats.add(0f);
+			floats.add(0f);
 		}
 		Iterator<Integer> ints = Square.makeInts(a1,a2,ua,oc,colour,colour2,x,y,1,1);
 		return Square.create(ints, floats.iterator());
@@ -488,7 +673,7 @@ public class Editor extends GraphicView {
 				final UpdateAction action= ((UpdateAction)temp);
 				final Button<Editor> button = new Button<Editor>("editor_update_icons",action.getIndex(),this,null);
 				final Button<Editor> activator = new Button<Editor>("editor_icons",3,this,null);
-				final MouseListener listener = new MouseListener(){
+				/*final MouseListener listener = new MouseListener(){
 					@Override
 					public boolean onClick(MotionEvent event) {
 						if(event.getAction()==MotionEvent.ACTION_UP){
@@ -510,16 +695,26 @@ public class Editor extends GraphicView {
 					@Override
 					public void onMouseScroll(int distance) {
 					}
-				};
+				};*/
 				button.setAction(new ButtonAction(){
 					@Override
 					public void act(Editor subject) {
-						Gui.giveOnClick(listener);
+						updatableSquareFocused=usq;
+						updatableSquareDataField.setX(usq.getX()+0.015f);
+						updatableSquareDataField.setY(usq.getY()+0.015f);
+						updatableSquareXField.changeTextOnLine(""+usq.getAction().getFloat(0), 0);
+						updatableSquareYField.changeTextOnLine(""+usq.getAction().getFloat(1), 0);
+						updatableSquareLimitField.changeTextOnLine(""+usq.getAction().getFloat(2), 0);
+						updatableSquareDefaultStateIndicator.setFrame(usq.getAction().getDefaultState()?3:4);
+						updatableSquareLimiterIndicator.setFrame(1);
+						updatableSquareDataField.setVisible(true);
+						Gui.giveOnClick(updatableSquareDataField);						
+						Gui.giveOnType(updatableSquareXField);
 					}
 				});
-				button.setX(usq.getX()+action.getFloat(0));
-				button.setY(usq.getY()+action.getFloat(1));
-				button.adjust(0.05f, 0.05f);
+				button.setX(usq.getX()+0.015f);
+				button.setY(usq.getY()+0.015f);
+				button.adjust(0.025f, 0.025f);
 				usq.addChild(button);
 				buttons.add(button);
 
@@ -531,9 +726,9 @@ public class Editor extends GraphicView {
 						builder1.onAddToDrawable();
 					}
 				});
-				activator.setX(button.getX()+0.05f);
+				activator.setX(button.getX()+0.025f);
 				activator.setY(button.getY());
-				activator.adjust(0.05f, 0.05f);
+				activator.adjust(0.025f, 0.025f);
 				usq.addChild(activator);
 				buttons.add(activator);
 			}

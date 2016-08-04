@@ -229,21 +229,21 @@ public class Map extends GraphicEntity {
 	public void addTemplateSquare(Square square) {
 		templateSquares.add(square);
 	}
-	public boolean isWithinWall(Square target, Hero accordingTo) {
+	public Square isWithinWall(Square target, Hero accordingTo) {
 		for(int i=functionalSquares.size()-1;i>=0;--i){
 			OnStepSquare square = functionalSquares.get(i);
 			if(square==target){
 				continue;
 			}
-			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isSafe()){					
-				return false;
+			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isSafe()){			
+				return null;
 			}
-			else if(square.getOnHitAction(accordingTo).getIndex()!=1
+			else if(square.getOnHitAction(accordingTo).getIndex()==1
 					&&(square.isWithin(target))){
-				return true;
+				return square;
 			}
 		}
-		return false;
+		return null;
 	}
 
 	public static void load(Object[] loaded) {

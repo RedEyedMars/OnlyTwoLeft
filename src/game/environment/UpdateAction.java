@@ -19,60 +19,67 @@ import game.Action;
 public abstract class UpdateAction implements SquareAction<Double>{
 	public static List<UpdateAction> actions = new ArrayList<UpdateAction>();
 	public static List<String> actionNames = new ArrayList<String>();
+	public static List<OnStepAction> limiters = new ArrayList<OnStepAction>();
 
-	public void setSelf(UpdatableSquare self){
-		this.self = self;
-	}
+
 	protected UpdatableSquare self;
-
 	public static final UpdateAction grow = new UpdateAction(){
 		private float growthW = 0f;
 		private float growthH = 0f;
+		{
+			defaultState = false;
+		}
 		@Override
 		public void act(Double seconds) {
-			growthW += data.get(0)*seconds;
-			growthH += data.get(1)*seconds;
-			self.adjust((float) (self.getWidth()+data.get(0)*seconds), (float) (self.getHeight()+data.get(1)*seconds));
+			growthW += x*seconds;
+			growthH += y*seconds;
+			self.adjust((float) (self.getWidth()+x*seconds), (float) (self.getHeight()+y*seconds));
+			if(onLimitBrokenAction>-1&&Math.sqrt(growthW*growthW+growthH*growthH)>=limit){
+				limiters.get(onLimitBrokenAction).setTarget(self);
+				limiters.get(onLimitBrokenAction).act(null);
+				growthW=0f;
+				growthH=0f;
+			}
 		}
 		@Override
 		public void undo(){
 			self.adjust(self.getWidth()-growthW, self.getHeight()-growthH);
-			growthW=0f;
-			growthH=0f;
 		}
 		@Override
 		public int getIndex() {
 			return 0;
 		}
-		@Override
-		public boolean defaultState(){
-			return false;
-		}
 	};
-	
+
 	public static final UpdateAction move = new UpdateAction(){
+		{
+			defaultState = true;
+		}
 		private float movementX = 0f;
 		private float movementY = 0f;
 		private float origXvel = 0f;
 		private float origYvel = 0f;
 		@Override
 		public void act(Double seconds) {
-			movementX += data.get(0)*seconds;
-			movementY += data.get(1)*seconds;
-			self.setX((float) (self.getX()+data.get(0)*seconds));
-			self.setY((float) (self.getY()+data.get(1)*seconds));
+			movementX += x*seconds;
+			movementY += y*seconds;
+			self.move((float) (x*seconds),(float) (y*seconds));
+			if(onLimitBrokenAction>-1&&Math.sqrt(movementX*movementX+movementY*movementY)>=limit){
+				limiters.get(onLimitBrokenAction).setTarget(self);
+				limiters.get(onLimitBrokenAction).act(null);
+				movementX=0f;
+				movementY=0f;
+			}
 		}
 		@Override
 		public void undo(){
 			self.setX(self.getX()-movementX);
 			self.setY(self.getY()-movementY);
-			movementX=0f;
-			movementY=0f;
 			addFloats(origXvel,origYvel);
 		}
 		@Override
-		public void setFloats(Iterator<Float> floats){
-			super.setFloats(floats);
+		public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){
+			super.setArgs(ints,floats);
 			origXvel=getFloat(0);
 			origYvel=getFloat(1);
 		}
@@ -80,119 +87,72 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		public int getIndex() {
 			return 1;
 		}
+	};
+
+	public static final OnStepAction reverse = new OnStepAction(){
 		@Override
-		public boolean defaultState(){
-			return true;
+		public void act(Hero hero) {
+			UpdatableSquare square = (UpdatableSquare)target;
+			square.getAction().addFloats(-square.getAction().x, -square.getAction().y);
+
+		}
+		@Override
+		public int getIndex() {
+			return 0;
+		}
+	};
+
+	public static final OnStepAction recycle = new OnStepAction(){
+		@Override
+		public void act(Hero hero) {
+			UpdatableSquare square = (UpdatableSquare)target;
+			square.recycle();
+		}
+		@Override
+		public int getIndex() {
+			return 1;
 		}
 	};
 	
-	public static final UpdateAction reverse = new UpdateAction(){
+	public static final OnStepAction stop = new OnStepAction(){
 		@Override
-		public void act(Double seconds) {
-			for(UpdatableSquare square:Hub.map.getUpdateSquares()){
-				if(square==self)continue;
-				float x = square.getAction().getFloat(0);
-				float y = square.getAction().getFloat(1);
-				if((square.getX()+square.getWidth()>=self.getX()&&square.getX()+square.getWidth()<=self.getX()+self.getWidth())){
-					if((square.getY()+square.getHeight()>=self.getY()&&square.getY()+square.getHeight()<=self.getY()+self.getHeight())){
-						if(Math.abs(x)>Math.abs(y)){
-							square.setX(self.getX()-square.getWidth());
-						}
-						else {
-							square.setY(self.getY()-square.getHeight());
-						}
-						x*=-1f;
-						y*=-1f;
-					}
-					else if(square.getY()<=self.getY()+self.getHeight()&&square.getY()>=self.getY()){
-						if(Math.abs(x)>Math.abs(y)){
-							square.setX(self.getX()-square.getWidth());
-						}
-						else {
-							square.setY(self.getY()+self.getHeight());							
-						}
-						x*=-1f;
-						y*=-1f;
-					}
-				}
-				else if((square.getX()<=self.getX()+self.getWidth()&&square.getX()>=self.getX())){
-					if((square.getY()+square.getHeight()>=self.getY()&&square.getY()+square.getHeight()<=self.getY()+self.getHeight())){
-						if(Math.abs(x)>Math.abs(y)){
-							square.setX(self.getX()+self.getWidth());
-						}
-						else {
-							square.setY(self.getY()-square.getHeight());
-						}
-						x*=-1f;
-						y*=-1f;
-					}
-					else if(square.getY()<=self.getY()+self.getHeight()&&square.getY()>=self.getY()){
-						if(Math.abs(x)>Math.abs(y)){
-							square.setX(self.getX()+self.getWidth());
-						}
-						else {
-							square.setY(self.getY()+self.getHeight());
-						}
-						x*=-1f;
-						y*=-1f;
-					}
-				}
-				
-				square.getAction().addFloats(x, y);
-			}
-
+		public void act(Hero hero) {
+			UpdatableSquare square = (UpdatableSquare)target;
+			square.getAction().addFloats(0, 0);
 		}
 		@Override
 		public int getIndex() {
 			return 2;
 		}
-		@Override
-		public boolean defaultState(){
-			return true;
-		}
-	};
-	
-	public static final UpdateAction recycle = new UpdateAction(){
-		@Override
-		public void act(Double seconds) {
-			for(UpdatableSquare square:Hub.map.getUpdateSquares()){
-				if(square==self)continue;
-				if(self.isWithin(square)){
-					square.recycle();
-				}
-			}
-
-		}
-		@Override
-		public int getIndex() {
-			return 3;
-		}
-		@Override
-		public boolean defaultState(){
-			return true;
-		}
 	};
 
-	protected ArrayList<Float> data = new ArrayList<Float>();
-
+	protected float x;
+	protected float y;
+	protected boolean defaultState;
+	protected float limit=0f;
+	protected int onLimitBrokenAction=-1;
 	public void undo() {
 	}
-	public int numberOfFloats(){
-		return 2;
-	}
-	public void setFloats(Iterator<Float> floats){
-		data.clear();
-		for(int i=0;i<numberOfFloats();++i){
-			data.add(floats.next());
+	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){		
+		defaultState=ints.next()==1;
+		x=floats.next();
+		y=floats.next();
+		onLimitBrokenAction=ints.next();
+		if(onLimitBrokenAction>=0){
+			limit = floats.next();
 		}
 	}
 	public float getFloat(int i){
-		return data.get(i);
+		return i==0?x:i==1?y:limit;
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
-		for(Float flt:data){
-			saveTo.add(flt);			
+		saveTo.add(defaultState?1:0);
+		saveTo.add(x);
+		saveTo.add(y);
+		saveTo.add(onLimitBrokenAction);
+		if(onLimitBrokenAction!=-1){
+			saveTo.add(limit);
 		}
 	}
 	@Override
@@ -201,20 +161,29 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	}
 	@Override
 	public void setTarget(Square square) {
+		this.self = (UpdatableSquare) square;
 	}
-	public boolean defaultState(){
-		return false;
+
+	public boolean getDefaultState(){
+		return defaultState;
+	}
+	public void setDefaultState(boolean newState) {
+		this.defaultState = newState;
 	}
 
 	public void addFloats(float x, float y) {
-		if(data.size()>=numberOfFloats()){
-			data.clear();
-		}
-		data.add(x);
-		if(data.size()>=numberOfFloats()){
-			data.clear();
-		}
-		data.add(y);
+		this.x=x;
+		this.y=y;
+	}
+	public void setLimit(float limit){
+		this.limit = limit;
+	}
+
+	public int getLimiter() {
+		return onLimitBrokenAction;
+	}
+	public void setLimiter(int limiter) {
+		this.onLimitBrokenAction=limiter;
 	}
 	public UpdateAction create() {
 		try {
@@ -233,6 +202,10 @@ public abstract class UpdateAction implements SquareAction<Double>{
 					actions.add((UpdateAction) obj);
 					actionNames.add(field.getName());
 				}
+				else if(obj instanceof OnStepAction){
+					//System.out.println(field.getName());
+					limiters.add((OnStepAction) obj);
+				}
 			} 
 		}
 		catch (IllegalArgumentException | IllegalAccessException e) {
@@ -240,7 +213,6 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		}
 	}
 	public static UpdateAction getAction(Integer i) {
-
 		if(i==-1||i>=actions.size()){
 			return null;
 		}

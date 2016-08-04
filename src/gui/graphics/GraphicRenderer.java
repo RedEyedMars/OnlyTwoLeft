@@ -183,13 +183,13 @@ public class GraphicRenderer {
 			}
 			for(final String filename:fileBuilder.toString().split("\n")){
 				if(filename.matches("\\s*"))continue;
-				String[] args = filename.split("\\Q"+File.separator+"\\E");
+				String[] args = filename.split("\\Q/\\E");
 				final String name = args[1].substring(0,args[1].indexOf('.'));
 				final Integer size = Integer.parseInt(args[0]);
 				loadImageFromTextureName.put(name,new ButtonAction(){
 					@Override
 					public void act(Editor subject) {
-						loadImageFromPath("images"+File.separator+filename,size,name);
+						loadImageFromPath("images/"+filename,size,name);
 					}				
 				});
 			}
