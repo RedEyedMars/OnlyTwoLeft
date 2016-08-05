@@ -113,9 +113,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
 			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
-			List<OnStepAction> onHandle = new ArrayList<OnStepAction>();
 			List<Boolean> safeties            = new ArrayList<Boolean>();
-			boolean isWithinSafety = true;
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
@@ -124,7 +122,6 @@ public class Game extends GraphicView implements KeyBoardListener{
 							safetiesFound.add(mapSquares.get(i));
 							safeties.add(action.isSafe());
 							if(hero.isCompletelyWithin(mapSquares.get(i))){
-								action.act(hero);
 								break;
 							}
 						}
@@ -132,24 +129,13 @@ public class Game extends GraphicView implements KeyBoardListener{
 							if(!action.resolve(hero)){
 								safetiesFound.add(mapSquares.get(i));
 								safeties.add(action.isSafe());
-								onHandle.add(action);
 							}
 						}
-						isWithinSafety = false;
 					}
 				}
 			}
 
-			if(!isWithinSafety){
-				if(hero.handleWalls(safetiesFound,safeties)){// is bumping
-					for(OnStepAction action:onHandle){
-						action.act(hero);
-					}
-				}
-				else {// is Safe
-
-				}
-			}
+			hero.handleWalls(safetiesFound,safeties);
 		}
 
 	}

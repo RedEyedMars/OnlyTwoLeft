@@ -119,6 +119,7 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		public void act(Hero hero) {
 			UpdatableSquare square = (UpdatableSquare)target;
 			square.getAction().addFloats(0, 0);
+			square.deactivate();
 		}
 		@Override
 		public int getIndex() {

@@ -19,10 +19,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction safe = new OnStepAction(){
 		@Override
 		public void act(Hero subject) {
-		}
-		public boolean isSafe(){
-			return true;
-		}
+		}		
 		@Override
 		public int getIndex() {
 			return 0;
@@ -31,6 +28,9 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction impassible = new OnStepAction(){
 		@Override
 		public void act(Hero subject) {
+		}
+		public boolean isSafe(){
+			return false;
 		}
 		@Override
 		public int getIndex() {
@@ -41,6 +41,9 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		@Override
 		public void act(Hero subject) {
 			subject.endGame();
+		}
+		public boolean isSafe(){
+			return false;
 		}
 		@Override
 		public int getIndex() {
@@ -53,10 +56,6 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 			if(target instanceof UpdatableSquare){
 				((UpdatableSquare)target).activate();
 			}
-		}
-		@Override
-		public boolean isSafe(){
-			return true;
 		}
 		@Override
 		public int numberOfTargets(){
@@ -75,10 +74,6 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 			}
 		}
 		@Override
-		public boolean isSafe(){
-			return true;
-		}
-		@Override
 		public int numberOfTargets(){
 			return 1;
 		}
@@ -90,23 +85,14 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction move = new OnStepAction(){
 		@Override
 		public boolean resolve(Hero subject){
-			float x = target.getX();
-			float y = target.getY();
-			Hero.push(subject,target);
-			if(subject.getPartner().isWithin(target)){
-				target.setX(x);
-				target.setY(y);
-				return false;
-			}
-			Square wall = Hub.map.isWithinWall(target,subject);
-			if(wall!=null){
-				Hero.push(wall,target);
-				return false;
-			}
-			return true;
+			return subject.push(target);
 		}
 		@Override
 		public void act(Hero subject) {
+		}
+		@Override
+		public boolean isSafe(){
+			return false;
 		}
 		@Override
 		public int getIndex() {
@@ -116,14 +102,10 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction move_ignore_walls = new OnStepAction(){
 		@Override
 		public boolean resolve(Hero subject){
-			float x = target.getX();
-			float y = target.getY();
-			Hero.push(subject,target);
-			if(subject.getPartner().isWithin(target)){
-				target.setX(x);
-				target.setY(y);
-				return false;
-			}
+			return subject.push(target);
+		}
+		@Override
+		public boolean isSafe(){
 			return true;
 		}
 		@Override
@@ -144,7 +126,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		return 0;
 	}
 	public boolean isSafe(){
-		return false;
+		return true;
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());

@@ -1,5 +1,6 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import duo.client.Client;
@@ -132,55 +133,63 @@ public class Hero extends GraphicEntity{
 	public void endGame() {
 		game.endGame();
 	}
-	public boolean handleWalls(List<GraphicEntity> safetiesFound, List<Boolean> isSafes) {
-		if(safetiesFound.size()==0)return false;
+	public static Object[] handleWalls(GraphicEntity target,List<GraphicEntity> squaresFound, List<Boolean> isSafes) {
+		if(squaresFound.size()<=1){
+			if(squaresFound.size()==0)return new Object[]{0f,0f,null,null,null,null};
+			return new Object[]{0f,0f,squaresFound.get(0),null,null,null};
+		}
 		boolean NW=true,NE=true,SW=true,SE=true;
+		GraphicEntity NWs=null,NEs=null,SWs=null,SEs=null;
 		float N=1000f,E=1000f,S=1000f,W=1000f;
 
-		for(int i=safetiesFound.size()-1;i>=0;--i){
-			GraphicEntity entity = safetiesFound.get(i);
+		for(int i=squaresFound.size()-1;i>=0;--i){
+			GraphicEntity entity = squaresFound.get(i);
 			boolean safe = isSafes.get(i);
-			if(getX()+getWidth()>entity.getX()&&getX()+getWidth()<entity.getX()+entity.getWidth()){
-				if(getY()+getHeight()>entity.getY()&&getY()+getHeight()<entity.getY()+entity.getHeight()){
+			if(target.getX()+target.getWidth()>=entity.getX()&&target.getX()+target.getWidth()<=entity.getX()+entity.getWidth()){
+				if(target.getY()+target.getHeight()>=entity.getY()&&target.getY()+target.getHeight()<=entity.getY()+entity.getHeight()){
 					NE=safe;
+					NEs=entity;
 				}
-				if(getY()<entity.getY()+entity.getHeight()&&getY()>entity.getY()){
+				if(target.getY()<=entity.getY()+entity.getHeight()&&target.getY()>=entity.getY()){
 					SE=safe;
+					SEs=entity;
 				}
 			}
-			if(getX()<entity.getX()+entity.getWidth()&&getX()>entity.getX()){
-				if(getY()<=entity.getY()+entity.getHeight()&&getY()>entity.getY()){
+			if(target.getX()<=entity.getX()+entity.getWidth()&&target.getX()>=entity.getX()){
+				if(target.getY()<=entity.getY()+entity.getHeight()&&target.getY()>=entity.getY()){
 					SW=safe;
+					SWs=entity;
 				}
-				if(getY()+getHeight()>entity.getY()&&getY()+getHeight()<entity.getY()+entity.getHeight()){
+				if(target.getY()+target.getHeight()>=entity.getY()&&target.getY()+target.getHeight()<=entity.getY()+entity.getHeight()){
 					NW = safe;
+					NWs=entity;
 				}					
 			}
 
 			float e=0f,w=0f,n=0f,s=0f;
 			if(safe){
-				e =(getX()+getWidth())-(entity.getX()+entity.getWidth());
-				w =entity.getX()-getX();
-				n =(getY()+getHeight())-(entity.getY()+entity.getHeight());
-				s =-(getY())+(entity.getY());
+				e =(target.getX()+target.getWidth())-(entity.getX()+entity.getWidth());
+				w =entity.getX()-target.getX();
+				n =(target.getY()+target.getHeight())-(entity.getY()+entity.getHeight());
+				s =-(target.getY())+(entity.getY());
 			}
 			else {
-				e = (getX()+getWidth())-(entity.getX());
-				w = entity.getX()+entity.getWidth()-getX();
-				n = (getY()+getHeight())-(entity.getY());
-				s = -(getY())+(entity.getY()+entity.getHeight());
-			}					
+				e = (target.getX()+target.getWidth())-(entity.getX());
+				w = entity.getX()+entity.getWidth()-target.getX();
+				n = (target.getY()+target.getHeight())-(entity.getY());
+				s = -(target.getY())+(entity.getY()+entity.getHeight());
+			}
 			if(e>=0&&e<E){
-				E=e+0.001f;
+				E=e;
 			}
 			if(w>=0&&w<W){
-				W=w+0.001f;
+				W=w;
 			}
 			if(n>=0&&n<N){
-				N=n+0.001f;
+				N=n;
 			}
 			if(s>=0&&s<S){
-				S=s+0.001f;
+				S=s;
 			}
 		}
 		//System.out.println(NE+" "+SE+" "+SW+" "+NW);
@@ -194,7 +203,6 @@ public class Hero extends GraphicEntity{
 				if(N<=W){
 					y=-N;
 				}
-				onCorner = true;
 			}
 			else if(NE&&NW&&SW){
 				if(E<=S){
@@ -203,7 +211,6 @@ public class Hero extends GraphicEntity{
 				if(S<=E){
 					y=S;
 				}
-				onCorner = true;
 			}
 			else if(NW&&SE&&SW){
 				if(E<=N){
@@ -212,7 +219,6 @@ public class Hero extends GraphicEntity{
 				if(N<=E){
 					y=-N;
 				}
-				onCorner = true;
 			}
 			else if(NE&&NW&&SE){
 				if(W<=S){
@@ -221,7 +227,6 @@ public class Hero extends GraphicEntity{
 				if(S<=W){
 					y=S;
 				}
-				onCorner = true;
 			}
 			else {
 				if(!NE&&!SE){
@@ -277,40 +282,90 @@ public class Hero extends GraphicEntity{
 					}
 				}
 			}
-			move(x,y);
-
-			if(y!=0){
-				yVel=0;
-				if(y>0){
-					southWallFound=true;
-				}
-				if(y<0){
-					northWallFound=true;
-				}
-			}
-			if(x!=0){
-				xVel=0;
-			}
-			return true;
+			return new Object[]{x,y,NEs,NWs,SEs,SWs};
 		}
-		else {
-			return false;
+		return new Object[]{0f,0f,null,null,null,null};
+	}
+	public void handleWalls(List<GraphicEntity> squaresFound,List<Boolean> safeties){
+		Object[] params = Hero.handleWalls(this, squaresFound, safeties);
+		float x = (float) params[0];
+		float y = (float) params[1];
+		OnStepSquare 
+		NEs=(OnStepSquare) params[2],
+		NWs=(OnStepSquare) params[3],
+		SEs=(OnStepSquare) params[4],
+		SWs=(OnStepSquare) params[5];		
+		move(x+(Math.signum(x)*0.001f),y+(Math.signum(y)*0.001f));
+		if(y!=0){
+			yVel=0;
+			if(y>0){
+				southWallFound=true;
+			}
+			if(y<0){
+				northWallFound=true;
+			}
+		}
+		if(x!=0){
+			xVel=0;
+		}
+		if(NEs!=null){
+			NEs.getOnHitAction(this).act(this);
+		}
+		if(NWs!=null&&NWs!=NEs){
+			NWs.getOnHitAction(this).act(this);
+		}
+		if(SEs!=null&&SEs!=NWs&&SEs!=NEs){
+			SEs.getOnHitAction(this).act(this);
+		}
+		if(SWs!=null&&SWs!=NWs&&SWs!=NEs&&SWs!=SEs){
+			SWs.getOnHitAction(this).act(this);
 		}
 	}
-	public static void push(GraphicEntity subject, GraphicEntity target) {
-		if(subject.getY()<target.getY()+target.getHeight()&&
-			subject.getY()+subject.getHeight()>target.getY()+target.getHeight()){
-			target.setY(subject.getY()-target.getHeight());	
+	public boolean push(Square subject) {
+		List<GraphicEntity> squaresFound = new ArrayList<GraphicEntity>();
+		List<Boolean> safeties = new ArrayList<Boolean>();
+		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
+		squaresFound.add(subject);
+		safeties.add(false);
+		squaresFound.add(mapSquares.get(0));
+		safeties.add(true);
+		squaresFound.add(mapSquares.get(1));
+		safeties.add(true);
+		Object[] params = Hero.handleWalls(this, squaresFound, safeties);
+		float x = (float) params[0];
+		float y = (float) params[1];
+		subject.setX(subject.getX()-x);
+		subject.setY(subject.getY()-y);
+
+		params = Hero.handleWalls(getPartner(), squaresFound, safeties);
+		x = (float) params[0];
+		y = (float) params[1];
+		if(x!=0||y!=0){
+			subject.setX(subject.getX()-x);
+			subject.setY(subject.getY()-y);
+			return false;
 		}
-		else if(subject.getY()<target.getY()&&subject.getY()+subject.getHeight()>target.getY()){
-			target.setY(subject.getY()+subject.getHeight());
+		squaresFound.clear();
+		safeties.clear();
+		for(int i=mapSquares.size()-1;i>=0;--i){
+			if(subject==mapSquares.get(i))continue;
+			squaresFound.add(mapSquares.get(i));
+			if(mapSquares.get(i).getOnHitAction(this).isSafe()){
+				safeties.add(true);
+			}
+			else {
+				safeties.add(mapSquares.get(i).getOnHitAction(this).getIndex()==2);
+			}
+			if(subject.isCompletelyWithin(mapSquares.get(i))){
+				break;
+			}
 		}
-		else if(subject.getX()<target.getX()+target.getWidth()&&
-				subject.getX()+subject.getWidth()>target.getX()+target.getWidth()){
-			target.setX(subject.getX()-target.getWidth());	
-		}
-		else if(subject.getX()<target.getX()&&subject.getX()+subject.getWidth()>target.getX()){
-			target.setX(subject.getX()+subject.getWidth());
-		}
+
+		params = Hero.handleWalls(subject, squaresFound, safeties);
+		x = (float) params[0];
+		y = (float) params[1];	
+		subject.setX(subject.getX()+x);
+		subject.setY(subject.getY()+y);
+		return x==0&&y==0;
 	}
 }
