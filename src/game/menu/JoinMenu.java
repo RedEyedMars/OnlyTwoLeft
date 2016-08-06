@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Random;
 
 import duo.client.Client;
+import duo.messages.EndGameMessage;
 import duo.messages.JoinGameMessage;
 import duo.messages.KickFromGameMessage;
+import duo.messages.PassMessage;
 import editor.ButtonAction;
 import editor.Editor;
 import editor.TextWriter;
@@ -122,7 +124,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		ipButton.setY(0.56f);
 
 		final JoinMenu self = this;
-		ip = new TextWriter("impact"," "){
+		ip = new TextWriter("impact","52.35.55.220"){
 			{
 				setWidthFactor(1.4f);
 				setHeightFactor(3f);
@@ -133,23 +135,25 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				ctrlCommands.put(47, new ButtonAction(){
 					@Override
 					public void act(Editor subject) {
-						Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-						try {
-							String string = (String) clip.getContents(null).getTransferData(DataFlavor.stringFlavor);
-							string = string.replace("\n", "");
-							string = string.replace("\t", "");
-							if(string.length()>40){
-								string = string.substring(0,40);
+						if(!"Connected".equals(ip.getText())){
+							Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+							try {
+								String string = (String) clip.getContents(null).getTransferData(DataFlavor.stringFlavor);
+								string = string.replace("\n", "");
+								string = string.replace("\t", "");
+								if(string.length()>40){
+									string = string.substring(0,40);
+								}
+								change(string);
+								charIndex = string.length();
+								index = string.length();
+								new JoinThread(self).start();
+							} catch (UnsupportedFlavorException | IOException e) {
+								e.printStackTrace();
 							}
-							change(string);
-							charIndex = string.length();
-							index = string.length();
-							new JoinThread(self).start();
-						} catch (UnsupportedFlavorException | IOException e) {
-							e.printStackTrace();
 						}
 					}});
-				change("");
+				change("52.35.55.220");
 			}
 			@Override
 			public void change(String newText){
@@ -326,6 +330,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			addChild(square);
 		}
 		this.squares = squares;
+		new JoinThread(self).start();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return ip;
@@ -407,6 +412,9 @@ public class JoinMenu extends Menu implements IDuoMenu{
 					@Override
 					public void close(){
 						if("Connected".equals(ip.getText())){
+							if(client.getHandler().getHero()!=null){
+								handler.sendNow(new PassMessage(new EndGameMessage()));
+							}
 							if(joinButton.getText().startsWith("Waiting")){
 								handler.sendNow(new KickFromGameMessage(officialGame));
 							}

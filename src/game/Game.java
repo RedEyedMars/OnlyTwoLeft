@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import duo.client.Client;
+import duo.messages.EndGameMessage;
 import duo.messages.MoveHeroMessage;
 import game.environment.OnStepSquare;
 import game.environment.Square;
@@ -28,7 +29,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 	protected Hero white;
 
 	protected Hero controlled;
-	
+
 	protected Hero wild;
 	protected Hero focused;
 
@@ -49,7 +50,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
-						Client.pass(new MoveHeroMessage(x,y));
+						if(Math.abs(x)>=0.0001f||Math.abs(y)>=0.0001f){
+							Client.pass(new MoveHeroMessage(x,y));
+						}
 					}
 				};
 				white = new Hero(this,Hero.white){
@@ -68,7 +71,9 @@ public class Game extends GraphicView implements KeyBoardListener{
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
-						Client.pass(new MoveHeroMessage(x,y));
+						if(Math.abs(x)>=0.0001f||Math.abs(y)>=0.0001f){
+							Client.pass(new MoveHeroMessage(x,y));
+						}
 					}
 				};
 			}

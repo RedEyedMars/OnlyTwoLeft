@@ -25,9 +25,11 @@ import duo.client.Client;
 import duo.messages.AddGameMessage;
 import duo.messages.AddPlayerMessage;
 import duo.messages.EndConnectionMessage;
+import duo.messages.EndGameMessage;
 import duo.messages.EndServerMessage;
 import duo.messages.GameListMessage;
 import duo.messages.KickFromGameMessage;
+import duo.messages.PassMessage;
 import duo.messages.PingMessage;
 import duo.messages.RemoveGameMessage;
 import duo.messages.SendMapMessage;
@@ -199,7 +201,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		button.setY(0.03f);
 		addChild(button);
 
-		ip = new MenuButton(getIpAddress()){
+		ip = new MenuButton("52.35.55.220"){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -248,8 +250,8 @@ public class HostMenu extends Menu implements IDuoMenu{
 			addChild(square);
 		}
 		this.squares = squares;
-		
-		new HostThread(this).start();
+
+		new JoinThread(this).start();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return name;
@@ -313,7 +315,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 	}
 	public void returnToMain(){
 		client.close();
-		Gui.setView(new DuoMenu(squares));
 	}
 
 	private double dotter = 0f;
@@ -390,5 +391,43 @@ public class HostMenu extends Menu implements IDuoMenu{
 			throw new RuntimeException(e);
 		}
 		return null;
+	}
+	private class JoinThread extends Thread {
+		private IDuoMenu join;
+		public JoinThread(IDuoMenu joinMenu){
+			super();
+			this.join = joinMenu;
+		}
+		@Override
+		public void run(){
+			try{
+				client = new Client(ip.getText(),name.getText()){
+					{
+						//handler.games = gamesList;
+					}
+					@Override
+					public void close(){
+						if(client.getHandler().getHero()!=null){
+							handler.sendNow(new PassMessage(new EndGameMessage()));
+						}
+						if(gameButton.getText().startsWith("Waiting")||gameButton.getText().startsWith("Start")){
+							handler.sendNow(new KickFromGameMessage(name.getText()));
+						}
+						super.close();
+						if(gameButton.getText().equals("Create Game")){
+							ip.changeText(getIpAddress());
+							new HostThread(join).start();
+						}
+					}
+				};
+				client.setMenu(join);
+				client.run();
+				ip.changeText("Connected");
+			}
+			catch(IOException e){
+				client.close();
+			}
+
+		}
 	}
 }

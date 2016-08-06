@@ -7,6 +7,8 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
+import duo.client.Client;
+import duo.messages.EndGameMessage;
 import game.Action;
 import game.Hero;
 import main.Hub;

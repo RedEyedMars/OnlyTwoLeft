@@ -3,6 +3,7 @@ package game.menu;
 import java.util.ArrayList;
 import java.util.List;
 
+import duo.client.Client;
 import editor.Editor;
 import editor.MapEditor;
 import editor.OnCreateSquareEditor;
@@ -23,6 +24,9 @@ public class MainMenu extends Menu{
 	}
 	public MainMenu(List<Square> squares) {
 		super();
+		if(Client.isConnected()){
+			Client.endConnection();
+		}
 		GraphicEntity button = new MenuButton("Solo"){
 			@Override
 			public void performOnRelease(MotionEvent e){

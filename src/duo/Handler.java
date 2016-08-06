@@ -51,7 +51,9 @@ public class Handler {
 	}
 
 	public void close(){
-		client.close();
+		if(connected){
+			client.close();
+		}
 	}
 
 	public Integer getPort() {
@@ -66,7 +68,7 @@ public class Handler {
 		try {
 			output.writeObject(message);
 		} catch(SocketException s){
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -81,7 +83,9 @@ public class Handler {
 	public byte[] acceptBytes(int length) {
 		byte[] bytes = new byte[length];
 		try{
-			socket.getInputStream().read(bytes);
+			for(int i=0;i<length;++i){
+				bytes[i]=(byte)socket.getInputStream().read();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -98,11 +102,11 @@ public class Handler {
 		public void run(){
 			while(connected){
 				try {
-					while(readMessages){
+					while(readMessages&&connected){
 						Message message = ((Message)input.readObject());
 						message.act(handler);
 					}
-					while(!readMessages){
+					while(!readMessages&&connected){
 						float x = input.readFloat();
 						float y = input.readFloat();
 
@@ -111,7 +115,7 @@ public class Handler {
 					}
 					//System.out.println(message);
 				} catch(SocketException s){
-					client.close();
+					Client.endConnection();
 				}
 				catch (ClassNotFoundException | IOException e) {
 					e.printStackTrace();
@@ -129,22 +133,22 @@ public class Handler {
 	private class HandlerOutputThread extends Thread{
 		@Override
 		public void run(){
-			while(connected){
-				while(!outgoingMail.isEmpty()){
-					try {
+			try {
+				while(connected){
+					while(!outgoingMail.isEmpty()){
 						//System.out.println("client send:"+outgoingMail.get(0));
 						output.writeObject(outgoingMail.remove(0));
-					} catch (SocketException s){
-						s.printStackTrace();
-					} catch (IOException e) {
+					}
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			} catch (SocketException s){
+				s.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}

@@ -94,11 +94,12 @@ public class Client {
 	public static void endConnection() {
 		if(client!=null){
 			client.close();
+			client = null;
 		}
 	}
 	public void close(){
+		handler.sendNow(new EndConnectionMessage());
 		handler.disconnect();
-		client = null;
 	}
 
 	public static void main(String[] args){
