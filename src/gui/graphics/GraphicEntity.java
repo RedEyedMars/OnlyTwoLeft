@@ -1,10 +1,5 @@
 package gui.graphics;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import gui.inputs.MotionEvent;
-import gui.inputs.MouseListener;
 import main.Hub;
 
 public class GraphicEntity extends GraphicView {
@@ -50,14 +45,18 @@ public class GraphicEntity extends GraphicView {
 
 	@Override
 	public void onAddToDrawable(){
-		Hub.addLayer.add(entity);
+		if(Hub.currentView==parent){
+			Hub.addLayer.add(entity);
+		}
 		entity.onAddToDrawable();
 		super.onAddToDrawable();
 	}
 
 	@Override
 	public void onRemoveFromDrawable(){
-		Hub.removeLayer.add(entity);
+		if(Hub.currentView==parent){
+			Hub.removeLayer.add(entity);
+		}
 		entity.onRemoveFromDrawable();
 		super.onRemoveFromDrawable();
 

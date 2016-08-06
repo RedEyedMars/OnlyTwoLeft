@@ -22,7 +22,7 @@ import game.menu.IDuoMenu;
 public class Handler {
 
 	private int port;
-	private boolean connected = true;
+	private boolean connected = false;
 	private ObjectOutputStream output;
 	private ObjectInputStream input;
 	private Socket socket;
@@ -39,8 +39,12 @@ public class Handler {
 			output = new ObjectOutputStream(socket.getOutputStream());
 			send(new PingMessage());
 			input = new ObjectInputStream(socket.getInputStream());
+			this.connected = true;
 			new HandlerOutputThread().start();
 			new HandlerInputThread(this).start();
+			synchronized(client){
+				client.notifyAll();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -67,6 +71,8 @@ public class Handler {
 	public void sendNow(Message message) {
 		try {
 			output.writeObject(message);
+		} catch(NullPointerException n){
+			
 		} catch(SocketException s){
 
 		} catch (IOException e) {
@@ -180,5 +186,4 @@ public class Handler {
 	public IDuoMenu getMenu() {
 		return menu;
 	}
-
 }

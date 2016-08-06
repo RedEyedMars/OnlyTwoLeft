@@ -76,6 +76,7 @@ public class GraphicText extends GraphicEntity {
 		blinker.adjust(0.005f,0.025f);
 		blinker.setY(0.975f);
 		blinker.turnOff();
+		addChild(blinker);
 
 	}
 
@@ -109,7 +110,6 @@ public class GraphicText extends GraphicEntity {
 		this.adjust(getWidth(), getHeight());
 		this.setX(getX());
 		this.setY(getY());
-		addChild(blinker);
 		this.onAddToDrawable();
 	}
 

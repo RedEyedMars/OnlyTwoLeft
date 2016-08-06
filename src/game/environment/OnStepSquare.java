@@ -23,17 +23,26 @@ public class OnStepSquare extends Square{
 	public OnStepSquare(int blackColour, int whiteColour, float size, OnStepAction blackAction,OnStepAction whiteAction) {
 		this(blackColour, whiteColour, size,size, blackAction, whiteAction);
 	}
-	public OnStepSquare(int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats, int actionType) {
+	public OnStepSquare(int actionType, int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(blackColour,whiteColour,ints, floats);
 		if(actionType==1){
 			this.actionType=1;
-			this.blackAction = OnStepAction.getAction(ints.next()).create();
+			this.blackAction = OnStepAction.getAction(ints.next());
+			if(this.blackAction!=null){
+				this.blackAction.create();
+			}
 			this.whiteAction = blackAction;
 		}
 		else if(actionType==2){
 			this.actionType=2;
-			this.blackAction = OnStepAction.getAction(ints.next()).create();
+			this.blackAction = OnStepAction.getAction(ints.next());
+			if(this.blackAction!=null){
+				this.blackAction.create();
+			}
 			this.whiteAction = OnStepAction.getAction(ints.next()).create();
+			if(this.whiteAction!=null){
+				this.whiteAction.create();
+			}
 		}
 	}
 	public OnStepSquare(int blackColour, int whiteColour, float width, float height, OnStepAction blackAction, OnStepAction whiteAction) {
@@ -82,8 +91,8 @@ public class OnStepSquare extends Square{
 			}
 			list.add(blackAction);
 		}
-		if(blackAction!=whiteAction){
-			if(blackAction.numberOfTargets()==0){
+		if(blackAction!=whiteAction&&whiteAction!=null){
+			if(whiteAction.numberOfTargets()==0){
 				whiteAction.setTarget(this);
 			}
 			list.add(whiteAction);

@@ -53,7 +53,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	private int gameIndex = 0;
 	private String officialName;
 	private String officialGame;
-	public JoinMenu(List<Square> squares) {
+	public JoinMenu() {
 		super();
 
 		GraphicEntity nameButton = new MenuButton("Name:"){
@@ -325,11 +325,6 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		button.setX(0.2f);
 		button.setY(0.03f);
 		addChild(button);
-
-		for(Square square:squares){
-			addChild(square);
-		}
-		this.squares = squares;
 		new JoinThread(self).start();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
@@ -357,8 +352,8 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	}
 
 	public void returnToMain(){
-		client.close();
-		Gui.setView(new DuoMenu(squares));
+		Client.endConnection();
+		Gui.setView(new DuoMenu());
 	}
 	public void progressGame() {
 		if("Join".equals(joinButton.getText())&&buttonList.isVisible()){
@@ -429,7 +424,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				ip.change("Connected");
 			}
 			catch(IOException e){
-				client.close();
+				Client.endConnection();
 			}
 
 		}

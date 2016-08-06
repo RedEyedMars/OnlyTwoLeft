@@ -23,9 +23,7 @@ import storage.Storage;
 public class MapEditor extends Editor implements KeyBoardListener{
 
 	private File saveTo = null;
-	private boolean readyToAddToDrawable = false;
 
-	private HashMap<String,Square> screenBackgrounds = new HashMap<String,Square>();
 	private float screenX = 0;
 	private float screenY = 0;
 
@@ -46,7 +44,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 							addIconsToSquare(dependant);
 						}
 					}
-					addChild(square);					
+					addChild(square);
 				}
 				if(squares.size()>0){
 					squares.get(0).setX(0f);
@@ -61,7 +59,6 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			setupHeroButton(0);
 			setupHeroButton(1);
 			setupButtons();
-			this.readyToAddToDrawable  = true;
 		}
 
 	}
@@ -213,9 +210,11 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		game.environment.Map map = new game.environment.Map();
 		for(Square square:squares){
 			map.addSquare(square);
+			square.setView(this);
 		}
 		for(Square square:Hub.map.getTemplateSquares()){
 			map.addTemplateSquare(square);
+			square.setView(this);
 		}
 		map.setStartPosition(0, myLoadedMap.getStartingXPosition(0), myLoadedMap.getStartingYPosition(0));
 		map.setStartPosition(1, myLoadedMap.getStartingXPosition(1), myLoadedMap.getStartingYPosition(1));

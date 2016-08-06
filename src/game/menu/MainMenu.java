@@ -19,10 +19,8 @@ import main.Main;
 
 public class MainMenu extends Menu{
 
+	
 	public MainMenu() {
-		this(new ArrayList<Square>());
-	}
-	public MainMenu(List<Square> squares) {
 		super();
 		if(Client.isConnected()){
 			Client.endConnection();
@@ -55,15 +53,11 @@ public class MainMenu extends Menu{
 		};
 		button.setX(0.2f);
 		button.setY(0.19f);
-		addChild(button);		
-		this.squares = squares;
-		for(Square square:squares){
-			addChild(square);
-		}
+		addChild(button);
 	}
 	
 	public void duo(){
-		Gui.setView(new DuoMenu(squares));
+		Gui.setView(new DuoMenu());
 	}
 	
 	public void solo(){
@@ -73,7 +67,7 @@ public class MainMenu extends Menu{
 	}
 	
 	public void editor(){
-		Gui.setView(new EditorMenu(squares));
+		Gui.setView(new EditorMenu());
 	}
 	
 	public void startHighscores(){

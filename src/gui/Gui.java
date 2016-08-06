@@ -225,7 +225,7 @@ public class Gui extends GLApp {
 		if(Hub.currentView!=null){
 			keyboardListener.clear();
 			mouseListener.clear();
-			Hub.currentView.onRemoveFromDrawable();			
+			Hub.currentView.onRemoveFromDrawable();	
 		}
 		Hub.currentView = view;
 		giveOnClick(view);

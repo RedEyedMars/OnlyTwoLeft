@@ -139,11 +139,11 @@ public class GraphicView implements Graphicable, MouseListener{
 
 	public void addChild(GraphicEntity e){
 		children.add(e);
-		e.setView(this);
+		e.setView(parent==null?this:parent);
 	}
 	public void removeChild(int e){
-		children.get(e).setView(null);
-		children.remove(e).onRemoveFromDrawable();
+		children.get(e).onRemoveFromDrawable();
+		children.remove(e).setView(null);
 	}
 	public void removeChild(GraphicEntity e){
 		removeChild(children.indexOf(e));
@@ -197,7 +197,7 @@ public class GraphicView implements Graphicable, MouseListener{
 			children.get(i).onMouseScroll(distance);
 		}
 	}
-	
+
 	public void performOnClick(MotionEvent event){		
 	}
 	public void performOnRelease(MotionEvent event){		
@@ -209,7 +209,7 @@ public class GraphicView implements Graphicable, MouseListener{
 
 	public boolean isWithin(float dx, float dy) {
 		return dx>=getX()&&dx<=getX()+getWidth()&&
-			   dy>=getY()&&dy<=getY()+getHeight();
+				dy>=getY()&&dy<=getY()+getHeight();
 	}
 	public int size() {
 		return children.size();
@@ -224,6 +224,9 @@ public class GraphicView implements Graphicable, MouseListener{
 		return parent;
 	}
 	public void setView(GraphicView graphicView) {
+		for(GraphicEntity e:children){
+			e.setView(graphicView);
+		}
 		this.parent = graphicView;
 	}
 	public void turnOff() {

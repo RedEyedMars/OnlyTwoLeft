@@ -14,7 +14,7 @@ import gui.inputs.MotionEvent;
 import main.Main;
 
 public class DuoMenu extends Menu {
-	public DuoMenu(List<Square> squares) {
+	public DuoMenu() {
 		super();
 		GraphicEntity button = new MenuButton("Host"){
 			@Override
@@ -45,22 +45,17 @@ public class DuoMenu extends Menu {
 		button.setX(0.2f);
 		button.setY(0.19f);
 		addChild(button);
-		
-		for(Square square:squares){
-			addChild(square);
-		}
-		this.squares = squares;
 	}
 	
 	public void host(){
-		Gui.setView(new HostMenu(squares));
+		Gui.setView(new HostMenu());
 	}
 	
 	public void join(){
-		Gui.setView(new JoinMenu(squares));
+		Gui.setView(new JoinMenu());
 	}
 
 	public void returnToMain(){
-		Gui.setView(new MainMenu(squares));
+		Gui.setView(new MainMenu());
 	}
 }

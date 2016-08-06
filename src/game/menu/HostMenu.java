@@ -59,7 +59,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 	private GraphicEntity whiteButton;
 	private GraphicEntity kickButton;
 	private MenuButton gameButton;
-	public HostMenu(List<Square> squares) {
+	public HostMenu() {
 		super();
 		GraphicEntity button = new GraphicText("impact","Name:",1){
 			{
@@ -245,12 +245,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 		kickButton.setVisible(false);
 		addChild(kickButton);
 
-
-		for(Square square:squares){
-			addChild(square);
-		}
-		this.squares = squares;
-
 		new JoinThread(this).start();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
@@ -314,7 +308,8 @@ public class HostMenu extends Menu implements IDuoMenu{
 	public void startGame(boolean colour) {		
 	}
 	public void returnToMain(){
-		client.close();
+		Client.endConnection();
+		Gui.setView(new DuoMenu());
 	}
 
 	private double dotter = 0f;
@@ -348,17 +343,21 @@ public class HostMenu extends Menu implements IDuoMenu{
 				final Process proc = Runtime.getRuntime().exec("java -jar server.jar");
 
 				client = new Client(ip.getText(),"Player One"){
+					private boolean sentEnd = false;
 					@Override
 					public void close(){
-						send(new EndServerMessage());
-						super.close();
-						if(proc!=null&&proc.isAlive()){
-							proc.destroy();
-							System.out.println("destroyed process");
+						if(!sentEnd){
+							handler.sendNow(new EndServerMessage());
+							sentEnd=true;
 						}
-						if(proc!=null&&proc.isAlive()){
-							proc.destroyForcibly();
-							System.out.println("destoryedForced");
+						else {
+							super.close();
+							if(proc!=null){
+								proc.destroy();
+								if(proc.isAlive()){
+									proc.destroyForcibly();
+								}
+							}
 						}
 					}
 				};
@@ -366,6 +365,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 				client.run();
 			} catch (IOException e) {
 				e.printStackTrace();
+				returnToMain();
 			}
 		}
 	}
@@ -414,18 +414,16 @@ public class HostMenu extends Menu implements IDuoMenu{
 							handler.sendNow(new KickFromGameMessage(name.getText()));
 						}
 						super.close();
-						if(gameButton.getText().equals("Create Game")){
-							ip.changeText(getIpAddress());
-							new HostThread(join).start();
-						}
 					}
 				};
 				client.setMenu(join);
 				client.run();
 				ip.changeText("Connected");
 			}
-			catch(IOException e){
-				client.close();
+			catch(IOException e){				
+				Client.endConnection();
+				ip.changeText(getIpAddress());
+				new HostThread(join).start();
 			}
 
 		}

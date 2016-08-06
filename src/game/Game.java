@@ -50,9 +50,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
-						if(Math.abs(x)>=0.0001f||Math.abs(y)>=0.0001f){
-							Client.pass(new MoveHeroMessage(x,y));
-						}
+						MoveHeroMessage.send(x,y);
 					}
 				};
 				white = new Hero(this,Hero.white){
@@ -71,9 +69,7 @@ public class Game extends GraphicView implements KeyBoardListener{
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
-						if(Math.abs(x)>=0.0001f||Math.abs(y)>=0.0001f){
-							Client.pass(new MoveHeroMessage(x,y));
-						}
+						MoveHeroMessage.send(x,y);
 					}
 				};
 			}

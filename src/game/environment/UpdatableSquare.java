@@ -12,8 +12,8 @@ public class UpdatableSquare extends OnStepSquare {
 	private UpdateAction updateAction;
 	private boolean activated = false;
 	private List<Square> dependants = new ArrayList<Square>();
-	public UpdatableSquare(int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats, int actionType) {
-		super(blackColour, whiteColour,ints, floats, actionType-3);
+	public UpdatableSquare(int actionType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
+		super(actionType-3,blackColour, whiteColour,ints, floats);
 		this.actionType=actionType;
 		this.updateAction = UpdateAction.getAction(ints.next()).create();		
 		this.updateAction.setArgs(ints,floats);

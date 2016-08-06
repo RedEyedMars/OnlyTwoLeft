@@ -14,7 +14,7 @@ import gui.inputs.MotionEvent;
 import main.Main;
 
 public class EditorMenu extends Menu {
-	public EditorMenu(List<Square> squares) {
+	public EditorMenu() {
 		super();
 		GraphicEntity button = new MenuButton("Map"){
 			@Override
@@ -46,14 +46,10 @@ public class EditorMenu extends Menu {
 		button.setY(0.19f);
 		addChild(button);
 		
-		for(Square square:squares){
-			addChild(square);
-		}
-		this.squares = squares;
 	}
 	
 
 	public void returnToMain(){
-		Gui.setView(new MainMenu(squares));
+		Gui.setView(new MainMenu());
 	}
 }

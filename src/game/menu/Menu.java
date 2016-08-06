@@ -1,5 +1,6 @@
 package game.menu;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import game.environment.Square;
@@ -8,7 +9,7 @@ import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 
 public class Menu extends GraphicView{
-	protected List<Square> squares;
+	private static List<Square> squares=new ArrayList<Square>();
 	protected double since = 0;
 	private float mouseX = 0;
 	private float mouseY = 0;
@@ -18,6 +19,13 @@ public class Menu extends GraphicView{
 		this.listenToRelease = true;
 		addChild(new GraphicEntity("squares"));
 		getChild(0).setFrame(15);
+	}
+	@Override
+	public void onAddToDrawable(){
+		for(Square square:squares){
+			addChild(square);
+		}
+		super.onAddToDrawable();
 	}
 	@Override
 	public boolean onHover(MotionEvent e){

@@ -57,7 +57,7 @@ public class Client {
 
 		synchronized(this){
 			try {
-				while(handler==null){
+				while(!handler.isConnected()){
 					wait();
 				}
 			} catch (InterruptedException e) {

@@ -1,6 +1,7 @@
 package game.environment;
 
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicView;
 import main.Hub;
 
 import java.util.ArrayList;
@@ -163,10 +164,10 @@ public class Square extends GraphicEntity{
 			square = new Square(blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType>=1&&actionType<=2){
-			square = new OnStepSquare(blackColour,whiteColour,ints,floats,actionType);
+			square = new OnStepSquare(actionType,blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType>=3&&actionType<=5){	
-			square = new UpdatableSquare(blackColour,whiteColour,ints,floats,actionType);
+			square = new UpdatableSquare(actionType,blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType==6){
 			square = new OnCreateSquare(blackColour,whiteColour,ints,floats);
@@ -187,8 +188,8 @@ public class Square extends GraphicEntity{
 				ints.add(w);
 				ints.add(h);
 			}
-			else if(squareAction1>=0&&updateAction==-1){
-				if(squareAction2==-1||squareAction1==squareAction2){
+			else if((squareAction1!=-1||squareAction2!=-1)&&updateAction==-1){
+				if(squareAction1==squareAction2){
 					ints.add(1);
 					ints.add(colour);
 					ints.add(colour2);
@@ -221,7 +222,7 @@ public class Square extends GraphicEntity{
 					ints.add(h);
 					ints.add(updateAction);
 				}
-				else if(squareAction2==-1||squareAction1==squareAction2){
+				else if(squareAction1==squareAction2){
 					ints.add(4);
 					ints.add(colour);
 					ints.add(colour2);
