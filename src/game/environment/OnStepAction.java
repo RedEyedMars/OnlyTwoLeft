@@ -87,7 +87,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction move = new OnStepAction(){
 		@Override
 		public boolean resolve(Hero subject){
-			return subject.push(target);
+			return subject.push((OnStepSquare)target);
 		}
 		@Override
 		public void act(Hero subject) {
@@ -104,7 +104,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction move_ignore_walls = new OnStepAction(){
 		@Override
 		public boolean resolve(Hero subject){
-			return subject.push(target);
+			return subject.push((OnStepSquare)target);
 		}
 		@Override
 		public boolean isSafe(){

@@ -10,7 +10,7 @@ public class EndConnectionMessage extends Message{
 
 	@Override
 	public void act(Handler handler) {
-		handler.close();
+		Client.serverEndThisConnection();
 	}
 
 }

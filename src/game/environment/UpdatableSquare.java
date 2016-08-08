@@ -26,7 +26,7 @@ public class UpdatableSquare extends OnStepSquare {
 	}
 
 	public void recycle() {
-		this.updateAction.undo();
+		updateAction.undo();
 	}
 	public void move(float x, float y){
 		setX(getX()+x);
@@ -36,9 +36,11 @@ public class UpdatableSquare extends OnStepSquare {
 			square.setY(square.getY()-y);
 		}
 	}
-	@Override
-	public void setY(float y){
-		super.setY(y);
+	public void activate(){
+		this.activated = true;
+	}
+	public void deactivate(){
+		this.activated = false;
 	}
 	public UpdateAction getAction(){
 		return updateAction;
@@ -48,12 +50,6 @@ public class UpdatableSquare extends OnStepSquare {
 		if(activated){
 			this.updateAction.act(secondsSinceLastFrame);
 		}
-	}
-	public void activate(){
-		this.activated = true;
-	}
-	public void deactivate(){
-		this.activated = false;
 	}
 
 	public void addDependant(Square square){

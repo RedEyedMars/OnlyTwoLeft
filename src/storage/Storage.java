@@ -141,6 +141,7 @@ public class Storage {
 				return ret;
 			}
 		};
+		toSave.add(map.getMapId());
 		toSave.add(map.getStartingXPosition(0));
 		toSave.add(map.getStartingYPosition(0));
 		toSave.add(map.getStartingXPosition(1));

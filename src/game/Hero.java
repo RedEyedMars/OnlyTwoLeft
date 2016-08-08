@@ -109,18 +109,21 @@ public class Hero extends GraphicEntity{
 	public float getYAcceleration() {
 		return yAcc;
 	}
+	public float getXVelocity() {
+		return xVel;
+	}
 	public float getYVelocity() {
 		return yVel;
 	}
 	public boolean foundSouthWall() {
 		if(southWallFound){
-			southWallFound = false;
+			southWallFound=false;
 			return true;
 		} else return false;
 	}
 	public boolean foundNorthWall() {
 		if(northWallFound){
-			northWallFound = false;
+			northWallFound=false;
 			return true;
 		} else return false;
 	}
@@ -135,67 +138,226 @@ public class Hero extends GraphicEntity{
 	}
 	public static Object[] handleWalls(GraphicEntity target,List<GraphicEntity> squaresFound, List<Boolean> isSafes) {
 		if(squaresFound.size()<=1){
-			if(squaresFound.size()==0)return new Object[]{0f,0f,null,null,null,null};
-			return new Object[]{0f,0f,squaresFound.get(0),null,null,null};
+			if(squaresFound.size()==0)return new Object[]{0f,0f,false,null,null,null,null};
+			return new Object[]{0f,0f,false,squaresFound.get(0),null,null,null};
 		}
 		boolean NW=true,NE=true,SW=true,SE=true;
-		GraphicEntity NWs=null,NEs=null,SWs=null,SEs=null;
+		GraphicEntity Ns=null,Es=null,Ws=null,Ss=null;
 		float N=1000f,E=1000f,S=1000f,W=1000f;
 
 		for(int i=squaresFound.size()-1;i>=0;--i){
-			GraphicEntity entity = squaresFound.get(i);
+
+			GraphicEntity bigHorz = squaresFound.get(i);
+			GraphicEntity bigVert = squaresFound.get(i);
+			GraphicEntity smallHorz = target;
+			GraphicEntity smallVert = target;
+			if(smallHorz.getWidth()>bigHorz.getWidth()){
+				smallHorz=bigHorz;
+				bigHorz=target;
+			}
+			if(smallVert.getHeight()>bigVert.getHeight()){
+				smallVert=bigVert;
+				bigVert=target;
+			}
+
+			float smallLeft = smallHorz.getX();
+			float smallRight = smallLeft+smallHorz.getWidth();
+			float smallDown = smallVert.getY();
+			float smallUp = smallDown+smallVert.getHeight();
+			float bigLeft = bigHorz.getX();
+			float bigRight = bigLeft+bigHorz.getWidth();
+			float bigDown = bigVert.getY();
+			float bigUp = bigDown+bigVert.getHeight();
 			boolean safe = isSafes.get(i);
-			if(target.getX()+target.getWidth()>=entity.getX()&&target.getX()+target.getWidth()<=entity.getX()+entity.getWidth()){
-				if(target.getY()+target.getHeight()>=entity.getY()&&target.getY()+target.getHeight()<=entity.getY()+entity.getHeight()){
-					NE=safe;
-					NEs=entity;
+			if(smallRight>=bigLeft&&smallRight<=bigRight){
+				if(smallUp>=bigDown&&smallUp<=bigUp){
+					if(smallVert==target){
+						if(smallHorz==target){
+							NE=safe;
+							Ns=bigVert;
+							Es=bigHorz;
+						}
+						else {
+							NW=safe;
+							Ns=bigVert;
+							Ws=smallHorz;
+						}
+					}
+					else {
+						if(smallHorz==target){
+							SE=safe;
+							Ss=smallVert;
+							Es=smallHorz;
+						}
+						else {
+							SW=safe;
+							Ss=smallVert;
+							Ws=bigHorz;
+						}
+					}
 				}
-				if(target.getY()<=entity.getY()+entity.getHeight()&&target.getY()>=entity.getY()){
-					SE=safe;
-					SEs=entity;
+				if(smallDown<=bigUp&&smallDown>=bigDown){
+					if(smallVert==target){
+						if(smallHorz==target){
+							SE=safe;
+							Ss=bigVert;
+							Es=bigHorz;
+						}
+						else {
+							SW=safe;
+							Ss=bigVert;
+							Ws=smallHorz;
+						}
+					}
+					else {
+						if(smallHorz==target){
+							NE=safe;
+							Ns=smallVert;
+							Es=bigHorz;
+						}
+						else {
+							NW=safe;
+							Ns=smallVert;
+							Ws=smallHorz;
+						}
+					}
 				}
 			}
-			if(target.getX()<=entity.getX()+entity.getWidth()&&target.getX()>=entity.getX()){
-				if(target.getY()<=entity.getY()+entity.getHeight()&&target.getY()>=entity.getY()){
-					SW=safe;
-					SWs=entity;
+			if(smallLeft<=bigRight&&smallLeft>=bigLeft){
+				if(smallDown<=bigUp&&smallDown>=bigDown){
+					if(smallVert==target){
+						if(smallHorz==target){
+							SW=safe;
+							Ss=bigVert;
+							Ws=bigHorz;
+						}
+						else {
+							SE=safe;
+							Ss=bigVert;
+							Es=smallHorz;
+						}
+					}
+					else {
+						if(smallHorz==target){
+							NW=safe;
+							Ns=smallVert;
+							Ws=bigHorz;
+						}
+						else {
+							NE=safe;
+							Ns=smallVert;
+							Es=smallHorz;
+						}
+					}
 				}
-				if(target.getY()+target.getHeight()>=entity.getY()&&target.getY()+target.getHeight()<=entity.getY()+entity.getHeight()){
-					NW = safe;
-					NWs=entity;
-				}					
+				if(smallUp>=bigDown&&smallUp<=bigUp){
+					if(smallVert==target){
+						if(smallHorz==target){
+							NW=safe;
+							Ns=bigVert;
+							Ws=bigHorz;
+						}
+						else {
+							NE=safe;
+							Ns=bigVert;
+							Es=smallHorz;
+						}
+					}
+					else {
+						if(smallHorz==target){
+							SW=safe;
+							Ss=smallVert;
+							Ws=bigHorz;
+						}
+						else {
+							SE=safe;
+							Ss=smallVert;
+							Es=smallHorz;
+						}
+					}
+				}				
 			}
 
 			float e=0f,w=0f,n=0f,s=0f;
 			if(safe){
-				e =(target.getX()+target.getWidth())-(entity.getX()+entity.getWidth());
-				w =entity.getX()-target.getX();
-				n =(target.getY()+target.getHeight())-(entity.getY()+entity.getHeight());
-				s =-(target.getY())+(entity.getY());
+				e =(smallRight)-(bigRight);
+				w =bigLeft-smallLeft;
+				n =(smallUp)-(bigUp);
+				s =-(smallDown)+(bigDown);
 			}
 			else {
-				e = (target.getX()+target.getWidth())-(entity.getX());
-				w = entity.getX()+entity.getWidth()-target.getX();
-				n = (target.getY()+target.getHeight())-(entity.getY());
-				s = -(target.getY())+(entity.getY()+entity.getHeight());
+				e = (smallRight)-(bigLeft);
+				w = bigRight-smallLeft;
+				n = (smallUp)-(bigDown);
+				s = -(smallDown)+(bigUp);
 			}
-			if(e>=0&&e<E){
-				E=e;
+
+			if(smallVert==target){
+				if(smallHorz==target){
+					if(e>=0&&e<E){
+						E=e;
+					}
+					if(w>=0&&w<W){
+						W=w;
+					}
+					if(n>=0&&n<N){
+						N=n;
+					}
+					if(s>=0&&s<S){
+						S=s;
+					}
+				}
+				else {
+					if(w>=0&&w<E){
+						E=w;
+					}
+					if(e>=0&&e<W){
+						W=e;
+					}
+					if(n>=0&&n<N){
+						N=n;
+					}
+					if(s>=0&&s<S){
+						S=s;
+					}					
+				}
 			}
-			if(w>=0&&w<W){
-				W=w;
-			}
-			if(n>=0&&n<N){
-				N=n;
-			}
-			if(s>=0&&s<S){
-				S=s;
+			else{
+				if(smallHorz==target){
+					if(e>=0&&e<E){
+						E=e;
+					}
+					if(w>=0&&w<W){
+						W=w;
+					}
+					if(s>=0&&s<N){
+						N=s;
+					}
+					if(n>=0&&n<S){
+						S=n;
+					}
+				}
+				else{
+					if(w>=0&&w<E){
+						E=w;
+					}
+					if(e>=0&&e<W){
+						W=e;
+					}
+					if(s>=0&&s<N){
+						N=s;
+					}
+					if(n>=0&&n<S){
+						S=n;
+					}
+				}
 			}
 		}
-		//System.out.println(NE+" "+SE+" "+SW+" "+NW);
+		//System.out.println(target+" "+NE+" "+SE+" "+SW+" "+NW);
 		if(!(NE&&NW&&SE&&SW)&&(NE||NW||SE||SW)){
 			float x = 0f;
 			float y = 0f;
+			boolean onCorner = false;
 			if(NE&&SE&&SW){
 				if(W<=N){
 					x=W;						
@@ -203,6 +365,7 @@ public class Hero extends GraphicEntity{
 				if(N<=W){
 					y=-N;
 				}
+				onCorner=true;
 			}
 			else if(NE&&NW&&SW){
 				if(E<=S){
@@ -219,6 +382,7 @@ public class Hero extends GraphicEntity{
 				if(N<=E){
 					y=-N;
 				}
+				onCorner=true;
 			}
 			else if(NE&&NW&&SE){
 				if(W<=S){
@@ -227,6 +391,7 @@ public class Hero extends GraphicEntity{
 				if(S<=W){
 					y=S;
 				}
+				onCorner=true;
 			}
 			else {
 				if(!NE&&!SE){
@@ -282,46 +447,48 @@ public class Hero extends GraphicEntity{
 					}
 				}
 			}
-			return new Object[]{x,y,NEs,NWs,SEs,SWs};
+			return new Object[]{x,y,onCorner,Ns,Es,Ss,Ws};
 		}
-		return new Object[]{0f,0f,null,null,null,null};
+		return new Object[]{0f,0f,false,null,null,null,null};
 	}
 	public void handleWalls(List<GraphicEntity> squaresFound,List<Boolean> safeties){
 		Object[] params = Hero.handleWalls(this, squaresFound, safeties);
 		float x = (float) params[0];
 		float y = (float) params[1];
+		onCorner = (boolean)params[2];
 		OnStepSquare 
-		NEs=(OnStepSquare) params[2],
-		NWs=(OnStepSquare) params[3],
-		SEs=(OnStepSquare) params[4],
-		SWs=(OnStepSquare) params[5];		
+		Ns=(OnStepSquare) params[3],
+		Es=(OnStepSquare) params[4],
+		Ss=(OnStepSquare) params[5],
+		Ws=(OnStepSquare) params[6];		
 		move(x+(Math.signum(x)*0.001f),y+(Math.signum(y)*0.001f));
 		if(y!=0){
 			yVel=0;
 			if(y>0){
 				southWallFound=true;
 			}
-			if(y<0){
+			else if(y<0){
 				northWallFound=true;
 			}
 		}
 		if(x!=0){
 			xVel=0;
+			//northWallFound=true;
 		}
-		if(NEs!=null){
-			NEs.getOnHitAction(this).act(this);
+		if(Ns!=null){
+			Ns.getOnHitAction(this).act(this);
 		}
-		if(NWs!=null&&NWs!=NEs){
-			NWs.getOnHitAction(this).act(this);
+		if(Es!=null&&Ns!=Es){
+			Es.getOnHitAction(this).act(this);
 		}
-		if(SEs!=null&&SEs!=NWs&&SEs!=NEs){
-			SEs.getOnHitAction(this).act(this);
+		if(Ss!=null&&Ss!=Ns&&Ss!=Es){
+			Ss.getOnHitAction(this).act(this);
 		}
-		if(SWs!=null&&SWs!=NWs&&SWs!=NEs&&SWs!=SEs){
-			SWs.getOnHitAction(this).act(this);
+		if(Ws!=null&&Ws!=Ns&&Ws!=Es&&Ws!=Ss){
+			Ws.getOnHitAction(this).act(this);
 		}
 	}
-	public boolean push(Square subject) {
+	public boolean push(OnStepSquare subject) {
 		List<GraphicEntity> squaresFound = new ArrayList<GraphicEntity>();
 		List<Boolean> safeties = new ArrayList<Boolean>();
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
@@ -337,13 +504,15 @@ public class Hero extends GraphicEntity{
 		subject.setX(subject.getX()-x);
 		subject.setY(subject.getY()-y);
 
-		params = Hero.handleWalls(getPartner(), squaresFound, safeties);
-		x = (float) params[0];
-		y = (float) params[1];
-		if(x!=0||y!=0){
-			subject.setX(subject.getX()-x);
-			subject.setY(subject.getY()-y);
-			return false;
+		if(!subject.getOnHitAction(getPartner()).isSafe()){
+			params = Hero.handleWalls(getPartner(), squaresFound, safeties);
+			x = (float) params[0];
+			y = (float) params[1];
+			if(x!=0||y!=0){
+				subject.setX(subject.getX()-x);
+				subject.setY(subject.getY()-y);
+				return false;
+			}
 		}
 		squaresFound.clear();
 		safeties.clear();
@@ -356,16 +525,19 @@ public class Hero extends GraphicEntity{
 			else {
 				safeties.add(mapSquares.get(i).getOnHitAction(this).getIndex()==2);
 			}
-			if(subject.isCompletelyWithin(mapSquares.get(i))){
+			if(safeties.get(safeties.size()-1)&&subject.isCompletelyWithin(mapSquares.get(i))){
 				break;
 			}
 		}
-
+		subject.setX(subject.getX()+0.0001f);
+		subject.setY(subject.getY()+0.0001f);
+		subject.adjust(subject.getWidth()-0.0002f,subject.getHeight()-0.0002f);
 		params = Hero.handleWalls(subject, squaresFound, safeties);
 		x = (float) params[0];
 		y = (float) params[1];	
-		subject.setX(subject.getX()+x);
-		subject.setY(subject.getY()+y);
+		subject.setX(subject.getX()+x-0.0001f);
+		subject.setY(subject.getY()+y-0.0001f);
+		subject.adjust(subject.getWidth()+0.0002f,subject.getHeight()+0.0002f);
 		return x==0&&y==0;
 	}
 }

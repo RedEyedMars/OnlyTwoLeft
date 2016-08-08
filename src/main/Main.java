@@ -50,6 +50,6 @@ public class Main {
 		if(Hub.map!=null&&Hub.map.isMallible()){
 			//Storage.saveMap("data/mal.map", Hub.map);
 		}
-		Client.endConnection();
+		Client.endConnectionToTheServer();
 	}
 }

@@ -30,6 +30,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private boolean reset = false;
 	private List<GraphicEntity> heroButtons = new ArrayList<GraphicEntity>();
 	private game.environment.Map myLoadedMap;
+	private GraphicEntity gravityShower = new GraphicEntity("gravity_icons",1);
 	public MapEditor(){
 		super();
 		saveTo = Gui.userSave("maps");
@@ -52,7 +53,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				}
 			}
 			else {
-				Hub.map = new game.environment.Map();
+				Hub.map = game.environment.Map.createMap(0);
 				squares = Hub.map.getSquares();
 			}
 			myLoadedMap = Hub.map;
@@ -109,6 +110,16 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		heroButtons .add(button);
 		buttons.add(button);
 		addChild(button);
+	}
+	
+	@Override
+	public void setupButtons(){
+		super.setupButtons();
+		gravityShower.adjust(0.04f, 0.04f);
+		gravityShower.setX(0.9f);
+		gravityShower.setY(0.96f);
+		addChild(gravityShower);
+		gravityShower.setFrame(1-(myLoadedMap.getMapId()+20)/-20);
 	}
 	
 	private void createCopyOfSquare(Square square){
@@ -195,6 +206,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			else if(keycode==32||keycode==205){//right
 				moveView(-0.5f,0);
 			}
+			else if(keycode==34){//toggle gravity
+				myLoadedMap.setMapId(myLoadedMap.getMapId()==-20?-40:-20);
+				gravityShower.setFrame(1-(myLoadedMap.getMapId()+20)/-20);
+			}
 		}
 		
 	}
@@ -207,7 +222,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			square.setX(square.getX()-screenX);
 			square.setY(square.getY()-screenY);
 		}
-		game.environment.Map map = new game.environment.Map();
+		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
 		for(Square square:squares){
 			map.addSquare(square);
 			square.setView(this);

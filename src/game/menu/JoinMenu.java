@@ -347,12 +347,11 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	public void startGame(boolean colour) {
 		System.out.println("start game");
 		Game game = new Game(colour);
-		client.getHandler().setHero(game.getHero());
 		Gui.setView(game);		
 	}
 
 	public void returnToMain(){
-		Client.endConnection();
+		Client.endConnectionToTheServer();
 		Gui.setView(new DuoMenu());
 	}
 	public void progressGame() {
@@ -402,7 +401,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			try{
 				client = new Client(ip.getText(),name.getText()){
 					{
-						handler.games = gamesList;
+						handler.setGames(gamesList);
 					}
 					@Override
 					public void close(){
@@ -414,17 +413,17 @@ public class JoinMenu extends Menu implements IDuoMenu{
 								handler.sendNow(new KickFromGameMessage(officialGame));
 							}
 							disconnect();
-							handler.games.clear();
+							handler.clearGames();
 						}
 						super.close();
 					}
 				};
 				client.setMenu(join);
-				client.run();
+				client.establishConnectionWithTheServer();
 				ip.change("Connected");
 			}
 			catch(IOException e){
-				Client.endConnection();
+				Client.endConnectionToTheServer();
 			}
 
 		}

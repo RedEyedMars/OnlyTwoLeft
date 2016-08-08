@@ -19,7 +19,7 @@ public class Client2 {
 	public static void main(String[] args){
 		Client client = new Client("127.0.0.1","Belma");
 		try {
-			client.run();
+			client.establishConnectionWithTheServer();
 			Client.send(new JoinGameMessage("newb","Belma"));			
 			//client.close();
 		} catch (IOException e) {

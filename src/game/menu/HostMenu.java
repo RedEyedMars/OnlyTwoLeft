@@ -266,7 +266,6 @@ public class HostMenu extends Menu implements IDuoMenu{
 					mapFile.getAbsolutePath(),
 					new StartGameMessage(whiteButton.isVisible()));
 			Game game = new Game(blackButton.isVisible());
-			client.getHandler().setHero(game.getHero());
 			Gui.setView(game);
 		}
 	}
@@ -308,7 +307,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 	public void startGame(boolean colour) {		
 	}
 	public void returnToMain(){
-		Client.endConnection();
+		Client.endConnectionToTheServer();
 		Gui.setView(new DuoMenu());
 	}
 
@@ -362,7 +361,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 					}
 				};
 				client.setMenu(host);
-				client.run();
+				client.establishConnectionWithTheServer();
 			} catch (IOException e) {
 				e.printStackTrace();
 				returnToMain();
@@ -417,11 +416,11 @@ public class HostMenu extends Menu implements IDuoMenu{
 					}
 				};
 				client.setMenu(join);
-				client.run();
+				client.establishConnectionWithTheServer();
 				ip.changeText("Connected");
 			}
 			catch(IOException e){				
-				Client.endConnection();
+				Client.endConnectionToTheServer();
 				ip.changeText(getIpAddress());
 				new HostThread(join).start();
 			}

@@ -61,6 +61,7 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		private float origYvel = 0f;
 		@Override
 		public void act(Double seconds) {
+			if(seconds>0.05f)return;
 			movementX += x*seconds;
 			movementY += y*seconds;
 			self.move((float) (x*seconds),(float) (y*seconds));

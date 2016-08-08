@@ -23,7 +23,7 @@ public class MainMenu extends Menu{
 	public MainMenu() {
 		super();
 		if(Client.isConnected()){
-			Client.endConnection();
+			Client.endConnectionToTheServer();
 		}
 		GraphicEntity button = new MenuButton("Solo"){
 			@Override

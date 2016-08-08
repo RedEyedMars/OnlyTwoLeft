@@ -121,7 +121,7 @@ public class GraphicRenderer {
 		//GL11.glTranslatef(-0f, -0f, -1f);
 		GL11.glTranslatef(-0.7521f+viewX, -0.565f+viewY, -1.107f+viewZ);
 		GL11.glScalef(1.504f, 1.12875f, 1f);
-		//GL11.glScalef(1f, 1f, 1f);
+		//GL11.glScalef(0.5f, 0.5f, 1f);
 		animate = System.currentTimeMillis()-last>animationInterval;
 		if(animate){
 			last = System.currentTimeMillis();
