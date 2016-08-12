@@ -30,6 +30,17 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	public static final OnStepAction impassible = new OnStepAction(){
 		@Override
 		public void act(Hero subject) {
+			if(target instanceof UpdatableSquare){
+				UpdatableSquare square = ((UpdatableSquare)target);
+				if(square.getAction().getIndex()==0||square.getAction().getIndex()==1){
+					if(subject.getXAcceleration()==0){
+						subject.setXVelocity(square.getAction().getFloat(0)/0.9f);
+					}
+					if(subject.getYAcceleration()==0){
+						subject.setYVelocity(square.getAction().getFloat(1)/0.9f);
+					}
+				}
+			}
 		}
 		public boolean isSafe(){
 			return false;
@@ -60,6 +71,12 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 			}
 		}
 		@Override
+		public void setTarget(Square target){
+			if(this.target==null){
+				this.target = target;
+			}
+		}
+		@Override
 		public int numberOfTargets(){
 			return 1;
 		}
@@ -73,6 +90,12 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		public void act(Hero subject) {
 			if(target instanceof UpdatableSquare){
 				((UpdatableSquare)target).deactivate();
+			}
+		}
+		@Override
+		public void setTarget(Square target){
+			if(this.target==null){
+				this.target = target;
 			}
 		}
 		@Override
@@ -101,18 +124,14 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 			return 5;
 		}
 	};
-	public static final OnStepAction move_ignore_walls = new OnStepAction(){
+	public static final OnStepAction colour_change_block = new OnStepAction(){
 		@Override
-		public boolean resolve(Hero subject){
-			return subject.push((OnStepSquare)target);
+		public void act(Hero subject) {
+			//subject.colourChange(target.textureIndex());
 		}
 		@Override
 		public boolean isSafe(){
-			return true;
-		}
-		@Override
-		public void act(Hero subject) {
-			
+			return false;
 		}
 		@Override
 		public int getIndex() {
@@ -166,7 +185,7 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 	}
 	public static OnStepAction getAction(Integer i) {
 		if(i==-1||i>=actions.size()){
-			return actions.get(5);
+			return null;
 		}
 		else {
 			return actions.get(i);

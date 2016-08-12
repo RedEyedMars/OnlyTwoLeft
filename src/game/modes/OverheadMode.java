@@ -59,6 +59,7 @@ public class OverheadMode implements GameMode{
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
 			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
+			List<OnStepAction> actionsFound = new ArrayList<OnStepAction>();
 			List<Boolean> safeties            = new ArrayList<Boolean>();
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
@@ -66,14 +67,17 @@ public class OverheadMode implements GameMode{
 					if(hero.isWithin(mapSquares.get(i))){
 						if(action.isSafe()){
 							safetiesFound.add(mapSquares.get(i));
+							actionsFound.add(action);
 							safeties.add(action.isSafe());
 							if(hero.isCompletelyWithin(mapSquares.get(i))){
 								break;
 							}
 						}
 						else {
+							action.setTarget(mapSquares.get(i));
 							if(!action.resolve(hero)){
 								safetiesFound.add(mapSquares.get(i));
+								actionsFound.add(action);
 								safeties.add(action.isSafe());
 							}
 						}
@@ -81,7 +85,7 @@ public class OverheadMode implements GameMode{
 				}
 			}
 
-			hero.handleWalls(safetiesFound,safeties);
+			hero.handleWalls(safetiesFound,actionsFound,safeties);
 		}
 	}
 
@@ -167,6 +171,7 @@ public class OverheadMode implements GameMode{
 					focused = black;
 					wild = white;
 				}
+				Hub.map.setVisibleSquares(focused.isBlack()?1:2);
 
 				if(!Client.isConnected()){
 					visionBubble.setHeroes(focused,wild);

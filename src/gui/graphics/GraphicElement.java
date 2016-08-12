@@ -13,11 +13,22 @@ import gui.inputs.MotionEvent;
 
 
 public class GraphicElement implements Graphicable{
+	public static final int SQUARE=0;
+	public static final int TRIANGLE=1;
+	public static final int HEXAGON=2;
 	protected String texName;
 	protected float x = 0f;
 	protected float y = 0f;
 	protected float angle = 0.0f;
-	protected static FloatBuffer vertexBuffer;
+	protected static FloatBuffer squareBuffer;
+	protected static FloatBuffer triangleBuffer;
+	protected static FloatBuffer trTriangleBuffer;
+	protected static FloatBuffer tlTriangleBuffer;
+	protected static FloatBuffer brTriangleBuffer;
+	protected static FloatBuffer blTriangleBuffer;	
+	protected static FloatBuffer hexagonBuffer;
+	protected FloatBuffer vertexBuffer;
+	protected int vertexNumber = 4;
 	protected boolean isVisible = true;
 	protected boolean on = true;
 	protected int textureIndex = 0;
@@ -38,6 +49,7 @@ public class GraphicElement implements Graphicable{
 		this.view = view;
 		adjust(width,height);
 		setTextureName(textureName);
+		this.vertexBuffer=squareBuffer;
 	}
 	public void onDraw(){
 		
@@ -56,11 +68,111 @@ public class GraphicElement implements Graphicable{
 
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
 		byteBuffer.order(ByteOrder.nativeOrder());
-		vertexBuffer = byteBuffer.asFloatBuffer();
-		vertexBuffer.clear();
-		vertexBuffer.put(vertices);
-		vertexBuffer.position(0);
+		squareBuffer = byteBuffer.asFloatBuffer();
+		squareBuffer.clear();
+		squareBuffer.put(vertices);
+		squareBuffer.position(0);
+		
+		vertices = new float[]{
+				0f, 0f,  0.0f,		// V1 - bottom left
+				0.5f,  1f,  0.0f,		// V2 - top left
+				1f, 0f,  0.0f,		// V3 - bottom right
+
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		triangleBuffer = byteBuffer.asFloatBuffer();
+		triangleBuffer.clear();
+		triangleBuffer.put(vertices);
+		triangleBuffer.position(0);
+		
+		//topleft
+		vertices = new float[]{
+				0f, 0f,  0.0f,		// V1 - bottom left
+				0f,  1f,  0.0f,		// V2 - top left
+				1f,  1f,  0.0f,		// V4 - top right
+
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		tlTriangleBuffer = byteBuffer.asFloatBuffer();
+		tlTriangleBuffer.clear();
+		tlTriangleBuffer.put(vertices);
+		tlTriangleBuffer.position(0);
+		//topright
+		vertices = new float[]{
+
+				0f, 1f,  0.0f,		// V1 - bottom left
+				1f,  1f,  0.0f,		// V4 - top right
+				1f, 0f,  0.0f,		// V3 - bottom right
+
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		trTriangleBuffer = byteBuffer.asFloatBuffer();
+		trTriangleBuffer.clear();
+		trTriangleBuffer.put(vertices);
+		trTriangleBuffer.position(0);
+		
+		//bottomleft
+		vertices = new float[]{
+				0f, 0f,  0.0f,		// V1 - bottom left
+				0f,  1f,  0.0f,		// V2 - top left
+				1f,  0f,  0.0f,		// V4 - top right
+
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		blTriangleBuffer = byteBuffer.asFloatBuffer();
+		blTriangleBuffer.clear();
+		blTriangleBuffer.put(vertices);
+		blTriangleBuffer.position(0);
+		
+		//bottomright
+		vertices = new float[]{
+				0f, 0f,  0.0f,
+				1f, 1f,  0.0f,
+				1f,  0f,  0.0f,
+
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		brTriangleBuffer = byteBuffer.asFloatBuffer();
+		brTriangleBuffer.clear();
+		brTriangleBuffer.put(vertices);
+		brTriangleBuffer.position(0);
+		/*
+		 * 
+  3----5
+ /|\   |\
+1 | \  | 6
+ \|  \ |/
+  2----4
+		 */
+		vertices = new float[]{
+				0f, 0.5f,  0.0f,
+				0.2f,1f,  0.0f,
+				0.2f,0f,  0.0f,
+				0.8f,1f,  0.0f,
+				0.8f,0f,  0.0f,
+				1f,0.5f,  0.0f
+		};
+
+		byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4);
+		byteBuffer.order(ByteOrder.nativeOrder());
+		hexagonBuffer = byteBuffer.asFloatBuffer();
+		hexagonBuffer.clear();
+		hexagonBuffer.put(vertices);
+		hexagonBuffer.position(0);
 	}
+	/*B00BIES2 
+	BHaskic0322 or
+	5832201BH*/
 	public void setTextureName(String n){
 		texName = n;
 	}
@@ -81,7 +193,7 @@ public class GraphicElement implements Graphicable{
 			}
 			GL11.glScalef(visualW, visualH, 1f);
 			GL11.glVertexPointer(3, 0, vertexBuffer);
-			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, vertexNumber);
 			GL11.glPopMatrix();
 
 			if(Hub.renderer.animate){
@@ -186,6 +298,60 @@ public class GraphicElement implements Graphicable{
 	}
 	public float getAngle() {
 		return angle;
+	}
+	public void setShape(int i){
+		switch(i){
+		case 0:{
+			vertexBuffer=squareBuffer;
+			vertexNumber=4;
+			break;
+		}
+		case 1:{
+			vertexBuffer=triangleBuffer;
+			vertexNumber=3;
+			break;
+		}
+		case 2:{
+			vertexBuffer=tlTriangleBuffer;
+			vertexNumber=3;
+			break;
+		}
+		case 3:{
+			vertexBuffer=trTriangleBuffer;
+			vertexNumber=3;
+			break;
+		}
+		case 4:{
+			vertexBuffer=blTriangleBuffer;
+			vertexNumber=3;
+			break;
+		}
+		case 5:{
+			vertexBuffer=brTriangleBuffer;
+			vertexNumber=3;
+			break;
+		}
+		case 6:{
+			vertexBuffer=hexagonBuffer;
+			vertexNumber=6;
+			break;
+		}
+		}
+	}
+	public int getReflectedShape() {
+		if(vertexBuffer==brTriangleBuffer){
+			return 2;
+		}
+		else if(vertexBuffer==blTriangleBuffer){
+			return 3;
+		}
+		else if(vertexBuffer==trTriangleBuffer){
+			return 4;
+		}
+		else if(vertexBuffer==tlTriangleBuffer){
+			return 5;
+		}
+		return -1;
 	}
 
 }

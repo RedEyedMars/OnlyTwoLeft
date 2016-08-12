@@ -82,8 +82,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			@Override
 			public boolean onHover(MotionEvent event) {
 
-				int x = Hub.map.getIntXLow(event.getX());
-				int y = Hub.map.getIntYLow(event.getY());
+				int x = (int) (Hub.map.getIntX(event.getX()-0.025f)+2.5f);
+				int y = (int) (Hub.map.getIntY(event.getY()-0.025f)+2.5f);
+				x-=x%5;
+				y-=y%5;
 				float dx = Hub.map.getRealX(x)-button.getX();
 				float dy = Hub.map.getRealY(y)-button.getY();
 				button.setX(button.getX()+dx);
@@ -136,8 +138,8 @@ public class MapEditor extends Editor implements KeyBoardListener{
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-				int x = Hub.map.getIntXLow(event.getX());
-				int y = Hub.map.getIntYLow(event.getY());
+				int x = Hub.map.getIntX(event.getX());
+				int y = Hub.map.getIntY(event.getY());
 				float dx = Hub.map.getRealX(x)-copy.getX();
 				float dy = Hub.map.getRealY(y)-copy.getY();
 				copy.setX(copy.getX()+dx);

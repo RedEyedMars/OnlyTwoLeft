@@ -22,6 +22,8 @@ import main.Hub;
 
 public class Game extends GraphicView{
 
+	public static Hero black;
+	public static Hero white;
 	private float pointerX = 0.05f;
 	private float pointerY = 0.05f;
 
@@ -29,8 +31,6 @@ public class Game extends GraphicView{
 
 	private GameMode gameMode;
 	public Game(boolean colourToControl){
-		Hero black;
-		Hero white;
 		if(Client.isConnected()){
 			if(colourToControl){
 				black = new Hero(this,Hero.black){

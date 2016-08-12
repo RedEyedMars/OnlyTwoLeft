@@ -7,6 +7,7 @@ import duo.client.Client;
 import game.Hero;
 import game.environment.OnStepAction;
 import game.environment.OnStepSquare;
+import game.environment.UpdatableSquare;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import main.Hub;
@@ -33,6 +34,8 @@ public class PlatformMode implements GameMode{
 
 		focused = black;
 		wild = white;
+		focused.adjust(0.04f, 0.04f);
+		wild.adjust(0.04f, 0.04f);
 		if(colourToControl==false/*white*/){
 			flipView();
 		}
@@ -63,30 +66,44 @@ public class PlatformMode implements GameMode{
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{focused,wild}){
-			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
-			List<Boolean> safeties            = new ArrayList<Boolean>();
+			List<GraphicEntity> entitiesTouching = new ArrayList<GraphicEntity>();
+			List<OnStepAction> actionsTouching = new ArrayList<OnStepAction>();
+			List<Boolean> safeness            = new ArrayList<Boolean>();
 			for(int i=mapSquares.size()-1;i>=0;--i){
 				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
 				if(action!=null){
 					if(hero.isWithin(mapSquares.get(i))){
-						if(action.isSafe()){
-							safetiesFound.add(mapSquares.get(i));
-							safeties.add(action.isSafe());
-							if(hero.isCompletelyWithin(mapSquares.get(i))){
-								break;
-							}
+						if(hero.isOppositeColour(mapSquares.get(i))){
+							entitiesTouching.add(mapSquares.get(i));
+							actionsTouching.add(null);							
+							safeness.add(true);
+						}
+						else if(hero.isSameColour(mapSquares.get(i))){
+							entitiesTouching.add(mapSquares.get(i));
+							actionsTouching.add(OnStepAction.impassible);							
+							safeness.add(false);
+						}
+						else if(action.isSafe()){
+							entitiesTouching.add(mapSquares.get(i));
+							actionsTouching.add(action);
+							safeness.add(action.isSafe());							
 						}
 						else {
+							action.setTarget(mapSquares.get(i));
 							if(!action.resolve(hero)){
-								safetiesFound.add(mapSquares.get(i));
-								safeties.add(action.isSafe());
+								entitiesTouching.add(mapSquares.get(i));
+								actionsTouching.add(action);
+								safeness.add(action.isSafe());
 							}
+						}
+						if(hero.isCompletelyWithin(mapSquares.get(i))){
+							break;
 						}
 					}
 				}
 			}
 
-			hero.handleWalls(safetiesFound,safeties);
+			hero.handleWalls(entitiesTouching,actionsTouching,safeness);
 		}
 	}
 
@@ -101,16 +118,22 @@ public class PlatformMode implements GameMode{
 			wild.setX(wild.getX()+(lowerViewBorder-focused.getX()));
 			focused.setX(lowerViewBorder);
 		}
-		wildWall.setX(wild.getX()-0.1f);
-		wildWall.setY(wild.getY()-0.1f);
+		wildWall.setX(wild.getX()-0.25f);
+		wildWall.setY(wild.getY()-0.25f);
 	}
 	private void flipView(){
 		Hero temp = focused;
 		focused = wild;
 		wild = temp;
-		Hub.map.setVisibleSquares(focused.textureIndex()+1);
+		Hub.map.setVisibleSquares(focused.isBlack()?1:2);
 		for(GraphicEntity child:Hub.map.getChildren()){
 			child.setY(1f-child.getY()-child.getHeight());
+			if(child instanceof UpdatableSquare){
+				UpdatableSquare square = (UpdatableSquare)child;
+				if(square.getAction().getIndex()==2){
+					square.getAction().addFloats(-square.getAction().getFloat(0), -square.getAction().getFloat(1));
+				}
+			}
 		}
 		boolean cj = focusedCanJump;
 		boolean jg = focusedJumping;
@@ -123,7 +146,7 @@ public class PlatformMode implements GameMode{
 		wild.setYAcceleration(acc);
 		wildCanJump=cj;
 		wildJumping=true;
-		
+
 	}
 	@Override 
 	public void update(double secondsSinceLastFrame){

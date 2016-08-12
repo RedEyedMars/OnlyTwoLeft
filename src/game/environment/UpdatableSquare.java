@@ -12,8 +12,8 @@ public class UpdatableSquare extends OnStepSquare {
 	private UpdateAction updateAction;
 	private boolean activated = false;
 	private List<Square> dependants = new ArrayList<Square>();
-	public UpdatableSquare(int actionType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
-		super(actionType-3,blackColour, whiteColour,ints, floats);
+	public UpdatableSquare(int actionType,int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
+		super(actionType-3,shapeType,blackColour, whiteColour,ints, floats);
 		this.actionType=actionType;
 		this.updateAction = UpdateAction.getAction(ints.next()).create();		
 		this.updateAction.setArgs(ints,floats);
@@ -23,6 +23,13 @@ public class UpdatableSquare extends OnStepSquare {
 		for(int i=0;i<depends;++i){
 			addDependant(Square.create(ints, floats));
 		}
+	}
+	public UpdatableSquare(int shapeType, int blackColour, int whiteColour,float width, float height,int action, float x, float y,int blackAction,int whiteAction) {
+		super(shapeType,blackColour, whiteColour,width,height,blackAction,whiteAction);
+		this.actionType=3;
+		this.updateAction = UpdateAction.getAction(action).create();		
+		this.updateAction.addFloats(x,y);
+		this.updateAction.setTarget(this);
 	}
 
 	public void recycle() {
@@ -65,15 +72,6 @@ public class UpdatableSquare extends OnStepSquare {
 	public List<Square> getDependants() {
 		return dependants;
 	}
-	@Override
-	public void displayFor(int colour){
-		super.displayFor(colour);
-		if(dependants!=null){
-			for(Square square:dependants){
-				square.displayFor(colour);
-			}
-		}
-	}
 
 	public void run(){
 		activated = this.updateAction.getDefaultState();
@@ -93,5 +91,6 @@ public class UpdatableSquare extends OnStepSquare {
 			square.saveTo(toSave);
 		}
 	}
+
 
 }

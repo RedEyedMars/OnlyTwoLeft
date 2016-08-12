@@ -155,9 +155,6 @@ public class GraphicRenderer {
 		d.draw();
 	}
 
-	public void clear() {
-		throw new RuntimeException("CLEARLY NOT IMPLEMENETED (glrenderer.clear())");
-	}
 	public boolean buffersInclude(int key) {
 		return textureBuffers.containsKey(key);
 	}

@@ -19,7 +19,7 @@ import main.Main;
 
 public class MainMenu extends Menu{
 
-	
+
 	public MainMenu() {
 		super();
 		if(Client.isConnected()){
@@ -34,7 +34,7 @@ public class MainMenu extends Menu{
 		button.setX(0.2f);
 		button.setY(0.51f);
 		addChild(button);
-		
+
 		button = new MenuButton("Duo"){
 			@Override
 			public void performOnRelease(MotionEvent e){
@@ -44,7 +44,7 @@ public class MainMenu extends Menu{
 		button.setX(0.2f);
 		button.setY(0.35f);
 		addChild(button);
-		
+
 		button = new MenuButton("Editors"){
 			@Override
 			public void performOnRelease(MotionEvent e){
@@ -55,23 +55,23 @@ public class MainMenu extends Menu{
 		button.setY(0.19f);
 		addChild(button);
 	}
-	
+
 	public void duo(){
 		Gui.setView(new DuoMenu());
 	}
-	
+
 	public void solo(){
 		if(Main.loadMap()){
 			Gui.setView(new Game(true));
 		}
 	}
-	
+
 	public void editor(){
 		Gui.setView(new EditorMenu());
 	}
-	
+
 	public void startHighscores(){
 	}
 
-	
+
 }

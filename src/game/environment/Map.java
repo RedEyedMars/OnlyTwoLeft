@@ -1,25 +1,24 @@
 package game.environment;
 
-import java.lang.reflect.Field;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import duo.client.Client;
-import game.Action;
 import game.Hero;
-import game.VisionBubble;
 import game.modes.GameMode;
 import game.modes.OverheadMode;
 import game.modes.PlatformMode;
+import gui.Gui;
 import gui.graphics.GraphicEntity;
-import gui.graphics.GraphicView;
 import main.Hub;
-import main.Log;
+import storage.Storage;
 
 public class Map extends GraphicEntity {
+
+	protected static final float gridSizeX = 100f;
+	protected static final float gridSizeY = 100f;
 
 	private static Map overhead = new Map(){
 		{
@@ -36,18 +35,16 @@ public class Map extends GraphicEntity {
 	private List<UpdatableSquare> updateSquares = new ArrayList<UpdatableSquare>();
 	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
 	private List<Square> templateSquares = new ArrayList<Square>();
+	private List<Square> displaySquares = new ArrayList<Square>();
 
 	private java.util.Map<Square,List<OnStepSquare>> adjacentSquares = new HashMap<Square,List<OnStepSquare>>();
-
-
-	protected static final float gridSizeX = 20f;
-	protected static final float gridSizeY = 20f;
 
 	private float[] startingXPosition = new float[2];
 	private float[] startingYPosition = new float[2];
 
 
 	private int mapId=0;
+	private int visibleColour=0;
 	private Map() {
 		super("blank");
 		this.setVisible(false);
@@ -80,12 +77,28 @@ public class Map extends GraphicEntity {
 		if(square instanceof OnCreateSquare){
 			onCreates.add((OnCreateSquare) square);
 		}
+		displaySquares.add(square);
+		square.displayFor(visibleColour);
+	}
+	public void unDisplaySquare(Square square) {
+		if(square==null)return;
+		if(square.isFunctional()){
+			functionalSquares.remove((OnStepSquare)square);
+		}
+		if(square instanceof UpdatableSquare){
+			updateSquares.remove((UpdatableSquare)square);
+		}
+		if(square instanceof OnCreateSquare){
+			onCreates.remove((OnCreateSquare) square);
+		}
+		displaySquares.remove(square);
 	}
 
 	public void setVisibleSquares(int colour){
-		for(Square square:allSquares){
+		for(Square square:displaySquares){
 			square.displayFor(colour);
 		}
+		visibleColour = colour;
 	}
 
 	private float xOffset = 0f;
@@ -228,8 +241,14 @@ public class Map extends GraphicEntity {
 	}
 
 	public void moveToStart(Hero hero){
-		hero.setX(startingXPosition[hero.getColour()]);
-		hero.setY(startingYPosition[hero.getColour()]);
+		if(hero.isBlack()){
+			hero.setX(startingXPosition[0]);
+			hero.setY(startingYPosition[0]);
+		}
+		else if(hero.isWhite()){
+			hero.setX(startingXPosition[1]);
+			hero.setY(startingYPosition[1]);
+		}
 	}
 
 	public void setStartPosition(int colour, float x, float y) {
@@ -245,23 +264,17 @@ public class Map extends GraphicEntity {
 	public float getRealX(int x){
 		return ((float)x)/gridSizeX;
 	}
-	public int getIntXHigh(float x){
-		return (int) (x*gridSizeX+0.5f);
+	public float getRealY(int y){
+		return ((float)y)/gridSizeY;
 	}
-	public int getIntXLow(float x){
+	public int getIntX(float x){
 		if(x<=0){
 			return (int) (x*gridSizeX-0.5f);
 		}
 		return (int) (x*gridSizeX+0.5f);
 	}
 
-	public float getRealY(int y){
-		return ((float)y)/gridSizeY;
-	}
-	public int getIntYHigh(float y){
-		return (int) (y*gridSizeY+0.5f);
-	}
-	public int getIntYLow(float y){
+	public int getIntY(float y){
 		return (int) (y*gridSizeY+0.5f);
 	}
 
@@ -274,12 +287,12 @@ public class Map extends GraphicEntity {
 
 	public GameMode getGameMode() {
 		switch((mapId+20)/-20){
-			case 0:{
-				return new OverheadMode();
-			}
-			case 1:{
-				return new PlatformMode();
-			}
+		case 0:{
+			return new OverheadMode();
+		}
+		case 1:{
+			return new PlatformMode();
+		}
 		}
 		return null;
 	}
@@ -347,10 +360,12 @@ public class Map extends GraphicEntity {
 		}
 
 		public Integer nextInteger(){
+			//if(integerIndex>=maxIntegers)return 0;
 			return (Integer)data[integerIndex++];
 		}
 
 		public Float nextFloat(){
+			//if(floatIndex>=data.length)return 0f;
 			return (Float)data[floatIndex++];
 		}
 
@@ -372,6 +387,15 @@ public class Map extends GraphicEntity {
 			return stringIterator;
 		}
 
+	}
+
+	public static void main(String[] args){
+		File file = Gui.userSave("maps");
+		while(file!=null){
+			Storage.loadMap(file.getAbsolutePath());
+			Storage.saveMap(file.getAbsolutePath(), Hub.map);
+			file = Gui.userSave("maps");
+		}
 	}
 
 

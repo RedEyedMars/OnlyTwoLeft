@@ -168,10 +168,10 @@ public class OnCreateSquareEditor extends Editor{
 				return false;
 			}
 		};
-		ints.add(Hub.map.getIntXLow(square_x));
-		ints.add(Hub.map.getIntYLow(square_y));
-		ints.add(Hub.map.getIntXHigh(square_w));
-		ints.add(Hub.map.getIntXHigh(square_h));
+		ints.add(Hub.map.getIntX(square_x));
+		ints.add(Hub.map.getIntY(square_y));
+		ints.add(Hub.map.getIntX(square_w));
+		ints.add(Hub.map.getIntX(square_h));
 		int numberOfOffsets = 0;
 		for(OnCreateAction action:actions){
 			if(action.getIndex()==8){
@@ -182,7 +182,7 @@ public class OnCreateSquareEditor extends Editor{
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
 		}
-		OnCreateSquare square = new OnCreateSquare(-1,-1,ints.iterator(),floats.iterator());
+		OnCreateSquare square = new OnCreateSquare(0,-1,-1,ints.iterator(),floats.iterator());
 		if(editor==null){
 			for(GraphicEntity child:square.getChildren()){
 				child.onAddToDrawable();

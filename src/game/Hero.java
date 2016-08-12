@@ -5,14 +5,15 @@ import java.util.List;
 
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
+import game.environment.Colourable;
+import game.environment.OnStepAction;
 import game.environment.OnStepSquare;
 import game.environment.Square;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
-public class Hero extends GraphicEntity{
+public class Hero extends GraphicEntity implements Colourable{
 
-	private static float radius = 0.010f;
 	public static byte black = 0;
 	public static byte white = 1;
 	private float xVel=0f;
@@ -26,11 +27,19 @@ public class Hero extends GraphicEntity{
 	private boolean southWallFound=false;
 	private boolean northWallFound=false;
 	private boolean onCorner=false;
+	private int index;
+	private float radius=0.01f;
 	public Hero(Game game, byte colour) {
-		super("circles");
-		this.setFrame(colour);
+		super("heroes",1);
+		index=colour;
+		this.setFrame(colour*7);
 		this.adjust(radius*2f, radius*2f);
 		this.game = game;
+	}
+	@Override
+	public void adjust(float x, float y){
+		this.radius = (x+y)/4f;
+		super.adjust(x, y);
 	}
 	public void setPartner(Hero hero){
 		this.partner = hero;
@@ -38,11 +47,15 @@ public class Hero extends GraphicEntity{
 	public Hero getPartner(){
 		return partner;
 	}
-	public int getColour() {
-		return textureIndex();
+	public boolean isBlack() {
+		return index==0;
+	}
+	public boolean isWhite(){
+		return index==1;
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
+		if(secondsSinceLastFrame>0.1f)return;
 		xVel=xVel*0.9f+xAcc;
 		if(Math.abs(xVel)>2f){
 			xVel=Math.signum(xVel)*2f;
@@ -83,7 +96,7 @@ public class Hero extends GraphicEntity{
 	}
 
 	public String getType() {
-		return this.textureIndex()==0?"black":this.textureIndex()==1?"white":"OTHER";
+		return this.index==0?"black":index==1?"white":"OTHER";
 	}
 
 	protected void move(float x, float y) {
@@ -139,14 +152,13 @@ public class Hero extends GraphicEntity{
 	public static Object[] handleWalls(GraphicEntity target,List<GraphicEntity> squaresFound, List<Boolean> isSafes) {
 		if(squaresFound.size()<=1){
 			if(squaresFound.size()==0)return new Object[]{0f,0f,false,null,null,null,null};
-			return new Object[]{0f,0f,false,squaresFound.get(0),null,null,null};
+			return new Object[]{0f,0f,false,0,null,null,null};
 		}
 		boolean NW=true,NE=true,SW=true,SE=true;
-		GraphicEntity Ns=null,Es=null,Ws=null,Ss=null;
+		Integer NWs=null,NEs=null,SWs=null,SEs=null;
 		float N=1000f,E=1000f,S=1000f,W=1000f;
 
 		for(int i=squaresFound.size()-1;i>=0;--i){
-
 			GraphicEntity bigHorz = squaresFound.get(i);
 			GraphicEntity bigVert = squaresFound.get(i);
 			GraphicEntity smallHorz = target;
@@ -174,25 +186,21 @@ public class Hero extends GraphicEntity{
 					if(smallVert==target){
 						if(smallHorz==target){
 							NE=safe;
-							Ns=bigVert;
-							Es=bigHorz;
+							NEs=i;
 						}
 						else {
 							NW=safe;
-							Ns=bigVert;
-							Ws=smallHorz;
+							NWs=i;
 						}
 					}
 					else {
 						if(smallHorz==target){
 							SE=safe;
-							Ss=smallVert;
-							Es=smallHorz;
+							SEs=i;
 						}
 						else {
 							SW=safe;
-							Ss=smallVert;
-							Ws=bigHorz;
+							SWs=i;
 						}
 					}
 				}
@@ -200,25 +208,21 @@ public class Hero extends GraphicEntity{
 					if(smallVert==target){
 						if(smallHorz==target){
 							SE=safe;
-							Ss=bigVert;
-							Es=bigHorz;
+							SEs=i;
 						}
 						else {
 							SW=safe;
-							Ss=bigVert;
-							Ws=smallHorz;
+							SWs=i;
 						}
 					}
 					else {
 						if(smallHorz==target){
 							NE=safe;
-							Ns=smallVert;
-							Es=bigHorz;
+							NEs=i;
 						}
 						else {
 							NW=safe;
-							Ns=smallVert;
-							Ws=smallHorz;
+							NWs=i;
 						}
 					}
 				}
@@ -228,25 +232,21 @@ public class Hero extends GraphicEntity{
 					if(smallVert==target){
 						if(smallHorz==target){
 							SW=safe;
-							Ss=bigVert;
-							Ws=bigHorz;
+							SWs=i;
 						}
 						else {
 							SE=safe;
-							Ss=bigVert;
-							Es=smallHorz;
+							SEs=i;
 						}
 					}
 					else {
 						if(smallHorz==target){
 							NW=safe;
-							Ns=smallVert;
-							Ws=bigHorz;
+							NWs=i;
 						}
 						else {
 							NE=safe;
-							Ns=smallVert;
-							Es=smallHorz;
+							NEs=i;
 						}
 					}
 				}
@@ -254,25 +254,21 @@ public class Hero extends GraphicEntity{
 					if(smallVert==target){
 						if(smallHorz==target){
 							NW=safe;
-							Ns=bigVert;
-							Ws=bigHorz;
+							NWs=i;
 						}
 						else {
 							NE=safe;
-							Ns=bigVert;
-							Es=smallHorz;
+							NEs=i;
 						}
 					}
 					else {
 						if(smallHorz==target){
 							SW=safe;
-							Ss=smallVert;
-							Ws=bigHorz;
+							SWs=i;
 						}
 						else {
 							SE=safe;
-							Ss=smallVert;
-							Es=smallHorz;
+							SEs=i;
 						}
 					}
 				}				
@@ -447,20 +443,20 @@ public class Hero extends GraphicEntity{
 					}
 				}
 			}
-			return new Object[]{x,y,onCorner,Ns,Es,Ss,Ws};
+			return new Object[]{x,y,onCorner,NWs,NEs,SEs,SWs};
 		}
 		return new Object[]{0f,0f,false,null,null,null,null};
 	}
-	public void handleWalls(List<GraphicEntity> squaresFound,List<Boolean> safeties){
-		Object[] params = Hero.handleWalls(this, squaresFound, safeties);
+	public void handleWalls(List<GraphicEntity> entities, List<OnStepAction> actions,List<Boolean> safeties){
+		Object[] params = Hero.handleWalls(this, entities, safeties);
 		float x = (float) params[0];
 		float y = (float) params[1];
 		onCorner = (boolean)params[2];
-		OnStepSquare 
-		Ns=(OnStepSquare) params[3],
-		Es=(OnStepSquare) params[4],
-		Ss=(OnStepSquare) params[5],
-		Ws=(OnStepSquare) params[6];		
+		Integer 
+		NWs=(Integer)params[3],
+		NEs=(Integer) params[4],
+		SEs=(Integer) params[5],
+		SWs=(Integer) params[6];		
 		move(x+(Math.signum(x)*0.001f),y+(Math.signum(y)*0.001f));
 		if(y!=0){
 			yVel=0;
@@ -475,17 +471,22 @@ public class Hero extends GraphicEntity{
 			xVel=0;
 			//northWallFound=true;
 		}
-		if(Ns!=null){
-			Ns.getOnHitAction(this).act(this);
+		//System.out.println(NWs+" "+NEs+" "+" "+SWs+" "+SEs);
+		if(NEs!=null&&actions.get(NEs)!=null){
+			actions.get(NEs).setTarget((Square) entities.get(NEs));
+			actions.get(NEs).act(this);
 		}
-		if(Es!=null&&Ns!=Es){
-			Es.getOnHitAction(this).act(this);
+		if(NWs!=null&&NWs!=NEs&&actions.get(NWs)!=null){
+			actions.get(NWs).setTarget((Square) entities.get(NWs));
+			actions.get(NWs).act(this);
 		}
-		if(Ss!=null&&Ss!=Ns&&Ss!=Es){
-			Ss.getOnHitAction(this).act(this);
+		if(SEs!=null&&SEs!=NWs&&SEs!=NEs&&actions.get(SEs)!=null){
+			actions.get(SEs).setTarget((Square) entities.get(SEs));
+			actions.get(SEs).act(this);
 		}
-		if(Ws!=null&&Ws!=Ns&&Ws!=Es&&Ws!=Ss){
-			Ws.getOnHitAction(this).act(this);
+		if(SWs!=null&&SWs!=NWs&&SWs!=NEs&&SWs!=SEs&&actions.get(SWs)!=null){
+			actions.get(SWs).setTarget((Square) entities.get(SWs));
+			actions.get(SWs).act(this);
 		}
 	}
 	public boolean push(OnStepSquare subject) {
@@ -539,5 +540,90 @@ public class Hero extends GraphicEntity{
 		subject.setY(subject.getY()+y-0.0001f);
 		subject.adjust(subject.getWidth()+0.0002f,subject.getHeight()+0.0002f);
 		return x==0&&y==0;
+	}
+	public Boolean[] getColours(boolean isBlack){
+
+		boolean myGreen=textureIndex()==2||textureIndex()==3||textureIndex()==4||textureIndex()==7;
+		boolean myRed=textureIndex()==1||textureIndex()==2||textureIndex()==6||textureIndex()==7;
+		boolean myBlue=textureIndex()==4||textureIndex()==5||textureIndex()==6||textureIndex()==7;
+		return new Boolean[]{myRed, myGreen, myBlue};
+	}
+	public void addToColour(Colourable other) {
+		Boolean[] theirColour = other.getColours(isBlack());
+		boolean theirRed = theirColour[0];
+		boolean theirGreen = theirColour[1];
+		boolean theirBlue = theirColour[2];
+
+		Boolean[] colour = getColours(isBlack());
+		if(colour==null)return;
+		boolean myRed = colour[0];		
+		boolean myGreen = colour[1];
+		boolean myBlue = colour[2];		
+
+		if(isBlack()){
+			myGreen=theirGreen&&!myGreen||myGreen;
+			myRed=theirRed&&!myRed||myRed;
+			myBlue=theirBlue&&!myBlue||myBlue;
+		}
+		else if(isWhite()){
+			myGreen = !theirGreen;
+			myRed = !theirRed;
+			myBlue = !theirBlue;
+		}
+		//System.out.println(theirGreen+","+theirRed+","+theirBlue+" "+myGreen+","+myRed+","+myBlue);
+		setColour(myRed,myGreen,myBlue);
+	}
+	@Override
+	public void setColour(boolean red, boolean green, boolean blue) {
+		int tex=0;
+		if(red){
+			if(green){
+				if(blue){
+					tex=7;
+				}
+				else {
+					tex=2;
+				}
+			}
+			else {
+				if(blue){
+					tex=6;
+				}
+				else {
+					tex=1;
+				}
+			}
+		}
+		else {
+			if(green){
+				if(blue){
+					tex=4;
+				}
+				else {
+					tex=3;
+				}
+			}
+			else {
+				if(blue){
+					tex=5;
+				}
+				else {
+					tex=0;
+				}
+			}
+		}
+		setFrame(tex);
+	}
+	public boolean isSameColour(Colourable other) {
+		Boolean[] myColour = getColours(isBlack());
+		Boolean[] theirColour = other.getColours(isBlack());
+		if(theirColour==null)return false;
+		return myColour[0]==theirColour[0]&&myColour[1]==theirColour[1]&&myColour[2]==theirColour[2];
+	}
+	public boolean isOppositeColour(Colourable other) {
+		Boolean[] myColour = getColours(isBlack());
+		Boolean[] theirColour = other.getColours(isBlack());
+		if(theirColour==null)return false;
+		return myColour[0]!=theirColour[0]&&myColour[1]!=theirColour[1]&&myColour[2]!=theirColour[2];
 	}
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 import game.Action;
 import game.Hero;
-public class Square extends GraphicEntity{
+public class Square extends GraphicEntity implements Colourable{
 
 	public static final byte green = 0;
 	public static final byte darkGreen = 1;
@@ -25,7 +25,8 @@ public class Square extends GraphicEntity{
 	private int blackColour=-1;
 	private int whiteColour=-1;
 	protected int actionType = 0;
-	public Square(int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
+	private int shapeType;
+	public Square(int shapeType, int blackColour,int whiteColour,Iterator<Integer> ints, Iterator<Float> floats) {
 		super("squares");
 		this.blackColour = blackColour;
 		this.whiteColour = whiteColour;
@@ -41,6 +42,8 @@ public class Square extends GraphicEntity{
 			float h = floats.next();
 			adjust(w,h);		
 		}*/
+		this.shapeType = shapeType;
+		this.setShape(shapeType);
 		setX(Hub.map.getRealX(ints.next()));
 		setY(Hub.map.getRealY(ints.next()));
 		float w = Hub.map.getRealX(ints.next());		
@@ -70,11 +73,6 @@ public class Square extends GraphicEntity{
 	public void displayFor(int colour){
 		if(blackColour==-1&&whiteColour==-1){
 			turnOff();
-			for(GraphicEntity child:children){
-				if(child instanceof Square){
-					((Square)child).displayFor(colour);
-				}
-			}
 		}
 		else if(colour==0){
 			if(blackColour>=0){
@@ -103,7 +101,15 @@ public class Square extends GraphicEntity{
 		}
 		else turnOff();
 	}
-
+	public int getColour(int i) {
+		if(i==0){
+			return blackColour;
+		}
+		else if(i==1){
+			return whiteColour;
+		}
+		else return blackColour;
+	}
 	@Override
 	public void adjust(float x, float y){
 		this.getGraphicElement().adjust(x, y);
@@ -142,12 +148,13 @@ public class Square extends GraphicEntity{
 	}
 	public void saveTo(List<Object> toSave) {
 		toSave.add(actionType);
+		toSave.add(shapeType);
 		toSave.add(blackColour);
 		toSave.add(whiteColour);
-		toSave.add(Hub.map.getIntXLow(getX()));
-		toSave.add(Hub.map.getIntYLow(getY()));
-		toSave.add(Hub.map.getIntXHigh(getWidth()));
-		toSave.add(Hub.map.getIntYHigh(getHeight()));
+		toSave.add(Hub.map.getIntX(getX()));
+		toSave.add(Hub.map.getIntY(getY()));
+		toSave.add(Hub.map.getIntX(getWidth()));
+		toSave.add(Hub.map.getIntY(getHeight()));
 		for(SquareAction action:getActions()){
 			action.saveTo(toSave);
 		}
@@ -155,32 +162,39 @@ public class Square extends GraphicEntity{
 	public List<SquareAction> getActions() {
 		return new ArrayList<SquareAction>();
 	}
+
+	public int getReflectTriangle(int colour) {
+		//later we can do "only reflect if the colour is right" right now just reflects everything
+		return entity.getReflectedShape();
+	}
 	public static Square create(Iterator<Integer> ints, Iterator<Float> floats){		
 		Square square = null;
 		int actionType = ints.next();
+		int shapeType = ints.next();
 		int blackColour = ints.next();
 		int whiteColour = ints.next();
 		if(actionType==0){
-			square = new Square(blackColour,whiteColour,ints,floats);
+			square = new Square(shapeType,blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType>=1&&actionType<=2){
-			square = new OnStepSquare(actionType,blackColour,whiteColour,ints,floats);
+			square = new OnStepSquare(actionType,shapeType,blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType>=3&&actionType<=5){	
-			square = new UpdatableSquare(actionType,blackColour,whiteColour,ints,floats);
+			square = new UpdatableSquare(actionType,shapeType,blackColour,whiteColour,ints,floats);
 		}
 		else if(actionType==6){
-			square = new OnCreateSquare(blackColour,whiteColour,ints,floats);
+			square = new OnCreateSquare(shapeType,blackColour,whiteColour,ints,floats);
 		}
 		return square;
 	}
 	public static Iterator<Integer> makeInts(
 			int squareAction1, int squareAction2, int updateAction, boolean onCreateAction,
-			int colour, int colour2,int x, int y, int w, int h) {		
+			int shapeType, int colour, int colour2,int x, int y, int w, int h) {		
 		List<Integer> ints = new ArrayList<Integer>();
 		if(!onCreateAction){
 			if(squareAction1==-1&&squareAction2==-1&&updateAction==-1){
 				ints.add(0);
+				ints.add(shapeType);
 				ints.add(colour);
 				ints.add(colour2);
 				ints.add(x);
@@ -191,6 +205,7 @@ public class Square extends GraphicEntity{
 			else if((squareAction1!=-1||squareAction2!=-1)&&updateAction==-1){
 				if(squareAction1==squareAction2){
 					ints.add(1);
+					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
 					ints.add(x);
@@ -201,6 +216,7 @@ public class Square extends GraphicEntity{
 				}
 				else {
 					ints.add(2);
+					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
 					ints.add(x);
@@ -214,6 +230,7 @@ public class Square extends GraphicEntity{
 			else if(updateAction>=0){
 				if(squareAction1==-1&&squareAction2==-1){
 					ints.add(3);
+					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
 					ints.add(x);
@@ -224,6 +241,7 @@ public class Square extends GraphicEntity{
 				}
 				else if(squareAction1==squareAction2){
 					ints.add(4);
+					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
 					ints.add(x);
@@ -235,6 +253,7 @@ public class Square extends GraphicEntity{
 				}
 				else {
 					ints.add(5);
+					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
 					ints.add(x);
@@ -249,6 +268,7 @@ public class Square extends GraphicEntity{
 		}
 		else{
 			ints.add(6);
+			ints.add(shapeType);
 			ints.add(colour);
 			ints.add(colour);
 			ints.add(x);
@@ -286,5 +306,20 @@ public class Square extends GraphicEntity{
 		List<Float> floats = new ArrayList<Float>();
 		Square.addArgsFromSquare(square, ints, floats);
 		return Square.create(ints.iterator(), floats.iterator());
+	}
+
+	@Override
+	public Boolean[] getColours(boolean isBlack) {
+		if(isBlack&&blackColour==-1)return null;
+		else if(!isBlack&&whiteColour==-1)return null;
+		int texture = isBlack?blackColour:whiteColour;
+		boolean myRed=texture==4||texture==8||texture==10||texture==15;
+		boolean myGreen=texture==0||texture==8||texture==12||texture==15;
+		boolean myBlue=texture==2||texture==10||texture==12||texture==15;
+		return new Boolean[]{myRed, myGreen, myBlue};
+	}
+
+	@Override
+	public void setColour(boolean red, boolean green, boolean blue) {
 	}
 }

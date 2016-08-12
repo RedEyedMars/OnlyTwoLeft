@@ -123,4 +123,7 @@ public class GraphicEntity extends GraphicView {
 	public boolean isWithin(float dx, float dy) {
 		return entity.isWithin(dx, dy);
 	}
+	public void setShape(int i){
+		entity.setShape(i);
+	}
 }
