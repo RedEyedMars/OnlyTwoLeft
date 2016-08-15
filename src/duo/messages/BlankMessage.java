@@ -8,7 +8,7 @@ import duo.Handler;
  *
  */
 public class BlankMessage extends Message{
-	//Requried for message sending
+	//Serial for message sending.
 	private static final long serialVersionUID = 746508151288345062L;
 
 	/**

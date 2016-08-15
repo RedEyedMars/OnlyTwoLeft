@@ -58,34 +58,7 @@ public class OverheadMode implements GameMode{
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{black,white}){
-			List<GraphicEntity> safetiesFound = new ArrayList<GraphicEntity>();
-			List<OnStepAction> actionsFound = new ArrayList<OnStepAction>();
-			List<Boolean> safeties            = new ArrayList<Boolean>();
-			for(int i=mapSquares.size()-1;i>=0;--i){
-				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
-				if(action!=null){
-					if(hero.isWithin(mapSquares.get(i))){
-						if(action.isSafe()){
-							safetiesFound.add(mapSquares.get(i));
-							actionsFound.add(action);
-							safeties.add(action.isSafe());
-							if(hero.isCompletelyWithin(mapSquares.get(i))){
-								break;
-							}
-						}
-						else {
-							action.setTarget(mapSquares.get(i));
-							if(!action.resolve(hero)){
-								safetiesFound.add(mapSquares.get(i));
-								actionsFound.add(action);
-								safeties.add(action.isSafe());
-							}
-						}
-					}
-				}
-			}
-
-			hero.handleWalls(safetiesFound,actionsFound,safeties);
+			hero.handleWalls(mapSquares);
 		}
 	}
 

@@ -10,7 +10,7 @@ import duo.Handler;
  *
  */
 public class AddPlayerMessage extends Message{
-	//Required for message sending.
+	//Serial for message sending.
 	private static final long serialVersionUID = -8715731293278294725L;
 	//The name of the player to be added. This is used as a reference when a player tries to join a game.
 	@SuppressWarnings("unused")

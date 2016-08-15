@@ -20,6 +20,8 @@ public class Hero extends GraphicEntity implements Colourable{
 	private float yVel=0f;
 	private float xAcc=0f;
 	private float yAcc=0f;
+	private float deltaX=0f;
+	private float deltaY=0f;
 
 	private Game game;
 	private Hero partner;
@@ -55,7 +57,7 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
-		if(secondsSinceLastFrame>0.1f)return;
+		
 		xVel=xVel*0.9f+xAcc;
 		if(Math.abs(xVel)>2f){
 			xVel=Math.signum(xVel)*2f;
@@ -64,7 +66,8 @@ public class Hero extends GraphicEntity implements Colourable{
 		if(Math.abs(xVel)>2f){
 			yVel=Math.signum(yVel)*2f;
 		}
-		move((float)(xVel*secondsSinceLastFrame),(float)(yVel*secondsSinceLastFrame));
+		deltaX=(float) (xVel*secondsSinceLastFrame);
+		deltaY=(float) (yVel*secondsSinceLastFrame);
 		super.update(secondsSinceLastFrame);
 	}
 
@@ -276,16 +279,16 @@ public class Hero extends GraphicEntity implements Colourable{
 
 			float e=0f,w=0f,n=0f,s=0f;
 			if(safe){
-				e =(smallRight)-(bigRight);
-				w =bigLeft-smallLeft;
-				n =(smallUp)-(bigUp);
-				s =-(smallDown)+(bigDown);
+				e = smallRight-bigRight;
+				w = bigLeft-smallLeft;
+				n = smallUp-bigUp;
+				s = bigDown-smallDown;
 			}
 			else {
-				e = (smallRight)-(bigLeft);
+				e = smallRight-bigLeft;
 				w = bigRight-smallLeft;
-				n = (smallUp)-(bigDown);
-				s = -(smallDown)+(bigUp);
+				n = smallUp-bigDown;
+				s = bigUp-smallDown;
 			}
 
 			if(smallVert==target){
@@ -447,19 +450,60 @@ public class Hero extends GraphicEntity implements Colourable{
 		}
 		return new Object[]{0f,0f,false,null,null,null,null};
 	}
-	public void handleWalls(List<GraphicEntity> entities, List<OnStepAction> actions,List<Boolean> safeties){
+	public void handleWalls(List<OnStepSquare> mapSquares){
+
+		setX(getX()+deltaX);
+		setY(getY()+deltaY);
+		List<GraphicEntity> entities = new ArrayList<GraphicEntity>();
+		List<OnStepAction> actions = new ArrayList<OnStepAction>();
+		List<Boolean> safeties            = new ArrayList<Boolean>();
+		for(int i=mapSquares.size()-1;i>=0;--i){
+			OnStepAction action = mapSquares.get(i).getOnHitAction(this);
+			if(action!=null){
+				if(this.isWithin(mapSquares.get(i))){
+					if(this.isOppositeColour(mapSquares.get(i))){
+						entities.add(mapSquares.get(i));
+						actions.add(null);							
+						safeties.add(true);
+					}
+					else if(this.isSameColour(mapSquares.get(i))){
+						entities.add(mapSquares.get(i));
+						actions.add(OnStepAction.impassible);							
+						safeties.add(false);
+					}
+					else if(action.isSafe()){
+						entities.add(mapSquares.get(i));
+						actions.add(action);
+						safeties.add(action.isSafe());							
+					}
+					else {
+						action.setTarget(mapSquares.get(i));
+						if(!action.resolve(this)){
+							entities.add(mapSquares.get(i));
+							actions.add(action);
+							safeties.add(action.isSafe());
+						}
+					}
+					if(this.isCompletelyWithin(mapSquares.get(i))){
+						break;
+					}
+				}
+			}
+		}
 		Object[] params = Hero.handleWalls(this, entities, safeties);
+		setX(getX()-deltaX);
+		setY(getY()-deltaY);
 		float x = (float) params[0];
 		float y = (float) params[1];
 		onCorner = (boolean)params[2];
 		Integer 
-		NWs=(Integer)params[3],
+		NWs=(Integer) params[3],
 		NEs=(Integer) params[4],
 		SEs=(Integer) params[5],
 		SWs=(Integer) params[6];		
-		move(x+(Math.signum(x)*0.001f),y+(Math.signum(y)*0.001f));
+		move(deltaX+x,deltaY+y);
 		if(y!=0){
-			yVel=0;
+			//yVel=0;
 			if(y>0){
 				southWallFound=true;
 			}
@@ -468,7 +512,7 @@ public class Hero extends GraphicEntity implements Colourable{
 			}
 		}
 		if(x!=0){
-			xVel=0;
+			//xVel=0;
 			//northWallFound=true;
 		}
 		//System.out.println(NWs+" "+NEs+" "+" "+SWs+" "+SEs);
@@ -502,8 +546,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		Object[] params = Hero.handleWalls(this, squaresFound, safeties);
 		float x = (float) params[0];
 		float y = (float) params[1];
-		subject.setX(subject.getX()-x);
-		subject.setY(subject.getY()-y);
+		subject.move(-x,-y);
 
 		if(!subject.getOnHitAction(getPartner()).isSafe()){
 			params = Hero.handleWalls(getPartner(), squaresFound, safeties);
@@ -530,14 +573,12 @@ public class Hero extends GraphicEntity implements Colourable{
 				break;
 			}
 		}
-		subject.setX(subject.getX()+0.0001f);
-		subject.setY(subject.getY()+0.0001f);
+		subject.move(0.0001f,0.0001f);
 		subject.adjust(subject.getWidth()-0.0002f,subject.getHeight()-0.0002f);
 		params = Hero.handleWalls(subject, squaresFound, safeties);
 		x = (float) params[0];
 		y = (float) params[1];	
-		subject.setX(subject.getX()+x-0.0001f);
-		subject.setY(subject.getY()+y-0.0001f);
+		subject.move(x-0.0001f,y-0.0001f);
 		subject.adjust(subject.getWidth()+0.0002f,subject.getHeight()+0.0002f);
 		return x==0&&y==0;
 	}
@@ -550,6 +591,7 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	public void addToColour(Colourable other) {
 		Boolean[] theirColour = other.getColours(isBlack());
+		if(theirColour==null)return;
 		boolean theirRed = theirColour[0];
 		boolean theirGreen = theirColour[1];
 		boolean theirBlue = theirColour[2];
@@ -561,9 +603,16 @@ public class Hero extends GraphicEntity implements Colourable{
 		boolean myBlue = colour[2];		
 
 		if(isBlack()){
-			myGreen=theirGreen&&!myGreen||myGreen;
-			myRed=theirRed&&!myRed||myRed;
-			myBlue=theirBlue&&!myBlue||myBlue;
+			if(!theirGreen&&!theirRed&&!theirBlue){
+				myGreen=false;
+				myRed=false;
+				myBlue=false;
+			}
+			else {
+				myGreen=theirGreen&&!myGreen||myGreen;
+				myRed=theirRed&&!myRed||myRed;
+				myBlue=theirBlue&&!myBlue||myBlue;
+			}
 		}
 		else if(isWhite()){
 			myGreen = !theirGreen;

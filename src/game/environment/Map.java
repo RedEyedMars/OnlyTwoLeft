@@ -360,7 +360,7 @@ public class Map extends GraphicEntity {
 		}
 
 		public Integer nextInteger(){
-			//if(integerIndex>=maxIntegers)return 0;
+			if(integerIndex>=maxIntegers)return 0;
 			return (Integer)data[integerIndex++];
 		}
 

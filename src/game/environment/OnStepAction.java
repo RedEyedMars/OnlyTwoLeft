@@ -32,12 +32,16 @@ public abstract class OnStepAction implements SquareAction<Hero> {
 		public void act(Hero subject) {
 			if(target instanceof UpdatableSquare){
 				UpdatableSquare square = ((UpdatableSquare)target);
-				if(square.getAction().getIndex()==0||square.getAction().getIndex()==1){
-					if(subject.getXAcceleration()==0){
-						subject.setXVelocity(square.getAction().getFloat(0)/0.9f);
-					}
-					if(subject.getYAcceleration()==0){
-						subject.setYVelocity(square.getAction().getFloat(1)/0.9f);
+				for(UpdateAction updateAction:square.getAction()){
+					if(updateAction.getIndex()==0||updateAction.getIndex()==1){
+						if(subject.getXAcceleration()==0){
+							subject.setXVelocity(subject.getXVelocity()+updateAction.getFloat(0)/0.9f);
+						}
+						if(subject.getYAcceleration()==0){
+							if(updateAction.getFloat(1)<0){
+								subject.setYVelocity(subject.getYVelocity()+updateAction.getFloat(1)/0.9f);
+							}
+						}
 					}
 				}
 			}

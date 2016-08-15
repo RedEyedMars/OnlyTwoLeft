@@ -150,7 +150,7 @@ public class GraphicRenderer {
 		if(previousTexture != texMap.get(d.getTextureName())){
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, texMap.get(d.getTextureName()));
 			previousTexture = texMap.get(d.getTextureName());
-		}		
+		}
 		GL11.glTexCoordPointer(2, 0, textureBuffers.get(sizMap.get(d.getTextureName()))[d.textureIndex()]);
 		d.draw();
 	}

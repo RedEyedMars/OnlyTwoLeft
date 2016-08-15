@@ -17,10 +17,10 @@ import main.Hub;
 import game.Action;
 import game.Game;
 
-public abstract class UpdateAction implements SquareAction<Double>{
+public abstract class UpdateAction implements SquareAction<Double>, Iterable<UpdateAction>{
 	public static List<UpdateAction> actions = new ArrayList<UpdateAction>();
 	public static List<String> actionNames = new ArrayList<String>();
-	public static List<OnStepAction> limiters = new ArrayList<OnStepAction>();
+	public static List<Action<UpdateAction>> limiters = new ArrayList<Action<UpdateAction>>();
 
 
 	protected UpdatableSquare self;
@@ -36,8 +36,7 @@ public abstract class UpdateAction implements SquareAction<Double>{
 			growthH += y*seconds;
 			self.adjust((float) (self.getWidth()+x*seconds), (float) (self.getHeight()+y*seconds));
 			if(onLimitBrokenAction>-1&&Math.sqrt(growthW*growthW+growthH*growthH)>=limit){
-				limiters.get(onLimitBrokenAction).setTarget(self);
-				limiters.get(onLimitBrokenAction).act(null);
+				limiters.get(onLimitBrokenAction).act(this);
 				growthW=0f;
 				growthH=0f;
 			}
@@ -62,15 +61,15 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		private float origYvel = 0f;
 		@Override
 		public void act(Double seconds) {
-			if(seconds>0.05f)return;
 			movementX += x*seconds;
 			movementY += y*seconds;
-			self.move((float) (x*seconds),(float) (y*seconds));
 			if(onLimitBrokenAction>-1&&Math.sqrt(movementX*movementX+movementY*movementY)>=limit){
-				limiters.get(onLimitBrokenAction).setTarget(self);
-				limiters.get(onLimitBrokenAction).act(null);
+				limiters.get(onLimitBrokenAction).act(this);
 				movementX=0f;
 				movementY=0f;
+			}
+			else {
+				self.move((float) (x*seconds),(float) (y*seconds));
 			}
 		}
 		@Override
@@ -142,6 +141,8 @@ public abstract class UpdateAction implements SquareAction<Double>{
 				else {
 					blackLight.adjust(blackDis,self.getHeight());
 					whiteLight.adjust(whiteDis,self.getHeight());
+					blackLight.setVisible(true);
+					whiteLight.setVisible(true);
 				}				
 				if(x>0){
 					blackLight.setX(self.getX()+self.getWidth());
@@ -168,6 +169,8 @@ public abstract class UpdateAction implements SquareAction<Double>{
 				else {
 					blackLight.adjust(self.getWidth(),blackDis);
 					whiteLight.adjust(self.getWidth(),whiteDis);
+					blackLight.setVisible(true);
+					whiteLight.setVisible(true);
 				}
 				if(y>0){
 					blackLight.setY(self.getY()+self.getHeight());
@@ -289,12 +292,12 @@ public abstract class UpdateAction implements SquareAction<Double>{
 							hero.getY()+hero.getHeight()/2f>=self.getY()&&
 							hero.getY()+hero.getHeight()/2f<=self.getY()+self.getHeight())){
 						if(x>0&&hero.getX()-(self.getX()+self.getWidth())<minDis&&
-								self.getX()+self.getWidth()<hero.getX()){
+								self.getX()+self.getWidth()<=hero.getX()){
 							minDis=hero.getX()-(self.getX()+self.getWidth());
 							stopSquare=hero;
 						}
 						else if(x<0&&self.getX()-(hero.getX()+hero.getWidth())<minDis&&
-								hero.getX()+hero.getWidth()<self.getX()){
+								hero.getX()+hero.getWidth()<=self.getX()){
 							minDis=self.getX()-(hero.getX()+hero.getWidth());
 							stopSquare=hero;
 						}
@@ -305,12 +308,12 @@ public abstract class UpdateAction implements SquareAction<Double>{
 							hero.getX()+hero.getWidth()/2f>=self.getX()&&
 							hero.getX()+hero.getWidth()/2f<=self.getX()+self.getWidth())){
 						if(y>0&&hero.getY()-(self.getY()+self.getHeight())<minDis&&
-								self.getY()+self.getHeight()<hero.getY()){
+								self.getY()+self.getHeight()-0.005f<=hero.getY()){
 							minDis=hero.getY()-(self.getY()+self.getHeight());
 							stopSquare=hero;
 						}
 						else if(y<0&&self.getY()-(hero.getY()+hero.getHeight())<minDis&&
-								hero.getY()+hero.getHeight()<self.getY()){
+								hero.getY()+hero.getHeight()<=self.getY()){
 							minDis=self.getY()-(hero.getY()+hero.getHeight());
 							stopSquare=hero;
 						}
@@ -327,12 +330,12 @@ public abstract class UpdateAction implements SquareAction<Double>{
 							square.getY()+square.getHeight()/2f>=self.getY()&&
 							square.getY()+square.getHeight()/2f<=self.getY()+self.getHeight())){
 						if(x>0&&square.getX()-(self.getX()+self.getWidth())<minDis&&
-								self.getX()+self.getWidth()<square.getX()){
+								self.getX()+self.getWidth()<=square.getX()){
 							minDis=square.getX()-(self.getX()+self.getWidth());
 							stopSquare=square;
 						}
 						else if(x<0&&self.getX()-(square.getX()+square.getWidth())<minDis&&
-								square.getX()+square.getWidth()<self.getX()){
+								square.getX()+square.getWidth()<=self.getX()){
 							minDis=self.getX()-(square.getX()+square.getWidth());
 							stopSquare=square;
 						}
@@ -343,12 +346,12 @@ public abstract class UpdateAction implements SquareAction<Double>{
 							square.getX()+square.getWidth()/2f>=self.getX()&&
 							square.getX()+square.getWidth()/2f<=self.getX()+self.getWidth())){
 						if(y>0&&square.getY()-(self.getY()+self.getHeight())<minDis&&
-								self.getY()+self.getHeight()<square.getY()){
+								self.getY()+self.getHeight()<=square.getY()){
 							minDis=square.getY()-(self.getY()+self.getHeight());
 							stopSquare=square;
 						}
 						else if(y<0&&self.getY()-(square.getY()+square.getHeight())<minDis&&
-								square.getY()+square.getHeight()<self.getY()){
+								square.getY()+square.getHeight()<=self.getY()){
 							minDis=self.getY()-(square.getY()+square.getHeight());
 							stopSquare=square;
 						}
@@ -359,6 +362,22 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		}
 		@Override
 		public void undo(){
+			if(blackLight!=null){
+				blackLight.setVisible(false);
+			}
+			if(whiteLight!=null){
+				whiteLight.setVisible(false);
+			}
+			if(blackReflector!=null){
+				blackReflector.setVisible(false);
+			}
+			if(whiteReflector!=null){
+				whiteReflector.setVisible(false);
+			}
+		}
+		@Override
+		public void onDeactivate(){
+			undo();
 		}
 		@Override
 		public int getIndex() {
@@ -366,41 +385,106 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		}
 	};
 
-	public static final OnStepAction reverse = new OnStepAction(){
-		@Override
-		public void act(Hero hero) {
-			UpdatableSquare square = (UpdatableSquare)target;
-			square.getAction().addFloats(-square.getAction().x, -square.getAction().y);
+	public final static UpdateAction  combine = new UpdateAction(){
 
+		List<UpdateAction> actions = new ArrayList<UpdateAction>();
+		@Override
+		public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+			this.defaultState=true;
+			int size = ints.next();
+			for(int i=0;i<size;++i){
+				UpdateAction action = UpdateAction.getAction(ints.next()).create();
+				action.setArgs(ints, floats);
+				action.setTarget(self);
+				actions.add(action);
+			}
+		}
+		@Override
+		public void saveTo(List<Object> toSave){
+			toSave.add(getIndex());
+			toSave.add(actions.size());
+			for(UpdateAction action:actions){
+				action.saveTo(toSave);
+			}
 		}
 		@Override
 		public int getIndex() {
-			return 0;
+			return -2;
+		}
+
+		@Override
+		public void act(Double subject) {
+			for(UpdateAction action:actions){
+				action.act(subject);
+			}
+		}
+		@Override
+		public void setTarget(Square target){
+			super.setTarget(target);
+			for(UpdateAction action:actions){
+				action.setTarget(target);
+			}
+		}
+		@Override
+		public void undo(){
+			for(UpdateAction action:actions){
+				action.undo();
+			}
+		}
+		@Override
+		public int numberOfTargets(){
+			return actions.size();
+		}
+
+		public Iterator<UpdateAction> iterator(){
+			return new Iterator<UpdateAction>(){
+				private int index = 0;
+				private Iterator<UpdateAction> currentIterator=null;
+				{
+					if(index<actions.size()){
+						currentIterator = actions.get(index++).iterator();
+					}
+				}
+				@Override
+				public boolean hasNext() {
+					if(currentIterator==null)return false;
+					return currentIterator.hasNext()||index<actions.size();
+				}
+
+				@Override
+				public UpdateAction next() {
+					while(!currentIterator.hasNext()&&index<actions.size()){
+						currentIterator=actions.get(index++).iterator();
+					}
+					if(currentIterator.hasNext()){
+						return currentIterator.next();
+					}
+					else {
+						return null;
+					}
+				}};
 		}
 	};
 
-	public static final OnStepAction recycle = new OnStepAction(){
+	public static final Action<UpdateAction> reverse = new Action<UpdateAction>(){
 		@Override
-		public void act(Hero hero) {
-			UpdatableSquare square = (UpdatableSquare)target;
-			square.recycle();
-		}
-		@Override
-		public int getIndex() {
-			return 1;
+		public void act(UpdateAction action) {
+			action.addFloats(-action.x, -action.y);
 		}
 	};
 
-	public static final OnStepAction stop = new OnStepAction(){
+	public static final Action<UpdateAction> recycle = new Action<UpdateAction>(){
 		@Override
-		public void act(Hero hero) {
-			UpdatableSquare square = (UpdatableSquare)target;
-			square.getAction().addFloats(0, 0);
-			square.deactivate();
+		public void act(UpdateAction action) {
+			action.undo();
 		}
+	};
+
+	public static final Action<UpdateAction> stop = new Action<UpdateAction>(){
 		@Override
-		public int getIndex() {
-			return 2;
+		public void act(UpdateAction action) {
+			action.addFloats(0, 0);
+			action.self.deactivate();
 		}
 	};
 
@@ -411,7 +495,7 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	protected int onLimitBrokenAction=-1;
 	public void undo() {
 	}
-	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){		
+	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){
 		defaultState=ints.next()==1;
 		x=floats.next();
 		y=floats.next();
@@ -435,7 +519,7 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	}
 	@Override
 	public int numberOfTargets() {
-		return 0;
+		return 1;
 	}
 	@Override
 	public void setTarget(Square square) {
@@ -463,6 +547,27 @@ public abstract class UpdateAction implements SquareAction<Double>{
 	public void setLimiter(int limiter) {
 		this.onLimitBrokenAction=limiter;
 	}
+	public void onActivate(){
+		
+	}
+	public void onDeactivate(){
+		
+	}
+	public Iterator<UpdateAction> iterator(){
+		final UpdateAction self = this;
+		return new Iterator<UpdateAction>(){
+			private boolean sent = false;
+			@Override
+			public boolean hasNext() {
+				return !sent;
+			}
+
+			@Override
+			public UpdateAction next() {
+				sent = true;
+				return self;
+			}};
+	}
 	public UpdateAction create() {
 		try {
 			return this.getClass().newInstance();
@@ -480,9 +585,9 @@ public abstract class UpdateAction implements SquareAction<Double>{
 					actions.add((UpdateAction) obj);
 					actionNames.add(field.getName());
 				}
-				else if(obj instanceof OnStepAction){
+				else if(obj instanceof Action){
 					//System.out.println(field.getName());
-					limiters.add((OnStepAction) obj);
+					limiters.add((Action<UpdateAction>) obj);
 				}
 			} 
 		}
@@ -491,11 +596,17 @@ public abstract class UpdateAction implements SquareAction<Double>{
 		}
 	}
 	public static UpdateAction getAction(Integer i) {
+		//System.out.println(i);
 		if(i==-1||i>=actions.size()){
 			return null;
 		}
 		else {
-			return actions.get(i);
+			if(i==-2){
+				return combine;
+			}
+			else {
+				return actions.get(i);
+			}
 		}
 	}
 }

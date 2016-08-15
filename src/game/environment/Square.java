@@ -28,8 +28,8 @@ public class Square extends GraphicEntity implements Colourable{
 	private int shapeType;
 	public Square(int shapeType, int blackColour,int whiteColour,Iterator<Integer> ints, Iterator<Float> floats) {
 		super("squares");
-		this.blackColour = blackColour;
-		this.whiteColour = whiteColour;
+		this.blackColour = blackColour%16;
+		this.whiteColour = whiteColour%16;
 		this.displayFor(0);/*
 		setX(floats.next());
 		setY(floats.next());
@@ -117,9 +117,13 @@ public class Square extends GraphicEntity implements Colourable{
 
 	private float xOffset = 0f;
 	private float yOffset = 0f;
+	public void move(float x, float y){
+		setX(getX()+x);
+		setY(getY()+y);
+	}
 	@Override
 	public void setX(float x){
-		
+
 		xOffset = x-getX();
 		super.setX(x);
 	}
@@ -188,11 +192,11 @@ public class Square extends GraphicEntity implements Colourable{
 		return square;
 	}
 	public static Iterator<Integer> makeInts(
-			int squareAction1, int squareAction2, int updateAction, boolean onCreateAction,
+			int squareAction1, int squareAction2, List<Integer> updateAction, boolean onCreateAction,
 			int shapeType, int colour, int colour2,int x, int y, int w, int h) {		
 		List<Integer> ints = new ArrayList<Integer>();
 		if(!onCreateAction){
-			if(squareAction1==-1&&squareAction2==-1&&updateAction==-1){
+			if(squareAction1==-1&&squareAction2==-1&&updateAction.size()==0){
 				ints.add(0);
 				ints.add(shapeType);
 				ints.add(colour);
@@ -202,7 +206,7 @@ public class Square extends GraphicEntity implements Colourable{
 				ints.add(w);
 				ints.add(h);
 			}
-			else if((squareAction1!=-1||squareAction2!=-1)&&updateAction==-1){
+			else if((squareAction1!=-1||squareAction2!=-1)&&updateAction.size()==0){
 				if(squareAction1==squareAction2){
 					ints.add(1);
 					ints.add(shapeType);
@@ -227,43 +231,47 @@ public class Square extends GraphicEntity implements Colourable{
 					ints.add(squareAction2);
 				}
 			}
-			else if(updateAction>=0){
+			else if(updateAction.size()>0){
 				if(squareAction1==-1&&squareAction2==-1){
-					ints.add(3);
-					ints.add(shapeType);
-					ints.add(colour);
-					ints.add(colour2);
-					ints.add(x);
-					ints.add(y);
-					ints.add(w);
-					ints.add(h);
-					ints.add(updateAction);
-				}
+					ints.add(3);										
+				}				
 				else if(squareAction1==squareAction2){
 					ints.add(4);
-					ints.add(shapeType);
-					ints.add(colour);
-					ints.add(colour2);
-					ints.add(x);
-					ints.add(y);
-					ints.add(w);
-					ints.add(h);
-					ints.add(squareAction1);
-					ints.add(updateAction);
 				}
 				else {
 					ints.add(5);
-					ints.add(shapeType);
-					ints.add(colour);
-					ints.add(colour2);
-					ints.add(x);
-					ints.add(y);
-					ints.add(w);
-					ints.add(h);
+				}
+				ints.add(shapeType);
+				ints.add(colour);
+				ints.add(colour2);
+				ints.add(x);
+				ints.add(y);
+				ints.add(w);
+				ints.add(h);
+				if(squareAction1==-1&&squareAction2==-1){								
+				}				
+				else if(squareAction1==squareAction2){
+					ints.add(squareAction1);
+				}
+				else {
 					ints.add(squareAction1);
 					ints.add(squareAction2);
-					ints.add(updateAction);
 				}
+				if(updateAction.size()==1){
+					ints.add(updateAction.get(0));
+					ints.add(UpdateAction.getAction(updateAction.get(0)).getDefaultState()?1:0);
+					ints.add(-1);
+				}
+				else {
+					ints.add(-2);
+					ints.add(updateAction.size());
+					for(Integer ua:updateAction){
+						ints.add(ua);
+						ints.add(UpdateAction.getAction(ua).getDefaultState()?1:0);
+						ints.add(-1);
+					}
+				}
+				ints.add(0);//The size of dependants, 0 because no depends have been assigned yet
 			}
 		}
 		else{
@@ -278,11 +286,7 @@ public class Square extends GraphicEntity implements Colourable{
 			ints.add(0);
 		}
 
-		if(updateAction!=-1){
-			ints.add(UpdateAction.getAction(updateAction).getDefaultState()?1:0);
-			ints.add(-1);
-			ints.add(0);
-		}
+
 		return ints.iterator();
 	}
 
@@ -309,13 +313,16 @@ public class Square extends GraphicEntity implements Colourable{
 	}
 
 	@Override
-	public Boolean[] getColours(boolean isBlack) {
-		if(isBlack&&blackColour==-1)return null;
-		else if(!isBlack&&whiteColour==-1)return null;
+	public Boolean[] getColours(boolean isBlack) {	
+
 		int texture = isBlack?blackColour:whiteColour;
+		for(Integer forbid:new Integer[]{-1,1,3,5,6,7,9,11,13}){
+			if(texture==forbid)return null;
+		}
 		boolean myRed=texture==4||texture==8||texture==10||texture==15;
 		boolean myGreen=texture==0||texture==8||texture==12||texture==15;
 		boolean myBlue=texture==2||texture==10||texture==12||texture==15;
+
 		return new Boolean[]{myRed, myGreen, myBlue};
 	}
 

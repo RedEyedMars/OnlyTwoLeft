@@ -100,6 +100,7 @@ public class Game extends GraphicView{
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
+		if(secondsSinceLastFrame>0.1f)return;
 		super.update(secondsSinceLastFrame);
 		gameMode.update(secondsSinceLastFrame);
 	}

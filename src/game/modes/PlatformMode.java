@@ -46,64 +46,10 @@ public class PlatformMode implements GameMode{
 		}
 	}
 
-	private void handleJump(Hero hero, boolean northWall, int direction){
-		if(northWall){
-			hero.setYAcceleration(0.1f*direction);				
-		}
-		if(hero.getYAcceleration()*-direction>=0){
-			hero.setYAcceleration(hero.getYAcceleration()+0.003f*direction);
-		}
-		else {				
-			if(hero.getYAcceleration()*-direction>-0.1f){
-				hero.setYAcceleration(hero.getYAcceleration()+0.005f*direction);
-			}
-			else {
-				hero.setYAcceleration(0.1f*direction);				
-			}				
-		}
-	}
-
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
 		for(Hero hero:new Hero[]{focused,wild}){
-			List<GraphicEntity> entitiesTouching = new ArrayList<GraphicEntity>();
-			List<OnStepAction> actionsTouching = new ArrayList<OnStepAction>();
-			List<Boolean> safeness            = new ArrayList<Boolean>();
-			for(int i=mapSquares.size()-1;i>=0;--i){
-				OnStepAction action = mapSquares.get(i).getOnHitAction(hero);
-				if(action!=null){
-					if(hero.isWithin(mapSquares.get(i))){
-						if(hero.isOppositeColour(mapSquares.get(i))){
-							entitiesTouching.add(mapSquares.get(i));
-							actionsTouching.add(null);							
-							safeness.add(true);
-						}
-						else if(hero.isSameColour(mapSquares.get(i))){
-							entitiesTouching.add(mapSquares.get(i));
-							actionsTouching.add(OnStepAction.impassible);							
-							safeness.add(false);
-						}
-						else if(action.isSafe()){
-							entitiesTouching.add(mapSquares.get(i));
-							actionsTouching.add(action);
-							safeness.add(action.isSafe());							
-						}
-						else {
-							action.setTarget(mapSquares.get(i));
-							if(!action.resolve(hero)){
-								entitiesTouching.add(mapSquares.get(i));
-								actionsTouching.add(action);
-								safeness.add(action.isSafe());
-							}
-						}
-						if(hero.isCompletelyWithin(mapSquares.get(i))){
-							break;
-						}
-					}
-				}
-			}
-
-			hero.handleWalls(entitiesTouching,actionsTouching,safeness);
+			hero.handleWalls(mapSquares);
 		}
 	}
 
@@ -127,12 +73,19 @@ public class PlatformMode implements GameMode{
 		wild = temp;
 		Hub.map.setVisibleSquares(focused.isBlack()?1:2);
 		for(GraphicEntity child:Hub.map.getChildren()){
-			child.setY(1f-child.getY()-child.getHeight());
 			if(child instanceof UpdatableSquare){
 				UpdatableSquare square = (UpdatableSquare)child;
 				if(square.getAction().getIndex()==2){
-					square.getAction().addFloats(-square.getAction().getFloat(0), -square.getAction().getFloat(1));
+					square.getAction().addFloats(square.getAction().getFloat(0), -square.getAction().getFloat(1));
 				}
+				float offset = child.getY()-(1f-(child.getY()+child.getHeight()));
+				square.move(0f,-offset);
+				for(GraphicEntity depend:square.getDependants()){
+					depend.setY(1f-depend.getY()-depend.getHeight());
+				}
+			}
+			else {
+				child.setY(1f-child.getY()-child.getHeight());
 			}
 		}
 		boolean cj = focusedCanJump;
@@ -150,28 +103,32 @@ public class PlatformMode implements GameMode{
 	}
 	@Override 
 	public void update(double secondsSinceLastFrame){
-		if(focusedJumping||Math.abs(focused.getXAcceleration())>=0.001f){
-			if(focused.foundSouthWall()&&focused.getYVelocity()<=0){
-				focusedJumping=false;
-				focusedCanJump=true;
-				focused.setYVelocity(0f);
-			}
-			else {
-				handleJump(focused, focused.foundNorthWall(),-1);
-			}
-		}
-		if(wildJumping||Math.abs(wild.getXAcceleration())>=0.001f){
-			if(wild.foundNorthWall()&&wild.getYVelocity()>=0){
-				wildJumping=false;
-				wildCanJump=true;
-				wild.setYVelocity(0f);
-			}
-			else {
-				handleJump(wild, wild.foundSouthWall(),1);
-			}
-		}
 		handleViewMovement();
 		handleInterceptions();
+		if(focused.foundSouthWall()){
+			focusedCanJump=true;
+			focusedJumping=false;
+			if(focused.getYAcceleration()<0){
+				focused.setYAcceleration(0);
+			}
+		}
+		else {
+			if(focused.getYAcceleration()>=-0.06){
+				focused.setYAcceleration((float) (focused.getYAcceleration()-0.2f*secondsSinceLastFrame));
+			}
+		}
+		if(wild.foundNorthWall()){
+				wildJumping=false;
+				wildCanJump=true;
+				if(wild.getYAcceleration()>0){
+					wild.setYAcceleration(0);
+				}
+		}
+		else {
+			if(wild.getYAcceleration()<=0.06){
+				wild.setYAcceleration((float) (wild.getYAcceleration()+0.2f*secondsSinceLastFrame));
+			}		
+		}
 		if(focused.getY()<-0.05f||wild.getY()>1.0f){
 			focused.endGame();
 		}
@@ -182,17 +139,15 @@ public class PlatformMode implements GameMode{
 		if(b==KeyBoardListener.DOWN){
 			if('a'==c){
 				focused.setXAcceleration(-standardAcceleration);
-				focusedJumping=true;
 			}
 			if('d'==c){
 				focused.setXAcceleration(standardAcceleration);
-				focusedJumping=true;
 			}
 			if('w'==c){
-				if(focusedCanJump&&focused.getYVelocity()>=-0.03f){
-					focused.setYAcceleration(0.065f);
+				if(focusedCanJump){
+					focused.setYAcceleration(0.06f);
 					if(focusedJumping){
-						focusedCanJump=false;						
+						focusedCanJump=false;
 					}
 					focusedJumping=true;
 				}
@@ -206,11 +161,10 @@ public class PlatformMode implements GameMode{
 				}
 				else if(keycode==203){//left
 					wild.setXAcceleration(-standardAcceleration);
-					wildJumping=true;
 				}
 				else if(keycode==208){//down
-					if(wildCanJump&&wild.getYVelocity()<=0.03f){
-						wild.setYAcceleration(-0.065f);
+					if(wildCanJump){
+						wild.setYAcceleration(-0.06f);
 						if(wildJumping){
 							wildCanJump=false;
 						}
@@ -219,7 +173,6 @@ public class PlatformMode implements GameMode{
 				}
 				else if(keycode==205){//right
 					wild.setXAcceleration(standardAcceleration);
-					wildJumping=true;
 				}
 			}
 		}
