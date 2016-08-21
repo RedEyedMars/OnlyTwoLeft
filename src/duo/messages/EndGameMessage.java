@@ -1,6 +1,8 @@
 package duo.messages;
 
 import duo.Handler;
+import game.menu.MainMenu;
+import gui.Gui;
 
 /**
  * When the {@link game.Game} ends (usually due to a {@link game.Hero} dying), this {@link duo.messages.Message} is sent.
@@ -19,8 +21,8 @@ public class EndGameMessage extends Message{
 	public void act(Handler handler) {
 		//For debug purposes, tells us that the message to end the game has been received.
 		System.out.println("end game");
-		//Gets the Hero associated to this handler and tells it to end the game.
-		handler.getHero().endGame();
+		//Abruptly returns the Client to the main menu, this is caused by the partnered Client closing.
+		Gui.setView(new MainMenu());
 	}
 
 }

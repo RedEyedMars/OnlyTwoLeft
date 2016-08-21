@@ -52,4 +52,9 @@ public class Main {
 		}
 		Client.endConnectionToTheServer();
 	}
+
+	public static long getNewRandomSeed() {
+		Main.seed = new Random().nextLong();
+		return Main.seed;
+	}
 }

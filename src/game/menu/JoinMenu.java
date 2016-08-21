@@ -316,15 +316,15 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		joinButton.setVisible(false);
 		addChild(joinButton);
 
-		GraphicEntity button = new MenuButton("Return"){
+		GraphicEntity returnButton = new MenuButton("Return"){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				returnToMain();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.03f);
-		addChild(button);
+		returnButton.setX(0.2f);
+		returnButton.setY(0.03f);
+		addChild(returnButton);
 		new JoinThread(self).start();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
@@ -344,9 +344,9 @@ public class JoinMenu extends Menu implements IDuoMenu{
 	}
 
 	@Override
-	public void startGame(boolean colour) {
+	public void startGame(boolean colour, long seed) {
 		System.out.println("start game");
-		Game game = new Game(colour);
+		Game game = new Game(colour,seed);
 		Gui.setView(game);		
 	}
 
@@ -365,7 +365,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			Client.send(new JoinGameMessage(gamesList.get(gameIndex+gameTopIndex)[0],officialName));
 		}
 		else if(joinButton.getText().startsWith("Waiting")){
-			Client.send(new KickFromGameMessage(officialGame));
+			Client.send(new KickFromGameMessage());
 			joinButton.changeText("Join");
 			gameButton.setVisible(false);
 			buttonList.setVisible(true);
@@ -410,7 +410,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 								handler.sendNow(new PassMessage(new EndGameMessage()));
 							}
 							if(joinButton.getText().startsWith("Waiting")){
-								handler.sendNow(new KickFromGameMessage(officialGame));
+								handler.sendNow(new KickFromGameMessage());
 							}
 							disconnect();
 							handler.clearGames();

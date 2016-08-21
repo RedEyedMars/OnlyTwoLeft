@@ -1,9 +1,11 @@
 package game.environment;
 
+import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import main.Hub;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -11,6 +13,11 @@ import java.util.List;
 
 import game.Action;
 import game.Hero;
+import game.environment.oncreate.OnCreateSquare;
+import game.environment.onstep.OnStepAction;
+import game.environment.onstep.OnStepSquare;
+import game.environment.update.UpdatableSquare;
+import game.environment.update.UpdateAction;
 public class Square extends GraphicEntity implements Colourable{
 
 	public static final byte green = 0;
@@ -217,6 +224,7 @@ public class Square extends GraphicEntity implements Colourable{
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
+					addMapNameToInts(ints,squareAction1);
 				}
 				else {
 					ints.add(2);
@@ -228,7 +236,9 @@ public class Square extends GraphicEntity implements Colourable{
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
+					addMapNameToInts(ints,squareAction1);
 					ints.add(squareAction2);
+					addMapNameToInts(ints,squareAction2);
 				}
 			}
 			else if(updateAction.size()>0){
@@ -252,10 +262,13 @@ public class Square extends GraphicEntity implements Colourable{
 				}				
 				else if(squareAction1==squareAction2){
 					ints.add(squareAction1);
+					addMapNameToInts(ints,squareAction1);
 				}
 				else {
 					ints.add(squareAction1);
+					addMapNameToInts(ints,squareAction1);
 					ints.add(squareAction2);
+					addMapNameToInts(ints,squareAction2);
 				}
 				if(updateAction.size()==1){
 					ints.add(updateAction.get(0));
@@ -288,6 +301,18 @@ public class Square extends GraphicEntity implements Colourable{
 
 
 		return ints.iterator();
+	}
+
+	private static void addMapNameToInts(List<Integer> ints, int squareAction) {
+		if(OnStepAction.getAction(squareAction).targetType()==2){
+			File file = Gui.userSave("maps");
+			while(file==null){
+				file = Gui.userSave("maps");
+			}
+
+			String relPath = file.getAbsolutePath().replace(new File("").getAbsolutePath()+File.separatorChar,"");
+			ints.add(Hub.map.setNextMap(relPath));
+		}
 	}
 
 	public static void addArgsFromSquare(Square square, final List<Integer> ints, final List<Float> floats){

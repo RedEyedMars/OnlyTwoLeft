@@ -1,4 +1,4 @@
-package game.environment;
+package game.environment.onstep;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,6 +7,8 @@ import java.util.List;
 
 import game.Action;
 import game.Hero;
+import game.environment.Square;
+import game.environment.SquareAction;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
@@ -30,6 +32,9 @@ public class OnStepSquare extends Square {
 			this.blackAction = OnStepAction.getAction(ints.next());
 			if(this.blackAction!=null){
 				this.blackAction=this.blackAction.create();
+				if(this.blackAction.targetType()==2){
+					this.blackAction.setTarget(ints.next());
+				}
 				this.whiteAction = blackAction;
 			}
 		}
@@ -38,10 +43,16 @@ public class OnStepSquare extends Square {
 			this.blackAction = OnStepAction.getAction(ints.next());
 			if(this.blackAction!=null){
 				this.blackAction=this.blackAction.create();
+				if(this.blackAction.targetType()==2){
+					this.blackAction.setTarget(ints.next());
+				}
 			}
 			this.whiteAction = OnStepAction.getAction(ints.next());
 			if(this.whiteAction!=null){
 				this.whiteAction=this.whiteAction.create();
+				if(this.whiteAction.targetType()==2){
+					this.whiteAction.setTarget(ints.next());
+				}
 			}
 		}
 	}
@@ -55,6 +66,9 @@ public class OnStepSquare extends Square {
 		if(this.blackAction!=null){
 			this.actionType=1;
 			this.blackAction=this.blackAction.create();
+			if(this.blackAction.targetType()==2){
+				this.blackAction.setTarget(-1);
+			}
 		}
 		if(blackAction==whiteAction){
 			this.whiteAction=this.blackAction;
@@ -63,6 +77,9 @@ public class OnStepSquare extends Square {
 				this.actionType=2;
 				this.whiteAction = OnStepAction.getAction(whiteAction);
 				this.whiteAction=this.whiteAction.create();
+				if(this.whiteAction.targetType()==2){
+					this.whiteAction.setTarget(-1);
+				}			
 		}
 		this.setShape(shapeType);
 	}
@@ -91,13 +108,13 @@ public class OnStepSquare extends Square {
 	public List<SquareAction> getActions() {
 		List<SquareAction> list = super.getActions();
 		if(blackAction!=null){
-			if(blackAction.numberOfTargets()==0){
+			if(blackAction.targetType()==0){
 				blackAction.setTarget(this);
 			}
 			list.add(blackAction);
 		}
 		if(blackAction!=whiteAction&&whiteAction!=null){
-			if(whiteAction.numberOfTargets()==0){
+			if(whiteAction.targetType()==0){
 				whiteAction.setTarget(this);
 			}
 			list.add(whiteAction);

@@ -200,8 +200,17 @@ public class Client {
 		this.handler.setMenu(menu);
 	}
 
+	/**
+	 * Sets the {@link game.Hero} handled by this Client.
+	 * @param hero - to be handled
+	 */
 	public static void setHero(Hero hero) {
+		//Set the hero.
 		client.getHandler().setHero(hero);		
+	}
+
+	public static void sendMapMessage(String filename, Message onEnd) {
+		SendMapMessage.send(client, filename, onEnd);
 	}
 	
 }

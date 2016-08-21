@@ -1,10 +1,12 @@
-package game.environment;
+package game.environment.oncreate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
+import game.environment.Square;
+import game.environment.SquareAction;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 

@@ -233,7 +233,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 			public void performOnRelease(MotionEvent e){
 				if(isVisible()){
 					setVisible(false);
-					Client.send(new KickFromGameMessage(name.getText()));
+					Client.send(new KickFromGameMessage());
 					gameButton.changeText("Waiting .");
 				}
 			}
@@ -258,14 +258,15 @@ public class HostMenu extends Menu implements IDuoMenu{
 		}
 		else if(gameButton.getText().startsWith("Waiting")){
 			gameButton.changeText("Create Game");
-			Client.send(new RemoveGameMessage(name.getText()));
+			Client.send(new RemoveGameMessage());
 		}
 		else if(gameButton.getText().startsWith("Start")){
+			long seed = Main.getNewRandomSeed();
 			SendMapMessage.send(
 					client,
 					mapFile.getAbsolutePath(),
 					new StartGameMessage(whiteButton.isVisible()));
-			Game game = new Game(blackButton.isVisible());
+			Game game = new Game(blackButton.isVisible(),seed);
 			Gui.setView(game);
 		}
 	}
@@ -304,7 +305,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		}
 	}
 	@Override
-	public void startGame(boolean colour) {		
+	public void startGame(boolean colour, long seed) {		
 	}
 	public void returnToMain(){
 		Client.endConnectionToTheServer();
@@ -352,9 +353,13 @@ public class HostMenu extends Menu implements IDuoMenu{
 						else {
 							super.close();
 							if(proc!=null){
+								System.out.println("destroy");
 								proc.destroy();
 								if(proc.isAlive()){
 									proc.destroyForcibly();
+								}
+								else {
+									System.out.println("destroy");
 								}
 							}
 						}
@@ -410,7 +415,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 							handler.sendNow(new PassMessage(new EndGameMessage()));
 						}
 						if(gameButton.getText().startsWith("Waiting")||gameButton.getText().startsWith("Start")){
-							handler.sendNow(new KickFromGameMessage(name.getText()));
+							handler.sendNow(new KickFromGameMessage());
 						}
 						super.close();
 					}

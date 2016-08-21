@@ -11,14 +11,14 @@ import javax.swing.JFileChooser;
 
 import game.Action;
 import game.Hero;
-import game.environment.OnStepSquare;
-import game.environment.OnCreateAction;
-import game.environment.OnCreateSquare;
 import game.environment.Square;
 import game.environment.SquareAction;
-import game.environment.OnStepAction;
-import game.environment.UpdatableSquare;
-import game.environment.UpdateAction;
+import game.environment.oncreate.OnCreateAction;
+import game.environment.oncreate.OnCreateSquare;
+import game.environment.onstep.OnStepAction;
+import game.environment.onstep.OnStepSquare;
+import game.environment.update.UpdatableSquare;
+import game.environment.update.UpdateAction;
 import game.menu.MainMenu;
 import game.menu.MenuButton;
 import gui.Gui;
@@ -380,7 +380,7 @@ public class Editor extends GraphicView {
 						Gui.giveOnType(updatableSquareLimitField);
 					}
 					try {
-						updatableSquareAction.addFloats(
+						updatableSquareAction.setFloats(
 								Float.parseFloat(updatableSquareXField.getText()),
 								Float.parseFloat(updatableSquareYField.getText()));
 					}

@@ -6,9 +6,9 @@ import java.util.List;
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
 import game.environment.Colourable;
-import game.environment.OnStepAction;
-import game.environment.OnStepSquare;
 import game.environment.Square;
+import game.environment.onstep.OnStepAction;
+import game.environment.onstep.OnStepSquare;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
@@ -57,7 +57,7 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
-		
+
 		xVel=xVel*0.9f+xAcc;
 		if(Math.abs(xVel)>2f){
 			xVel=Math.signum(xVel)*2f;
@@ -148,9 +148,6 @@ public class Hero extends GraphicEntity implements Colourable{
 			onCorner = false;
 			return true;
 		} else return false;
-	}
-	public void endGame() {
-		game.endGame();
 	}
 	public static Object[] handleWalls(GraphicEntity target,List<GraphicEntity> squaresFound, List<Boolean> isSafes) {
 		if(squaresFound.size()<=1){
@@ -468,20 +465,22 @@ public class Hero extends GraphicEntity implements Colourable{
 					}
 					else if(this.isSameColour(mapSquares.get(i))){
 						entities.add(mapSquares.get(i));
-						actions.add(OnStepAction.impassible);							
+						actions.add(OnStepAction.wall);							
 						safeties.add(false);
 					}
-					else if(action.isSafe()){
+					else if(action.isPassible()){
 						entities.add(mapSquares.get(i));
 						actions.add(action);
-						safeties.add(action.isSafe());							
+						safeties.add(action.isPassible());							
 					}
 					else {
-						action.setTarget(mapSquares.get(i));
+						if(action.targetType()==0){
+							action.setTarget(mapSquares.get(i));
+						}
 						if(!action.resolve(this)){
 							entities.add(mapSquares.get(i));
 							actions.add(action);
-							safeties.add(action.isSafe());
+							safeties.add(action.isPassible());
 						}
 					}
 					if(this.isCompletelyWithin(mapSquares.get(i))){
@@ -517,19 +516,27 @@ public class Hero extends GraphicEntity implements Colourable{
 		}
 		//System.out.println(NWs+" "+NEs+" "+" "+SWs+" "+SEs);
 		if(NEs!=null&&actions.get(NEs)!=null){
-			actions.get(NEs).setTarget((Square) entities.get(NEs));
+			if(actions.get(NEs).targetType()==0){
+				actions.get(NEs).setTarget((Square) entities.get(NEs));
+			}
 			actions.get(NEs).act(this);
 		}
 		if(NWs!=null&&NWs!=NEs&&actions.get(NWs)!=null){
-			actions.get(NWs).setTarget((Square) entities.get(NWs));
+			if(actions.get(NWs).targetType()==0){
+				actions.get(NWs).setTarget((Square) entities.get(NWs));
+			}
 			actions.get(NWs).act(this);
 		}
 		if(SEs!=null&&SEs!=NWs&&SEs!=NEs&&actions.get(SEs)!=null){
-			actions.get(SEs).setTarget((Square) entities.get(SEs));
+			if(actions.get(SEs).targetType()==0){
+				actions.get(SEs).setTarget((Square) entities.get(SEs));
+			}
 			actions.get(SEs).act(this);
 		}
 		if(SWs!=null&&SWs!=NWs&&SWs!=NEs&&SWs!=SEs&&actions.get(SWs)!=null){
-			actions.get(SWs).setTarget((Square) entities.get(SWs));
+			if(actions.get(SWs).targetType()==0){
+				actions.get(SWs).setTarget((Square) entities.get(SWs));
+			}
 			actions.get(SWs).act(this);
 		}
 	}
@@ -548,7 +555,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		float y = (float) params[1];
 		subject.move(-x,-y);
 
-		if(!subject.getOnHitAction(getPartner()).isSafe()){
+		if(!subject.getOnHitAction(getPartner()).isPassible()){
 			params = Hero.handleWalls(getPartner(), squaresFound, safeties);
 			x = (float) params[0];
 			y = (float) params[1];
@@ -563,7 +570,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		for(int i=mapSquares.size()-1;i>=0;--i){
 			if(subject==mapSquares.get(i))continue;
 			squaresFound.add(mapSquares.get(i));
-			if(mapSquares.get(i).getOnHitAction(this).isSafe()){
+			if(mapSquares.get(i).getOnHitAction(this).isPassible()){
 				safeties.add(true);
 			}
 			else {
@@ -674,5 +681,8 @@ public class Hero extends GraphicEntity implements Colourable{
 		Boolean[] theirColour = other.getColours(isBlack());
 		if(theirColour==null)return false;
 		return myColour[0]!=theirColour[0]&&myColour[1]!=theirColour[1]&&myColour[2]!=theirColour[2];
+	}
+	public Game getGame(){
+		return game;
 	}
 }

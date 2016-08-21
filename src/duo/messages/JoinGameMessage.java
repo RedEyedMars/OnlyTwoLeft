@@ -14,6 +14,7 @@ public class JoinGameMessage extends Message{
 	//The player name that is joining the game. This name is superficial and main use is as security for the host client to know who is joining.
 	private String playerName;
 	//The game name that represents the game the player wants to join.
+	@SuppressWarnings("unused")
 	private String gameName;
 	/**
 	 * Initialize the variables this {@link duo.messages.Message} is containing.

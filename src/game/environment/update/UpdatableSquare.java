@@ -1,4 +1,4 @@
-package game.environment;
+package game.environment.update;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
+import game.environment.Square;
+import game.environment.SquareAction;
+import game.environment.onstep.OnStepSquare;
 import main.Hub;
 
 public class UpdatableSquare extends OnStepSquare {
@@ -28,7 +31,7 @@ public class UpdatableSquare extends OnStepSquare {
 		super(shapeType,blackColour, whiteColour,width,height,blackAction,whiteAction);
 		this.actionType=3;
 		this.updateAction = UpdateAction.getAction(action).create();		
-		this.updateAction.addFloats(x,y);
+		this.updateAction.setFloats(x,y);
 		this.updateAction.setTarget(this);
 	}
 
@@ -61,9 +64,8 @@ public class UpdatableSquare extends OnStepSquare {
 
 	public void addDependant(Square square){
 		this.dependants.add(square);
-		Hub.map.displaySquare(square);
 		for(SquareAction action:square.getActions()){
-			if(action.numberOfTargets()>0){
+			if(action.targetType()==1){
 				action.setTarget(this);
 			}
 		}
@@ -71,6 +73,17 @@ public class UpdatableSquare extends OnStepSquare {
 	}
 	public List<Square> getDependants() {
 		return dependants;
+	}
+	
+	public void display(){
+		for(Square square:dependants){
+			Hub.map.displaySquare(square);
+		}
+	}
+	public void undisplay(){
+		for(Square square:dependants){
+			Hub.map.unDisplaySquare(square);
+		}
 	}
 
 	public void run(){

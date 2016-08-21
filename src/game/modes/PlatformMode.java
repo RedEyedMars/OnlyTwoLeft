@@ -5,9 +5,10 @@ import java.util.List;
 
 import duo.client.Client;
 import game.Hero;
-import game.environment.OnStepAction;
-import game.environment.OnStepSquare;
-import game.environment.UpdatableSquare;
+import game.environment.onstep.OnStepAction;
+import game.environment.onstep.OnStepSquare;
+import game.environment.update.UpdatableSquare;
+import game.environment.update.UpdateAction;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import main.Hub;
@@ -75,10 +76,10 @@ public class PlatformMode implements GameMode{
 		for(GraphicEntity child:Hub.map.getChildren()){
 			if(child instanceof UpdatableSquare){
 				UpdatableSquare square = (UpdatableSquare)child;
-				if(square.getAction().getIndex()==2){
-					square.getAction().addFloats(square.getAction().getFloat(0), -square.getAction().getFloat(1));
+				for(UpdateAction updateAction:square.getAction()){
+					updateAction.flip();
 				}
-				float offset = child.getY()-(1f-(child.getY()+child.getHeight()));
+				float offset = square.getY()-(1f-(square.getY()+square.getHeight()));
 				square.move(0f,-offset);
 				for(GraphicEntity depend:square.getDependants()){
 					depend.setY(1f-depend.getY()-depend.getHeight());
@@ -118,11 +119,11 @@ public class PlatformMode implements GameMode{
 			}
 		}
 		if(wild.foundNorthWall()){
-				wildJumping=false;
-				wildCanJump=true;
-				if(wild.getYAcceleration()>0){
-					wild.setYAcceleration(0);
-				}
+			wildJumping=false;
+			wildCanJump=true;
+			if(wild.getYAcceleration()>0){
+				wild.setYAcceleration(0);
+			}
 		}
 		else {
 			if(wild.getYAcceleration()<=0.06){
@@ -130,7 +131,7 @@ public class PlatformMode implements GameMode{
 			}		
 		}
 		if(focused.getY()<-0.05f||wild.getY()>1.0f){
-			focused.endGame();
+			focused.getGame().transition("Restart", false);
 		}
 	}
 

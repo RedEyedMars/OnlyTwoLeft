@@ -14,19 +14,40 @@ import main.Hub;
 
 public class Storage {
 	
-	public static void loadMap(String filename){
-
+	public static String loadMap(String filename){
 		byte[] file = readVerbatum(filename);
-		loadMap(file);
+		String mapName = getMapNameFromFileName(filename);
+		loadMap(mapName,filename,file);
+		return mapName;
+	}
+	public static String getMapNameFromFileName(String filename){
+		if(filename.trim().equals("Restart")){
+			return filename;
+		}
+		int lastSeparator = filename.lastIndexOf(File.separatorChar);
+		if(lastSeparator==-1){
+			lastSeparator = filename.lastIndexOf('/');
+			if(lastSeparator==-1){
+				lastSeparator=0;
+			}
+			else {
+				++lastSeparator;
+			}
+		}
+		else {
+			++lastSeparator;
+		}
+		int dot = filename.lastIndexOf('.');
+		return filename.substring(lastSeparator, dot);
 	}
 	
-	public static void loadMap(byte[] file){
+	public static void loadMap(String name,String filename, byte[] file){
 		int index = 0;
 		for(;(char)file[index]!='\n';++index);
 		Map<Integer,String> strings = loadStringMap(file);
-		Object[] loaded = Coder.decode(file, index+1, strings,3,0,0);
-		loaded = Coder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
-		game.environment.Map.load(loaded);
+		Object[] loaded = Decoder.decode(file, index+1, strings,3,0,0);
+		loaded = Decoder.decode(file, index+1, strings,(Integer)loaded[0],(Integer)loaded[1],(Integer)loaded[2]);
+		game.environment.Map.load(name,filename,loaded);
 	}
 
 	private static Map<Integer,String> loadStringMap(byte[] file) {
@@ -55,6 +76,14 @@ public class Storage {
 	}
 
 	public static byte[] readVerbatum(String filename){
+		if(filename.trim().equals("Restart")){
+			if(Hub.map.getFileName()==null){
+				filename=null;
+			}
+			else {
+				filename = Hub.map.getFileName();
+			}
+		}
 		List<Byte> builder = new ArrayList<Byte>();
 		try {
 			FileInputStream reader = new FileInputStream(filename);
@@ -141,19 +170,7 @@ public class Storage {
 				return ret;
 			}
 		};
-		toSave.add(map.getMapId());
-		toSave.add(map.getStartingXPosition(0));
-		toSave.add(map.getStartingYPosition(0));
-		toSave.add(map.getStartingXPosition(1));
-		toSave.add(map.getStartingYPosition(1));
-		toSave.add(map.getTemplateSquares().size());
-		for(Square square:map.getTemplateSquares()){
-			square.saveTo(toSave);
-		}
-		for(Square square:map.getSquares()){
-			square.saveTo(toSave);
-		}
-		
+		map.saveTo(toSave);		
 		save(filename,toSave.toArray(new Object[0]));
 	}
 	public static void save(String filename, Object... toSave) {
@@ -163,7 +180,7 @@ public class Storage {
 			writer = new FileOutputStream(filename,false);
 			List<Byte> build = new ArrayList<Byte>();
 			Map<String,Integer> strings = new HashMap<String,Integer>();
-			Coder.encode(strings,build,toSave);
+			Encoder.encode(strings,build,toSave);
 			int index = 0;
 			for(int i=0;i<strings.size();++i){
 				build.add(index++,(byte) '\t');

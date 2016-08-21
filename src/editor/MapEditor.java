@@ -8,9 +8,9 @@ import java.util.List;
 
 import game.Action;
 import game.environment.Square;
-import game.environment.UpdatableSquare;
-import game.environment.OnStepAction;
-import game.environment.UpdateAction;
+import game.environment.onstep.OnStepAction;
+import game.environment.update.UpdatableSquare;
+import game.environment.update.UpdateAction;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -224,17 +224,15 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			square.setX(square.getX()-screenX);
 			square.setY(square.getY()-screenY);
 		}
+		
 		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
+		myLoadedMap.copyTo(map,squares);
 		for(Square square:squares){
-			map.addSquare(square);
 			square.setView(this);
 		}
 		for(Square square:Hub.map.getTemplateSquares()){
-			map.addTemplateSquare(square);
 			square.setView(this);
 		}
-		map.setStartPosition(0, myLoadedMap.getStartingXPosition(0), myLoadedMap.getStartingYPosition(0));
-		map.setStartPosition(1, myLoadedMap.getStartingXPosition(1), myLoadedMap.getStartingYPosition(1));
 		Storage.saveMap(saveTo.getAbsolutePath(), map);
 	}
 	private void moveView(float x, float y){

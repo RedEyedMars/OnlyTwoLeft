@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.Hero;
+import game.environment.oncreate.OnCreateSquare;
+import game.environment.onstep.OnStepSquare;
+import game.environment.update.UpdatableSquare;
 import game.modes.GameMode;
 import game.modes.OverheadMode;
 import game.modes.PlatformMode;
@@ -37,17 +40,28 @@ public class Map extends GraphicEntity {
 	private List<Square> templateSquares = new ArrayList<Square>();
 	private List<Square> displaySquares = new ArrayList<Square>();
 
+	private List<String> nextMaps = new ArrayList<String>();
+
 	private java.util.Map<Square,List<OnStepSquare>> adjacentSquares = new HashMap<Square,List<OnStepSquare>>();
 
 	private float[] startingXPosition = new float[2];
 	private float[] startingYPosition = new float[2];
 
-
+	private String name;
+	private String filename;
 	private int mapId=0;
 	private int visibleColour=0;
+
 	private Map() {
 		super("blank");
 		this.setVisible(false);
+	}
+
+	public String getName(){
+		return name;
+	}
+	public String getFileName() {
+		return filename;
 	}
 
 	public List<OnStepSquare> getFunctionalSquares() {
@@ -63,6 +77,7 @@ public class Map extends GraphicEntity {
 		displaySquare(square);
 		allSquares.add(square);
 		addChild(square);
+
 	}
 
 
@@ -73,6 +88,7 @@ public class Map extends GraphicEntity {
 		}
 		if(square instanceof UpdatableSquare){
 			updateSquares.add((UpdatableSquare)square);
+			((UpdatableSquare)square).display();
 		}
 		if(square instanceof OnCreateSquare){
 			onCreates.add((OnCreateSquare) square);
@@ -87,6 +103,7 @@ public class Map extends GraphicEntity {
 		}
 		if(square instanceof UpdatableSquare){
 			updateSquares.remove((UpdatableSquare)square);
+			((UpdatableSquare)square).undisplay();
 		}
 		if(square instanceof OnCreateSquare){
 			onCreates.remove((OnCreateSquare) square);
@@ -182,7 +199,7 @@ public class Map extends GraphicEntity {
 			if(square==target){
 				continue;
 			}
-			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isSafe()){			
+			if(target.isCompletelyWithin(square)&&square.getOnHitAction(accordingTo).isPassible()){			
 				return null;
 			}
 			else if(square.getOnHitAction(accordingTo).getIndex()==1
@@ -212,7 +229,45 @@ public class Map extends GraphicEntity {
 		return null;
 	}
 
-	public static void load(Object[] loaded) {
+	public String getNextMap(Integer target) {
+		if(target>=0&&target<nextMaps.size()){
+			return nextMaps.get(target);
+		}
+		return null;
+	}
+	public Integer setNextMap(String name){
+		if(!nextMaps.contains(name)){
+			nextMaps.add(name);
+		}
+		return nextMaps.indexOf(name);
+	}
+	public void saveTo(List<Object> toSave) {
+		toSave.add(getMapId());
+		toSave.add(getStartingXPosition(0));
+		toSave.add(getStartingYPosition(0));
+		toSave.add(getStartingXPosition(1));
+		toSave.add(getStartingYPosition(1));
+		for(String name:nextMaps){
+			toSave.add(name);
+		}
+		toSave.add(getTemplateSquares().size());
+		for(Square square:getTemplateSquares()){
+			square.saveTo(toSave);
+		}
+		for(Square square:getSquares()){
+			square.saveTo(toSave);
+		}
+	}
+
+	public static void load(String name, String fileName, Object[] loaded) {
+		if(Hub.map!=null){
+			if(name.equals("Restart")){
+				name = Hub.map.name;
+			}
+			if("Restart".equals(fileName)){
+				fileName = Hub.map.filename;
+			}
+		}
 		Hub.map = null;
 		MapLoader loader = null;
 		if(loaded[3] instanceof Integer){
@@ -226,6 +281,10 @@ public class Map extends GraphicEntity {
 			loader = Hub.map.new MapLoader(loaded);
 			loader.nextInteger();
 		}
+		Hub.map.name = name;
+		Hub.map.filename = fileName;
+		for(Iterator<String> names=loader.getStrings();names.hasNext();Hub.map.nextMaps.add(names.next())){			
+		}
 		int i=0;
 		for(Iterator<Float> itr=loader.getFloats();i<2;++i){
 			Hub.map.startingXPosition[i]=itr.next();
@@ -233,11 +292,12 @@ public class Map extends GraphicEntity {
 		}
 		int size = loader.nextInteger();
 		for(i=0;i<size;++i){
-			Hub.map.templateSquares.add(Square.create(loader.getIntegers(), loader.getFloats()));
+			Square toAdd = Square.create(loader.getIntegers(), loader.getFloats());
+			Hub.map.templateSquares.add(toAdd);
 		}
 		for(Square square:loader){
 			Hub.map.addSquare(square);
-		}
+		}		
 	}
 
 	public void moveToStart(Hero hero){
@@ -398,7 +458,18 @@ public class Map extends GraphicEntity {
 		}
 	}
 
-
-
+	public void copyTo(Map map, List<Square> squares) {
+		for(Square square:Hub.map.allSquares){
+			map.addSquare(square);
+		}
+		for(Square square:Hub.map.getTemplateSquares()){
+			map.addTemplateSquare(square);
+		}
+		map.setStartPosition(0, getStartingXPosition(0), getStartingYPosition(0));
+		map.setStartPosition(1, getStartingXPosition(1), getStartingYPosition(1));
+		for(String name:nextMaps){
+			map.setNextMap(name);
+		}
+	}
 
 }

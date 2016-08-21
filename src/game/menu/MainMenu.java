@@ -62,7 +62,7 @@ public class MainMenu extends Menu{
 
 	public void solo(){
 		if(Main.loadMap()){
-			Gui.setView(new Game(true));
+			Gui.setView(new Game(true,Main.getNewRandomSeed()));
 		}
 	}
 

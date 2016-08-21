@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
-import game.environment.OnCreateAction;
-import game.environment.OnCreateSquare;
+
 import game.environment.Square;
+import game.environment.oncreate.OnCreateAction;
+import game.environment.oncreate.OnCreateSquare;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -232,7 +233,7 @@ public class OnCreateSquareEditor extends Editor{
 			}
 		}
 		if(toParse.length()>0){
-			OnCreateAction action = OnCreateAction.actions.get(name).create();
+			OnCreateAction action = OnCreateAction.actionMap.get(name).create();
 			action.setArgs(ints.iterator(), floats.iterator());
 			return action;
 		}
