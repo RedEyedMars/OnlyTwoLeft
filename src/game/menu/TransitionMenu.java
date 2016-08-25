@@ -34,7 +34,7 @@ public class TransitionMenu extends Menu{
 		final File saveFile = new File("data"+File.separatorChar+"save.data");
 		String lastName = "";
 		int bestWin = 1000000;
-		int bestFail = 1000000;
+		int bestFail = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(saveFile));
 			String line = reader.readLine();
@@ -63,7 +63,7 @@ public class TransitionMenu extends Menu{
 							}
 						}
 						else if(line.contains("\tFailed\t")){
-							if(secs<bestFail){
+							if(secs>bestFail){
 								bestFail=secs;
 							}
 						}
@@ -78,10 +78,10 @@ public class TransitionMenu extends Menu{
 		winnerButton.setX(0.2f);
 		winnerButton.setY(0.83f);
 		addChild(winnerButton);
-		final int bestTime = bestWin==1000000?bestFail:bestWin;
+		boolean won = bestWin!=1000000;
 		boolean best = false;
 		//System.out.println(bestTime+"|"+minutes*60+seconds);
-		if(minutes*60+seconds<=bestTime&&(bestTime==bestWin&&winner||bestTime==bestFail)){
+		if((won&&minutes*60+seconds<=bestWin&&winner)||(!won&&(winner||minutes*60+seconds>=bestFail))){
 			best = true;
 
 			

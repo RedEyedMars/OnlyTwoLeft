@@ -47,6 +47,7 @@ public class UpdatableSquare extends OnStepSquare {
 	}
 	public void activate(){
 		this.activated = true;
+		this.updateAction.onActivate();
 	}
 	public void deactivate(){
 		this.activated = false;
@@ -87,7 +88,12 @@ public class UpdatableSquare extends OnStepSquare {
 	}
 
 	public void run(){
-		activated = this.updateAction.getDefaultState();
+		if(this.updateAction.getDefaultState()){
+			activate();
+		}
+		else {
+			deactivate();
+		}
 	}
 
 	@Override

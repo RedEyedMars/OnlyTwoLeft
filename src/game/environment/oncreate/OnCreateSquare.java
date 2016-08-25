@@ -38,10 +38,14 @@ public class OnCreateSquare extends Square{
 	public Object useLast() {
 		return data.remove(data.size()-1);
 	}
+	public Object getLast() {
+		return data.get(data.size()-1);
+	}
 	@Override
 	public List<SquareAction> getActions() {
 		List<SquareAction> list = super.getActions();
 		list.add(action);
 		return list;
 	}
+
 }

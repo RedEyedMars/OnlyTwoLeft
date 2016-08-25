@@ -8,13 +8,25 @@ public class GrowUpdateAction extends UpdateAction{
 	}
 	@Override
 	public void act(Double seconds) {
-		growthW += x*seconds;
-		growthH += y*seconds;
-		self.adjust((float) (self.getWidth()+x*seconds), (float) (self.getHeight()+y*seconds));
-		if(onLimitBrokenAction>-1&&Math.sqrt(growthW*growthW+growthH*growthH)>=limit){
+		float dx = (float) (x*seconds);
+		float dy = (float) (y*seconds);
+		growthW += dx;
+		growthH += dy;
+		limiter+=Math.sqrt(dx*dx+dy*dy);
+		if(onLimitBrokenAction>-1&&limiter>=limit){
+			if(dx==0){
+				self.adjust(self.getWidth(),self.getHeight()+dy-Math.signum(y)*(limiter-limit));
+			}
+			else if(dy==0){
+				self.adjust(self.getWidth()+dx-Math.signum(x)*(limiter-limit),self.getHeight());
+			}
 			limiters.get(onLimitBrokenAction).act(this);
 			growthW=0f;
 			growthH=0f;
+			limiter=0f;
+		}
+		else {
+			self.adjust(self.getWidth()+dx,self.getHeight()+dy);
 		}
 	}
 	@Override

@@ -13,6 +13,7 @@ import game.environment.update.UpdatableSquare;
 import game.modes.GameMode;
 import game.modes.OverheadMode;
 import game.modes.PlatformMode;
+import game.modes.RaceMode;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import main.Hub;
@@ -23,16 +24,6 @@ public class Map extends GraphicEntity {
 	protected static final float gridSizeX = 100f;
 	protected static final float gridSizeY = 100f;
 
-	private static Map overhead = new Map(){
-		{
-			setMapId(-20);
-		}
-	};
-	private static Map platform = new Map(){
-		{
-			setMapId(-40);
-		}
-	};
 	private List<Square> allSquares = new ArrayList<Square>();
 	private List<OnStepSquare> functionalSquares = new ArrayList<OnStepSquare>();
 	private List<UpdatableSquare> updateSquares = new ArrayList<UpdatableSquare>();
@@ -211,22 +202,14 @@ public class Map extends GraphicEntity {
 	}
 
 	public static Map createMap(int id){
-		try {
-			if(id==-40){
-				return platform.getClass().newInstance();
-			}
-			else if(id==-20){
-				return overhead.getClass().newInstance();
-			}
-			else if(id==0){
-				Map map = new Map();
-				map.setMapId(-20);
-				return map;
-			}
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
+		if(id==0){
+			return createMap(-20);
 		}
-		return null;
+
+		Map map = new Map();
+		map.setMapId(id);
+		return map;
+
 	}
 
 	public String getNextMap(Integer target) {
@@ -352,6 +335,9 @@ public class Map extends GraphicEntity {
 		}
 		case 1:{
 			return new PlatformMode();
+		}
+		case 2:{
+			return new RaceMode();
 		}
 		}
 		return null;

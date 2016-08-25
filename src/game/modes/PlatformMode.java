@@ -131,10 +131,15 @@ public class PlatformMode implements GameMode{
 			}		
 		}
 		if(focused.getY()<-0.05f||wild.getY()>1.0f){
-			focused.getGame().transition("Restart", false);
+			loseGame();
 		}
 	}
-
+	public void loseGame(){
+		focused.getGame().transition("Restart", false);
+	}
+	public void winGame(String nextMap){
+		focused.getGame().transition(nextMap, true);
+	}
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){

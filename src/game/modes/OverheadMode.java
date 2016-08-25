@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import duo.client.Client;
+import duo.messages.MoveHeroMessage;
 import game.Hero;
 import game.VisionBubble;
 import game.environment.onstep.OnStepAction;
@@ -86,11 +87,17 @@ public class OverheadMode implements GameMode{
 		wildWall.setX(wild.getX()-0.1f);
 		wildWall.setY(wild.getY()-0.1f);
 	}
-
+	public void loseGame(){
+		focused.getGame().transition("Restart", false);
+	}
+	public void winGame(String nextMap){
+		focused.getGame().transition(nextMap, true);
+	}
 	@Override
 	public void update(double seconds) {
 		handleViewMovement();
-		handleInterceptions();		
+		handleInterceptions();	
+		MoveHeroMessage.update(seconds, wild);	
 	}
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {

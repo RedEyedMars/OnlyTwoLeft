@@ -280,6 +280,10 @@ public class GraphicRenderer {
 		viewY+=y;
 		viewZ+=z;
 	}
+	public void translateTo(float x, float y){
+		viewX=x;
+		viewY=y;
+	}
 
 	public float getViewX() {
 		return viewX;

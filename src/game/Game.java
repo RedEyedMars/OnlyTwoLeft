@@ -31,6 +31,7 @@ public class Game extends GraphicView{
 
 	public static Hero black;
 	public static Hero white;
+	private static List<Action<Double>> updateActions = new ArrayList<Action<Double>>() ;
 	private float pointerX = 0.05f;
 	private float pointerY = 0.05f;
 
@@ -104,11 +105,12 @@ public class Game extends GraphicView{
 			gameMode = Hub.map.getGameMode();
 			if(gameMode!=null){
 				gameMode.setup(colourToControl, black, white, wildWall);
+				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
+					addChild(e);
+				}
+				startTime = System.currentTimeMillis();
 			}
-			for(GraphicEntity e:gameMode.getAuxillaryChildren()){
-				addChild(e);
-			}
-			startTime = System.currentTimeMillis();
+			
 
 		}
 	}
@@ -170,6 +172,15 @@ public class Game extends GraphicView{
 			Storage.loadMap(nextMap);
 			Gui.setView(new TransitionMenu(false,successful,minutes,seconds,previousMap,Storage.getMapNameFromFileName(nextMap),colourToControl,canProceed));
 		}
+	}
+	public static void addUpdateAction(Action<Double> action) {
+		Game.updateActions .add(action);
+	}
+	public void loseGame() {
+		gameMode.loseGame();
+	}
+	public void winGame(String nextMap) {
+		gameMode.winGame(nextMap);
 	}
 
 }

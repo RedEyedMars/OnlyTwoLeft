@@ -58,6 +58,8 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	protected float y;
 	protected boolean defaultState;
 	protected float limit=0f;
+	protected float limiterStartPercent = 0f;
+	protected float limiter = 0f;
 	protected int onLimitBrokenAction=-1;
 	public void undo() {
 	}
@@ -68,10 +70,11 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		onLimitBrokenAction=ints.next();
 		if(onLimitBrokenAction>=0){
 			limit = floats.next();
+			limiterStartPercent = floats.next();
 		}
 	}
 	public float getFloat(int i){
-		return i==0?x:i==1?y:limit;
+		return i==0?x:i==1?y:i==2?limit:limiterStartPercent;
 	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
@@ -81,6 +84,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		saveTo.add(onLimitBrokenAction);
 		if(onLimitBrokenAction!=-1){
 			saveTo.add(limit);
+			saveTo.add(limiterStartPercent);
 		}
 	}
 	@Override
@@ -106,6 +110,9 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public void setLimit(float limit){
 		this.limit = limit;
 	}
+	public void setLimiterStartPercent(float limiterStartPercent){
+		this.limiterStartPercent = limiterStartPercent;
+	}
 
 	public int getLimiter() {
 		return onLimitBrokenAction;
@@ -114,7 +121,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		this.onLimitBrokenAction=limiter;
 	}
 	public void onActivate(){
-		
+		limiter=limit*limiterStartPercent;
 	}
 	public void onDeactivate(){
 		

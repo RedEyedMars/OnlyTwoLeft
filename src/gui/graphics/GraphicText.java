@@ -188,7 +188,7 @@ public class GraphicText extends GraphicEntity {
 		public GraphicChar(char c) {
 			super("$"+font,layer);
 			setFrame(c);
-			value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
+			setValue(c);
 		}
 
 		public float getWidthValue() {
@@ -197,9 +197,17 @@ public class GraphicText extends GraphicEntity {
 
 		public void change(char c) {
 			setFrame(c);
-			value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
+			setValue(c);
 		}
 
+		private void setValue(char c){
+			if(c=='\t'){
+				value = 4*Hub.renderer.letterWidths.get(font).get(' ')*14/16;
+			}
+			else {
+				value = Hub.renderer.letterWidths.get(font).get(c)*14/16;
+			}
+		}
 		@Override
 		public void adjust(float x, float y){
 			super.adjust(0.025f*visualW,0.025f*visualH);

@@ -1,0 +1,8 @@
+create list
+create square:#0
+for:5
+	translate x:-0.01
+	adjust start%:0.09
+	copy:1
+	put:0
+display list:0

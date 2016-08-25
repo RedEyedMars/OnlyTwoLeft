@@ -1,25 +1,15 @@
 package editor;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JFileChooser;
-
-import game.Action;
-import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.oncreate.OnCreateAction;
-import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepAction;
-import game.environment.onstep.OnStepSquare;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
-import game.menu.MainMenu;
 import game.menu.MenuButton;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -28,7 +18,6 @@ import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 import main.Hub;
-import storage.Storage;
 
 public class Editor extends GraphicView {
 
@@ -60,11 +49,13 @@ public class Editor extends GraphicView {
 	private TextWriter updatableSquareXField;
 	private TextWriter updatableSquareYField;
 	private TextWriter updatableSquareLimitField;
+	private TextWriter updatableSquareLimiterPercentField;
 	private GraphicEntity updatableSquareDefaultStateIndicator;
 	private GraphicEntity updatableSquareLimiterIndicator;
 
 	protected List<Square> squares;
 	protected Square builder1;
+	protected Square mostRecentlyRemovedSquare;
 
 	public Editor(){
 		super();
@@ -72,6 +63,12 @@ public class Editor extends GraphicView {
 	}
 
 	protected void setupButtons(){
+		shapeMenu.clear();
+		colourMenu.clear();
+		colour2Menu.clear();
+		actionMenu.clear();
+		actionMenu2.clear();
+		updateActionMenu.clear();
 		for(int i=0;i<6;++i){
 			final int x = i;
 			Button<Editor> button = new Button<Editor>("editor_shape_icons",i,this,new ButtonAction(){
@@ -290,7 +287,7 @@ public class Editor extends GraphicView {
 		visibleToShower.setFrame(3);
 		addChild(visibleToShower);
 
-		updatableSquareDataField = new MenuButton("X:\nY:\nLimit:"){
+		updatableSquareDataField = new MenuButton("X:\nY:\nLimit:\nStart %:"){
 			{
 				text.setWidthFactor(1f);
 				text.setHeightFactor(1f);
@@ -316,12 +313,16 @@ public class Editor extends GraphicView {
 				else if(index<6){
 					return 0.0925f;
 				}
+				else if(index==7){
+					return 0.02f;
+				}
 				else if(index==8){
 					return 0.14f;
 				}
-				else {
-					return 0.02f;
+				else if(index==9){
+					return 0.17f;
 				}
+				else return 0.02f;
 			}
 			@Override
 			public float offsetY(int index){
@@ -329,15 +330,21 @@ public class Editor extends GraphicView {
 					return super.offsetY(index);
 				}
 				else if(index<=4){
-					return 0.055f;
+					return 0.08f;
 				}
 				else if(index==5){
-					return 0.03f;
-				}
-				else if(index==6){
 					return 0.055f;
 				}
+				else if(index==6){
+					return 0.08f;
+				}				
+				else if(index==7){
+					return 0.03f;
+				}
 				else if(index==8){
+					return 0.03f;
+				}
+				else if(index==9){
 					return 0.005f;
 				}
 				else return 0f;
@@ -409,6 +416,29 @@ public class Editor extends GraphicView {
 						e.printStackTrace();
 					}
 					Gui.removeOnType(this);
+					Gui.giveOnType(updatableSquareLimiterPercentField);
+				}
+			}
+		};
+		updatableSquareLimiterPercentField = new TextWriter("impact"," "){
+			{
+				charIndex=0;
+				index=0;
+			}
+			@Override
+			public void keyCommand(boolean b, char c, int keycode){
+				if(c>=48&&c<=57||c==46||c==45||keycode==14){
+					super.keyCommand(b, c, keycode);
+				}
+				else if(b==KeyBoardListener.UP&&(keycode==15||keycode==28)){
+					try {
+						updatableSquareAction.setLimiterStartPercent(
+								Float.parseFloat(updatableSquareLimiterPercentField.getText()));
+					}
+					catch(NumberFormatException e){
+						e.printStackTrace();
+					}
+					Gui.removeOnType(this);
 					Gui.removeOnClick(updatableSquareDataField);
 					updatableSquareDataField.setVisible(false);
 				}
@@ -464,8 +494,9 @@ public class Editor extends GraphicView {
 		updatableSquareDataField.addChild(updatableSquareDefaultStateIndicator);
 		updatableSquareDataField.addChild(updatableSquareLimiterIndicator);
 		updatableSquareDataField.addChild(updatableSquareLimitField);
+		updatableSquareDataField.addChild(updatableSquareLimiterPercentField);
 		addChild(updatableSquareDataField);
-		updatableSquareDataField.adjust(0.3f, 0.1f);
+		updatableSquareDataField.adjust(0.3f, 0.13f);
 		updatableSquareDataField.setVisible(false);
 	}
 
@@ -539,9 +570,9 @@ public class Editor extends GraphicView {
 			if(e.getAction()==MotionEvent.ACTION_UP){
 				for(int i=squares.size()-1;i>=0;--i){
 					if(squares.get(i).isWithin(e.getX(), e.getY())){
-						Square square = squares.remove(i);
-						removeButtonsFromSquare(square);
-						removeChild(square);
+						mostRecentlyRemovedSquare = squares.remove(i);
+						removeButtonsFromSquare(mostRecentlyRemovedSquare);
+						removeChild(mostRecentlyRemovedSquare);
 						return true;
 					}
 					else if(squares.get(i) instanceof UpdatableSquare){
@@ -562,6 +593,7 @@ public class Editor extends GraphicView {
 	}
 	protected Square createSquare(int x, int y,int shape, int colour, int colour2, int a1, int a2, List<Integer> ua, boolean oc){
 		mode=2;
+		mostRecentlyRemovedSquare = null;
 		List<Float> floats = new ArrayList<Float>();
 		for(int i=0;i<ua.size();++i){			
 			floats.add(0f);
@@ -723,6 +755,7 @@ public class Editor extends GraphicView {
 							updatableSquareXField.changeTextOnLine(""+updatableSquareAction.getFloat(0), 0);
 							updatableSquareYField.changeTextOnLine(""+updatableSquareAction.getFloat(1), 0);
 							updatableSquareLimitField.changeTextOnLine(""+updatableSquareAction.getFloat(2), 0);
+							updatableSquareLimiterPercentField.changeTextOnLine(""+updatableSquareAction.getFloat(3), 0);
 							updatableSquareDefaultStateIndicator.setFrame(updatableSquareAction.getDefaultState()?3:4);
 							updatableSquareLimiterIndicator.setFrame(1);
 							updatableSquareDataField.setVisible(true);
@@ -780,7 +813,7 @@ public class Editor extends GraphicView {
 				});
 				button.setX(ocs.getX()+0.015f);
 				button.setY(ocs.getY()+0.015f);
-				button.adjust(0.05f, 0.05f);
+				button.adjust(0.025f, 0.025f);
 				ocs.addChild(button);
 				buttons.add(button);
 			}

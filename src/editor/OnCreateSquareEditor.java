@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
+import java.util.Stack;
 
 import game.environment.Square;
 import game.environment.oncreate.OnCreateAction;
@@ -45,7 +46,10 @@ public class OnCreateSquareEditor extends Editor{
 			if(saveTo.exists()){
 				text = Storage.loadText(saveTo.getAbsolutePath());
 			}
-			squares = Hub.map.getTemplateSquares();
+			if(Hub.map==null){
+				Hub.map = game.environment.Map.createMap(0);
+			}
+			squares = Hub.map.getTemplateSquares();	
 			for(Square square:squares){
 				for(int i=0;i<square.size();++i){
 					if(!(square.getChild(i) instanceof Square)){
@@ -101,7 +105,7 @@ public class OnCreateSquareEditor extends Editor{
 			@Override
 			public void act(Editor subject){
 				moveView(0.25f,0);
-			
+
 			}
 		});
 		ctrlCommands.put(31, new ButtonAction(){
@@ -148,11 +152,34 @@ public class OnCreateSquareEditor extends Editor{
 	private void saveAndReturnToEditor() {
 		Storage.saveText(saveTo.getAbsolutePath(), writer.getText());
 		List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
+		List<OnCreateAction> currentSection = actions;
+		Stack<List<OnCreateAction>> stack = new Stack<List<OnCreateAction>>();
+		int depth = 0;
 		for(String line:writer.getLines()){
+			if(depth>0){
+				int numberOfTabs=0;
+				for(;numberOfTabs<line.length()&&line.charAt(numberOfTabs)=='\t';++numberOfTabs){				
+				}
+				if(numberOfTabs>0){
+					line = line.substring(numberOfTabs);
+				}
+				while(numberOfTabs<depth){
+					currentSection = stack.pop();
+					--depth;
+				}				
+			}
 			OnCreateAction action = createFromString(line);
 			if(action!=null){
-				actions.add(action);
+				if(action.getIndex()!=8){
+					currentSection.add(action);
+				}
+				if(action.isBlock()){
+					stack.push(currentSection);
+					currentSection = (List<OnCreateAction>) action;
+					++depth;
+				}
 			}
+
 		}
 
 		final List<Integer> ints = new ArrayList<Integer>();
@@ -161,6 +188,7 @@ public class OnCreateSquareEditor extends Editor{
 			@Override
 			public boolean add(Object obj){
 				if(obj instanceof Integer){
+					System.out.print(obj+" ");
 					return ints.add((Integer) obj);
 				}
 				else if(obj instanceof Float){
@@ -173,16 +201,13 @@ public class OnCreateSquareEditor extends Editor{
 		ints.add(Hub.map.getIntY(square_y));
 		ints.add(Hub.map.getIntX(square_w));
 		ints.add(Hub.map.getIntX(square_h));
-		int numberOfOffsets = 0;
-		for(OnCreateAction action:actions){
-			if(action.getIndex()==8){
-				++numberOfOffsets;
-			}
-		}
-		ints.add(actions.size()-numberOfOffsets);
+		ints.add(actions.size());
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
+			System.out.println();
 		}
+
+		OnCreateAction.squareIndexOffset=0;
 		OnCreateSquare square = new OnCreateSquare(0,-1,-1,ints.iterator(),floats.iterator());
 		if(editor==null){
 			for(GraphicEntity child:square.getChildren()){
@@ -199,10 +224,15 @@ public class OnCreateSquareEditor extends Editor{
 	}
 
 	public OnCreateAction createFromString(String toParse){
+		if(toParse.length()==0)return null;
 		String[] split = toParse.trim().split(":");
 		String name = split[0];
+		OnCreateAction action = OnCreateAction.actionMap.get(name).create();
 		List<Integer> ints = new ArrayList<Integer>();
 		List<Float> floats = new ArrayList<Float>();
+		if(action.isBlock()){
+			ints.add(0);
+		}
 		if(split.length>1){
 			String[] args = split[1].split(" ");		
 			for(String arg:args){
@@ -232,12 +262,8 @@ public class OnCreateSquareEditor extends Editor{
 				}
 			}
 		}
-		if(toParse.length()>0){
-			OnCreateAction action = OnCreateAction.actionMap.get(name).create();
-			action.setArgs(ints.iterator(), floats.iterator());
-			return action;
-		}
-		else return null;
+		action.setArgs(ints.iterator(), floats.iterator());
+		return action;
 	}
 	private void moveView(float x, float y){
 		for(int i=0;i<squares.size();++i){

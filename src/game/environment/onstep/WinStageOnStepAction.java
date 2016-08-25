@@ -11,8 +11,7 @@ public class WinStageOnStepAction extends OnStepAction<Integer>{
 	public void act(Hero subject) {
 		if(Hub.map.getNextMap(target)!=null){
 			System.out.println("Start Next Map:"+Hub.map.getNextMap(target));
-			
-			subject.getGame().transition(Hub.map.getNextMap(target),true);
+			subject.getGame().winGame(Hub.map.getNextMap(target));
 		}
 		else {
 			System.out.println("Map not found:"+target);

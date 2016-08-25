@@ -2,15 +2,10 @@ package editor;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
-import game.Action;
 import game.environment.Square;
-import game.environment.onstep.OnStepAction;
 import game.environment.update.UpdatableSquare;
-import game.environment.update.UpdateAction;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -66,7 +61,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return this;
 	}
-	
+
 	public void setupHeroButton(final int colour){
 		final Button<Editor> button = new Button<Editor>("circles",colour,this,null);
 		final MouseListener mouseListener = new MouseListener(){
@@ -113,7 +108,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		buttons.add(button);
 		addChild(button);
 	}
-	
+
 	@Override
 	public void setupButtons(){
 		super.setupButtons();
@@ -121,9 +116,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		gravityShower.setX(0.9f);
 		gravityShower.setY(0.96f);
 		addChild(gravityShower);
-		gravityShower.setFrame(1-(myLoadedMap.getMapId()+20)/-20);
+		gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
 	}
-	
+
 	private void createCopyOfSquare(Square square){
 		final Square copy = Square.copy(square);
 		final MouseListener mouseListener = new MouseListener(){
@@ -157,7 +152,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		copy.onAddToDrawable();
 		Gui.giveOnClick(mouseListener);
 	}
-	
+
 	public void update(double seconds){
 		if(saveTo==null){
 			Gui.setView(new MainMenu());
@@ -183,7 +178,18 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				setVisibleSquares(visibleTo);
 			}
 			else if(44==keycode&&!squares.isEmpty()){
-				removeChild(squares.remove(squares.size()-1));
+				if(mostRecentlyRemovedSquare!=null){
+					addIconsToSquare(mostRecentlyRemovedSquare);
+					addChild(mostRecentlyRemovedSquare);
+					mostRecentlyRemovedSquare.onAddToDrawable();
+					squares.add(mostRecentlyRemovedSquare);
+					mostRecentlyRemovedSquare = null;
+				}
+				else {
+					mostRecentlyRemovedSquare = squares.remove(squares.size()-1);
+					removeButtonsFromSquare(mostRecentlyRemovedSquare);
+					removeChild(mostRecentlyRemovedSquare);
+				}
 			}
 			else if(45==keycode){
 				if(!reset){
@@ -209,11 +215,11 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				moveView(-0.5f,0);
 			}
 			else if(keycode==34){//toggle gravity
-				myLoadedMap.setMapId(myLoadedMap.getMapId()==-20?-40:-20);
-				gravityShower.setFrame(1-(myLoadedMap.getMapId()+20)/-20);
+				myLoadedMap.setMapId(myLoadedMap.getMapId()==-60?-20:myLoadedMap.getMapId()-20);
+				gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
 			}
 		}
-		
+
 	}
 	private void saveAndReturnToMainMenu() {
 		saveMap();
@@ -224,7 +230,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			square.setX(square.getX()-screenX);
 			square.setY(square.getY()-screenY);
 		}
-		
+
 		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
 		myLoadedMap.copyTo(map,squares);
 		for(Square square:squares){
@@ -256,6 +262,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		if(square!=null){
 			squares.add(square);
 		}
+		
 		buttons.clear();
 		setupHeroButton(0);
 		setupHeroButton(1);
@@ -263,8 +270,13 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		for(Square sqr:squares){
 			addChild(sqr);
 			addIconsToSquare(sqr);
+			if(sqr instanceof UpdatableSquare){
+				for(Square dependant:((UpdatableSquare)sqr).getDependants()){
+					sqr.addChild(dependant);
+					addIconsToSquare(dependant);
+				}
+			}
 		}
-
 		reset = true;
 	}
 

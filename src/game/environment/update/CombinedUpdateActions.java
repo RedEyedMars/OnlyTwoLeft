@@ -50,9 +50,22 @@ public class CombinedUpdateActions extends UpdateAction{
 		}
 	}
 	@Override
+	public void onActivate(){
+		for(UpdateAction action:actions){
+			action.onActivate();
+		}		
+	}
+	@Override
+	public void onDeactivate(){
+		for(UpdateAction action:actions){
+			action.onDeactivate();
+		}		
+	}
+
+	@Override
 	public int targetType(){
 		return actions.size();
-	}
+	}	
 
 	public Iterator<UpdateAction> iterator(){
 		return new Iterator<UpdateAction>(){

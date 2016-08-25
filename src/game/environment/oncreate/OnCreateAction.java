@@ -18,7 +18,7 @@ import main.Main;
 public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Object>{
 	public static Map<String,OnCreateAction> actionMap = new HashMap<String,OnCreateAction>();
 	public static List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
-	protected static int squareIndexOffset = 0;
+	public static int squareIndexOffset = 0;
 
 	public static final OnCreateAction section = new SectionOnCreateAction();
 	public static final OnCreateAction create_list = new CreateListOnCreateAction();
@@ -29,6 +29,11 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Obje
 	public static final OnCreateAction get_random = new GetRandomOnCreateAction();
 	public static final OnCreateAction display_list = new DisplayListOnCreateAction();
 	public static final OnCreateAction square_index_offset = new SquareIndexOffsetOnCreateAction();
+	public static final OnCreateAction copy = new CopyOnCreateAction();
+	public static final OnCreateAction _for = new ForOnCreateAction();
+	public static final OnCreateAction translate_x = new TranslateXOnCreateAction();
+	public static final OnCreateAction translate_y = new TranslateYOnCreateAction();
+	public static final OnCreateAction adjust_startPERCENT = new AdjustLimiterStartPercentOnCreateAction();
 
 	protected List<Float> floats = new ArrayList<Float>();
 	protected List<Integer> ints = new ArrayList<Integer>();
@@ -60,6 +65,9 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Obje
 	}
 
 	public abstract OnCreateAction create();
+	public boolean isBlock(){
+		return false;
+	}
 
 	protected void saveArgs(List<Object> saveTo){
 		for(int i=0;i<numberOfInts();++i){
@@ -76,7 +84,12 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Obje
 				Object obj = field.get(OnCreateAction.class);
 				if(obj instanceof OnCreateAction){
 					//System.out.println(field.getName());
-					actionMap.put(field.getName().replace('_', ' '),(OnCreateAction) obj);
+					String name = field.getName().replace('_', ' ');
+					name = name.replace("PERCENT", "%");
+					while(name.startsWith(" ")){
+						name = name.substring(1);
+					}
+					actionMap.put(name,(OnCreateAction) obj);
 					actions.add((OnCreateAction) obj);
 				}
 			} 
