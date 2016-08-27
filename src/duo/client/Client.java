@@ -114,7 +114,7 @@ public class Client {
 			client.handler.pass(message);
 		}
 	}
-	
+
 	/**
 	 * Askes if there is a Client that is currently connected.
 	 * @return true - if there is a Client that is connected to the Server. false - if there is no client that can currently send {@link duo.messages.Message}'s.
@@ -129,11 +129,17 @@ public class Client {
 	 */
 	public static void endConnectionToTheServer() {
 		if(client!=null){
-			client.handler.sendNow(new EndConnectionMessage());
-			client.close();
-			client = null;
+			client.handler.sendAllMessagesNow();
+			client.closing();
 		}
 	}
+
+	protected void closing(){	
+		client.handler.sendNow(new EndConnectionMessage());
+		client.close();
+		client = null;
+	}
+
 	/**
 	 * If there is a client currently connected, closes that connection to the server.
 	 * This method should be called if the Server is the one closing the connection.
@@ -212,5 +218,5 @@ public class Client {
 	public static void sendMapMessage(String filename, Message onEnd) {
 		SendMapMessage.send(client, filename, onEnd);
 	}
-	
+
 }

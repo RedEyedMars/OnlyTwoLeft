@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import duo.client.Client;
+import duo.messages.PassMessage;
+import duo.messages.SaveGameMessage;
 import duo.messages.StartGameMessage;
 import editor.TextWriter;
 import game.Game;
@@ -22,19 +24,34 @@ import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
+import main.Hub;
 import main.Main;
 
 public class TransitionMenu extends Menu{
-	TextWriter name;
+	private TextWriter playerName;
+	private boolean isBest;
+	private boolean isWinner;
+	private boolean isCompetitive;
+	private int minutes;
+	private int seconds;
+	private int millis;
+	private boolean canProceed;
+	private MenuButton winnerButton;
 	public TransitionMenu(
-			boolean competitive,final boolean winner,final int minutes,final int seconds,
+			boolean isCompetitive,boolean isWinner,long millisecondsToComplete,
 			final String previousMapName, final String nextMapName, final boolean myColour, boolean canProceed){
 		super();
+		this.isCompetitive = isCompetitive;
+		this.isWinner = isWinner;
+		this.minutes = (int) (millisecondsToComplete/1000/60);
+		this.seconds = (int) ((millisecondsToComplete/1000)%60);
+		this.millis = (int) ((millisecondsToComplete)%1000);
+		this.canProceed = canProceed;
 		//if(!competitive){
 		final File saveFile = new File("data"+File.separatorChar+"save.data");
 		String lastName = "";
-		int bestWin = 1000000;
-		int bestFail = 0;
+		long bestWin = Long.MAX_VALUE;
+		long bestFail = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(saveFile));
 			String line = reader.readLine();
@@ -54,38 +71,35 @@ public class TransitionMenu extends Menu{
 						line.substring(firstTab+1,line.indexOf('\t',firstTab+1)))){
 					String[] split = line.split("\\tIN\\t");
 					if(split!=null&&split.length>1){
-						Integer mins = Integer.parseInt(split[1].substring(0, split[1].indexOf('m')));
-						Integer secs = Integer.parseInt(split[1].substring(split[1].indexOf(' ')+1,split[1].indexOf('s')));
-						secs=mins*60+secs;
-						if(line.contains("\tCompleted\t")){
-							if(secs<bestWin){
-								bestWin=secs;
+						Long millis = Long.parseLong(split[1].substring(0, split[1].indexOf("ms")));
+						if(line.contains("\tW\t")){
+							if(millis<bestWin){
+								bestWin=millis;
 							}
 						}
-						else if(line.contains("\tFailed\t")){
-							if(secs>bestFail){
-								bestFail=secs;
+						else if(line.contains("\tL\t")){
+							if(millis>bestFail){
+								bestFail=millis;
 							}
 						}
 					}
 				}
 				line=reader.readLine();
 			}
+			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		GraphicEntity winnerButton = new MenuButton(winner?"Completed!":"Failed");
+		winnerButton = new MenuButton(isCompetitive?isWinner?"Victory!":"Defeat":isWinner?"Completed!":"Failed");
 		winnerButton.setX(0.2f);
 		winnerButton.setY(0.83f);
 		addChild(winnerButton);
-		boolean won = bestWin!=1000000;
-		boolean best = false;
-		//System.out.println(bestTime+"|"+minutes*60+seconds);
-		if((won&&minutes*60+seconds<=bestWin&&winner)||(!won&&(winner||minutes*60+seconds>=bestFail))){
-			best = true;
-
-			
-			name = new TextWriter("impact",lastName){
+		boolean won = bestWin!=Long.MAX_VALUE;
+		isBest = false;
+		if((won&&millisecondsToComplete<=bestWin&&isWinner)||
+				(!won&&(isWinner||millisecondsToComplete>=bestFail))){
+			isBest = true;			
+			playerName = new TextWriter("impact",lastName){
 				{
 					setWidthFactor(1.4f);
 					setHeightFactor(3f);
@@ -109,7 +123,7 @@ public class TransitionMenu extends Menu{
 			GraphicEntity nameButton = new MenuButton("Name:"){
 				@Override
 				public void performOnRelease(MotionEvent e){
-					Gui.giveOnType(name);
+					Gui.giveOnType(playerName);
 				}
 				@Override
 				public float offsetX(int index){
@@ -126,32 +140,10 @@ public class TransitionMenu extends Menu{
 			nameButton.setY(0.67f);
 
 
-			name.setX(0.325f);
-			name.setY(0.69f);
+			playerName.setX(0.325f);
+			playerName.setY(0.69f);
 			addChild(nameButton);
-			addChild(name);
-
-
-			GraphicEntity saveTime = new MenuButton("Save"){
-				boolean saved = false;
-				@Override
-				public void performOnRelease(MotionEvent e){
-					if(!saved){
-						try {
-							BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile,true));
-							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							Date date = new Date();
-							writer.write("\n"+name.getText()+"\t"+previousMapName+(winner?"\tCompleted\t":"\tFailed\t")+"on "+dateFormat.format(date)+"\tIN\t"+minutes+"m "+seconds+"s");
-							writer.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
-			};
-			saveTime.setX(0.2f);
-			saveTime.setY(0.51f);
-			addChild(saveTime);		
+			addChild(playerName);
 
 		}
 		//}
@@ -164,58 +156,107 @@ public class TransitionMenu extends Menu{
 			}
 		};
 		time.setX(0.2f);
-		time.setY(0.35f);
+		time.setY(0.51f);
 		addChild(time);
-		GraphicEntity proceedButton = null;
+
+		GraphicEntity returnButton = new MenuButton("Return to Main Menu"){
+			@Override
+			public void performOnRelease(MotionEvent e){
+				if(Client.isConnected()){
+					Client.pass(new PassMessage(
+							new SaveGameMessage(previousMapName,minutes,seconds)));
+				}
+				saveTime(previousMapName);
+				returnToMain();
+			}
+		};
+		returnButton.setX(0.2f);
+		returnButton.setY(0.19f);
+		addChild(returnButton);
+		if(isBest){
+			GraphicEntity bestIndicator = new GraphicEntity("menu_best_indicator",1);
+			bestIndicator.adjust(0.075f, 0.075f);
+			bestIndicator.setX(0.6f);
+			bestIndicator.setY(0.56f);
+			addChild(bestIndicator);
+		}
+		else {
+			winnerButton.setY(0.67f);
+		}
+	}
+
+	public void saveTime(String previousMapName){
+		if(isBest){
+			try {
+				BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data"+File.separatorChar+"save.data"),true));
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();
+				writer.write("\n"+playerName.getText()+"\t"+previousMapName+(isWinner?"\tW\t":"\tL\t")+"on "+dateFormat.format(date)+"\tIN\t"+(((minutes*60)+seconds)*1000+millis)+"ms");
+				writer.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	private void returnToMain() {
+		Client.endConnectionToTheServer();
+		Gui.setView(new MainMenu());
+	}
+	public void verifyWhoWon(boolean successful, long theirTime) {
+		if(!isCompetitive){
+			if(isWinner&&!successful){
+				isWinner=false;
+			}
+		}
+		else {
+			if(isWinner&&successful){
+				long myTime = this.millis+1000*(this.seconds+60*this.minutes);
+				System.out.println(myTime+"vs"+theirTime);
+				if(myTime==theirTime){
+					winnerButton.changeText("Tie");
+					return;
+				}
+				else if(myTime>theirTime){
+					isWinner = false;
+				}
+			}
+		}
+		winnerButton.changeText(isCompetitive?isWinner?"Victory!":"Defeat":isWinner?"Completed!":"Failed");
+	}
+	public void canProceed(final String previousMapName,String nextMapName,final boolean myColour){
 		if(canProceed){
-			proceedButton = new MenuButton(nextMapName){
+			GraphicEntity proceedButton = new MenuButton(nextMapName){
 				@Override
 				public void performOnRelease(MotionEvent e){
 					long seed = Main.getNewRandomSeed();
 					if(Client.isConnected()){
+						Client.pass(new SaveGameMessage(previousMapName,minutes,seconds));						
 						Client.pass(new StartGameMessage(!myColour));
 					}
+					saveTime(previousMapName);
 					Game game = new Game(myColour,seed);
 					Gui.setView(game);
 				}
 			};
 			proceedButton.setX(0.2f);
-			proceedButton.setY(0.19f);
+			proceedButton.setY(0.35f);
 			addChild(proceedButton);
+			proceedButton.onAddToDrawable();
 		}
-
-		GraphicEntity returnButton = new MenuButton("Return to Main Menu"){
-			@Override
-			public void performOnRelease(MotionEvent e){
-				returnToMain();
-			}
-		};
-		returnButton.setX(0.2f);
-		returnButton.setY(0.03f);
-		addChild(returnButton);
-		if(!best){
-			winnerButton.setY(0.67f);
-			time.setY(0.51f);
-			if(proceedButton!=null){
-				proceedButton.setY(0.35f);
-			}
-			returnButton.setY(0.19f);
-		}
-		else {
-			GraphicEntity bestIndicator = new GraphicEntity("menu_best_indicator",1);
-			bestIndicator.adjust(0.075f, 0.075f);
-			bestIndicator.setX(0.6f);
-			bestIndicator.setY(0.4f);
-			addChild(bestIndicator);
-		}
-	}
-
-	private void returnToMain() {
-		Client.endConnectionToTheServer();
-		Gui.setView(new MainMenu());
 	}
 
 	public KeyBoardListener getDefaultKeyBoardListener(){
-		return name;
+		return playerName;
 	}
+
+	public int getMinutes() {
+		return minutes;
+	}
+	public int getSeconds() {
+		return seconds;
+	}
+	public int getMillis() {
+		return millis;
+	}
+	
 }

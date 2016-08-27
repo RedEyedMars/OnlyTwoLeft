@@ -2,8 +2,6 @@ package duo.messages;
 
 import duo.Handler;
 import duo.client.Client;
-import game.Action;
-import game.Game;
 import game.Hero;
 
 /**
@@ -21,15 +19,15 @@ public class MoveHeroMessage extends Message{
 	//The delta Y coordinate, or, how much the Hero has moved on the Y axis.
 	private static float dy=0f;
 
-	private static float dx2=0f;
-	private static float dy2=0f;
+	//The limit to which the partnered Hero will move in the X axis.
+	private static float x_limit=0f;
+	//The limit to which the partnered Hero will move in the Y axis.
+	private static float y_limit=0f;
 
 	//The variable used to send the X coordinate information about the Hero moving, to the other Client.
 	private float x;
 	//The variable used to send the Y coordinate information about the Hero moving, to the other Client.
 	private float y;
-	//The start time variable to compare the time it took for this Message to reach the partnered Client.
-	private long timeSent;
 	/**
 	 * Initializes the MoveHeroMessage with the amount of movement this {@link duo.client.Client} has moved.
 	 * @param x -  the amount of distance on the X axis this {@link duo.client.Client}'s {@link game.Hero} has moved.
@@ -40,53 +38,52 @@ public class MoveHeroMessage extends Message{
 		this.x = x;
 		//Initialize the y variable.
 		this.y = y;
-		//Initialize the time spent variable.
-		this.timeSent = System.currentTimeMillis();
 	}
 
 	/**
-	 * When received this {@link duo.messages.Message} and adds it to the actions for the update thread to take care of.
-	 * The action causes the {@link game.Hero} partnered to this {@link duo.client.Client}'s {@link game.Hero} to move a set amount.
-	 * The distance traveled per action call is dependent on the time it took for this {@link duo.messages.Message} to reach this {@link duo.client.Client}.
-	 * A longer ping will mean a longer time for the {@link game.Hero} to reach its final destination. The {@link duo.client.Client} basically simulates the ping time as the travel time of the {@link game.Hero}.
-	 * 
+	 * Adds to the dx2/dy2 variables. This causes the update function to then move the partnered {@link game.Hero}.
 	 */
 	@Override
 	public void act(final Handler handler) {
-		dx2+=x;
-		dy2+=y;
+		x_limit+=x;
+		y_limit+=y;
 	}
 
-	public static void update(Double seconds, Hero hero){
-		if(dx2==0f&&dy2==0)return;
+	/**
+	 * This method determines if the amount of distance the {@link game.Hero} will travel given the amount of time during the frames is over the amount given by the act method.
+	 * If the amount of travel distance is greater than the limit then only travel the amount to the limit and not further.
+	 * @param seconds - Seconds since last frame. This is the factor by which the speed is determined.
+	 * @param limit - The limit of the distance to travel. If the distance calculated is greater than this limit, the method will return just the distance to the limit.
+	 * @return The amount of distance that will be traveled given the number of seconds since last frame.
+	 */
+	private static float getTravelDistance(double seconds, float limit){
 		float toTravel = (float) (seconds*0.5f);
-		if(dx2>0){
-			if(dx2-toTravel<0){
-				toTravel=dx2;
+		if(limit>0){
+			if(limit-toTravel<0){
+				toTravel=limit;
 			}
 		}
 		else {
 			toTravel*=-1f;
-			if(dx2-toTravel>0){
-				toTravel=dx2;
+			if(limit-toTravel>0){
+				toTravel=limit;
 			}
 		}
-		dx2-= toTravel;
+		return toTravel;
+	}
+	/**
+	 * On each update, the partnered {@link game.Hero} is moved towards the limit variables which were determined by the act method. 
+	 * @param seconds - Seconds since last frame. This determines how fast the {@link game.Hero} should move towards the limits.
+	 * @param hero - the partnered {@link game.Hero}
+	 */
+	public static void update(Double seconds, Hero hero){
+		if(x_limit==0f&&y_limit==0)return;
+		float toTravel = getTravelDistance(seconds,x_limit);
+		x_limit-= toTravel;
 		hero.setX((float) (hero.getX()+toTravel));
 
-		toTravel = (float) (seconds*0.5f);
-		if(dy2>0){
-			if(dy2-toTravel<0){
-				toTravel=dy2;
-			}
-		}
-		else {
-			toTravel*=-1f;
-			if(dy2-toTravel>0){
-				toTravel=dy2;
-			}
-		}
-		dy2-= toTravel;
+		toTravel = getTravelDistance(seconds,y_limit);		
+		y_limit-= toTravel;
 		hero.setY((float) (hero.getY()+toTravel));
 	}
 
@@ -112,6 +109,14 @@ public class MoveHeroMessage extends Message{
 			//Reset the delta Y to 0 so that future movement as if from the 0,0 position.
 			dy=0;
 		}
+	}
+	
+	public static void reset(){
+		dx=0f;
+		dy=0f;
+
+		x_limit=0f;
+		y_limit=0f;
 	}
 
 }

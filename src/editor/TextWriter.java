@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 

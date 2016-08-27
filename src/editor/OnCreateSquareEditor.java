@@ -15,9 +15,7 @@ import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
-import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
-import gui.inputs.MotionEvent;
 import main.Hub;
 import storage.Storage;
 
@@ -120,6 +118,11 @@ public class OnCreateSquareEditor extends Editor{
 				moveView(-0.25f,0);
 			}
 		});
+		ctrlCommands.put(33, new ButtonAction(){
+			@Override
+			public void act(Editor subject) {
+				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
+			}});
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
 		mode = -1;
@@ -149,6 +152,7 @@ public class OnCreateSquareEditor extends Editor{
 		}
 		super.update(seconds);
 	}
+	@SuppressWarnings("unchecked")
 	private void saveAndReturnToEditor() {
 		Storage.saveText(saveTo.getAbsolutePath(), writer.getText());
 		List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
@@ -185,6 +189,8 @@ public class OnCreateSquareEditor extends Editor{
 		final List<Integer> ints = new ArrayList<Integer>();
 		final List<Float> floats = new ArrayList<Float>();
 		List<Object> probe = new ArrayList<Object>(){
+			private static final long serialVersionUID = -599983209956028447L;
+
 			@Override
 			public boolean add(Object obj){
 				if(obj instanceof Integer){

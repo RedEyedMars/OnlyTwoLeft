@@ -63,7 +63,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	}
 
 	public void setupHeroButton(final int colour){
-		final Button<Editor> button = new Button<Editor>("circles",colour,this,null);
+		final Button button = new Button("circles",colour,this,null);
 		final MouseListener mouseListener = new MouseListener(){
 			@Override
 			public boolean onClick(MotionEvent event) {
@@ -135,6 +135,12 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			public boolean onHover(MotionEvent event) {
 				int x = Hub.map.getIntX(event.getX());
 				int y = Hub.map.getIntY(event.getY());
+				if(granityShower.textureIndex()==0){
+					x = (int) (x+2.5f);
+					y = (int) (y+2.5f);
+					x-=x%5;
+					y-=y%5;
+				}
 				float dx = Hub.map.getRealX(x)-copy.getX();
 				float dy = Hub.map.getRealY(y)-copy.getY();
 				copy.setX(copy.getX()+dx);
@@ -217,6 +223,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			else if(keycode==34){//toggle gravity
 				myLoadedMap.setMapId(myLoadedMap.getMapId()==-60?-20:myLoadedMap.getMapId()-20);
 				gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
+			}
+			else if(keycode==33){//toggle granity
+				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
 			}
 		}
 

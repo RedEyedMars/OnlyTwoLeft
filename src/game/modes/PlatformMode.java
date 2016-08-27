@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import duo.client.Client;
+import duo.messages.MoveHeroMessage;
 import game.Hero;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
@@ -13,7 +14,7 @@ import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import main.Hub;
 
-public class PlatformMode implements GameMode{
+public class PlatformMode extends OverheadMode{
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
@@ -106,6 +107,7 @@ public class PlatformMode implements GameMode{
 	public void update(double secondsSinceLastFrame){
 		handleViewMovement();
 		handleInterceptions();
+		MoveHeroMessage.update(secondsSinceLastFrame, wild);
 		if(focused.foundSouthWall()){
 			focusedCanJump=true;
 			focusedJumping=false;
@@ -130,15 +132,12 @@ public class PlatformMode implements GameMode{
 				wild.setYAcceleration((float) (wild.getYAcceleration()+0.2f*secondsSinceLastFrame));
 			}		
 		}
-		if(focused.getY()<-0.05f||wild.getY()>1.0f){
-			loseGame();
+		if(focused.getY()<-0.05f){
+			loseGame(focused.isBlack());
 		}
-	}
-	public void loseGame(){
-		focused.getGame().transition("Restart", false);
-	}
-	public void winGame(String nextMap){
-		focused.getGame().transition(nextMap, true);
+		if(wild.getY()>1.0f){
+			loseGame(wild.isBlack());
+		}
 	}
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
@@ -216,6 +215,11 @@ public class PlatformMode implements GameMode{
 	}
 
 
+	@Override
+	public boolean isCompetetive(){
+		return false;
+	}
+	
 	@Override
 	public boolean continuousKeyboard() {
 		return false;

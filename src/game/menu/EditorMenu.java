@@ -1,17 +1,10 @@
 package game.menu;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import editor.MapEditor;
 import editor.OnCreateSquareEditor;
-import game.Game;
-import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
-import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
-import main.Main;
 
 public class EditorMenu extends Menu {
 	public EditorMenu() {

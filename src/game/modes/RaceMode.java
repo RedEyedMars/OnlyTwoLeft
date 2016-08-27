@@ -1,24 +1,20 @@
 package game.modes;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
 import duo.client.Client;
+import duo.messages.HeroEndGameMessage;
+import duo.messages.MoveHeroMessage;
 import game.Hero;
-import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
-import game.environment.update.UpdatableSquare;
-import game.environment.update.UpdateAction;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
@@ -31,22 +27,21 @@ public class RaceMode implements GameMode{
 	private static final float standardAcceleration = 0.02f;
 	private boolean focusedCanJump = false;
 	private boolean focusedJumping = true;
-	private boolean wildCanJump = false;
-	private boolean wildJumping = true;
 
 	private Hero wild;
 	private Hero focused;
 	private GraphicEntity wildWall;
 	private List<GraphicEntity> auxillaryChildren = new ArrayList<GraphicEntity>();
 	private Iterator<Long> ghostItr;
-	private Long ghostNext;
-	private LinkedHashMap<Long,Float[]> ghostPath = null;
-	private LinkedHashMap<Long,Float[]> myPath = new LinkedHashMap<Long,Float[]>();
+	private Long ghostNext = 0L;
+	private DataInputStream ghostPath = null;
+	private DataOutputStream myPath;
 	private long bestTime=Long.MAX_VALUE;
-	private long myTime=0;
-	
-	private GraphicText showTime = new GraphicText("impactWhite","0",1);
-	private GraphicText showTimeBack = new GraphicText("impact","0",1);
+
+	private boolean ending = false;
+
+	private GraphicText showTime;
+	private GraphicText showTimeBack;
 	private float previousX=0;
 	private float previousY=0;
 	public List<GraphicEntity> getAuxillaryChildren(){
@@ -54,30 +49,32 @@ public class RaceMode implements GameMode{
 	}
 	@Override 
 	public void setup(boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
-		focused = black;
-		wild = white;
+		if(colourToControl){
+			focused = black;
+			wild = white;
+		}
+		else {
+			focused = white;
+			wild = black;
+		}
 		focused.adjust(0.04f, 0.04f);
 		wild.adjust(0.04f, 0.04f);
 		this.wildWall = wildWall;
-		myTime = System.currentTimeMillis();
 		wild.setX(focused.getX());
 		wild.setY(focused.getY());
 		if(Client.isConnected()){
 			Client.setHero(focused);
 		}
 		else {
-			ghostPath = getGhostPath(Hub.map.getName());
-			ghostItr = ghostPath.keySet().iterator();
-			if(ghostItr.hasNext()){
-				ghostNext=ghostItr.next();
-			}
-			
+			setupPathStreams(Hub.map.getName());			
 		}
+		showTimeBack = new GraphicText("impact","0",1);
 		showTimeBack.setX(0.445f);
 		showTimeBack.setY(0.895f);
 		showTimeBack.setWidthFactor(1.45f);
 		showTimeBack.setHeightFactor(3.2f);
 		auxillaryChildren.add(showTimeBack);
+		showTime = new GraphicText("impactWhite","0",1);
 		showTime.setX(0.45f);
 		showTime.setY(0.9f);
 		showTime.setWidthFactor(1.4f);
@@ -85,54 +82,52 @@ public class RaceMode implements GameMode{
 		auxillaryChildren.add(showTime);
 	}
 
-	public LinkedHashMap<Long,Float[]> getGhostPath(String mapName){
-		File file = new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".ghost");
+	public void setupPathStreams(String mapName){
+
+		File file = new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".temp");
+		try {
+			myPath = new DataOutputStream(new FileOutputStream(file));
+		} catch( IOException e) {
+			e.printStackTrace();
+		}
+		file = new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".ghost");
 		if(file.exists()){
-			LinkedHashMap<Long,Float[]> map = new LinkedHashMap<Long,Float[]>();
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				String line = reader.readLine();
-				while(line!=null){
-					int space = line.indexOf(' ');
-					int comma = line.lastIndexOf(',');
-					if(space==-1||comma==-1){
-						bestTime = Long.parseLong(line);
-						line = reader.readLine();
-						break;
-					}
-					map.put(Long.parseLong(line.substring(0, space)),
-							new Float[]{
-									Float.parseFloat(line.substring(space+1,comma)),
-									Float.parseFloat(line.substring(comma+1))
-					});
-					line = reader.readLine();
-				}
-				reader.close();
-				return map;
+				ghostPath = new DataInputStream(new FileInputStream(file));
+				bestTime = ghostPath.readLong();
+				ghostNext = ghostPath.readLong();
+				return;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		ghostPath = null;
 		wild.setVisible(false);
-		return new LinkedHashMap<Long,Float[]>();
 	}
-	private void saveGhostPath(String mapName){
-		if(System.currentTimeMillis()-myTime<=bestTime){
-			File file = new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".ghost");
+	private void saveGhostPath(String mapName,long now){
+		if(now<=bestTime){
 			try {
-				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-				StringBuilder builder = new StringBuilder();
-				for(Long key:myPath.keySet()){
-					builder.append(key);
-					builder.append(' ');
-					builder.append(myPath.get(key)[0]);
-					builder.append(',');
-					builder.append(myPath.get(key)[1]);
-					builder.append('\n');
+				DataOutputStream writer = new DataOutputStream(
+						new FileOutputStream(new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".ghost")));
+				DataInputStream reader = new DataInputStream(
+						new FileInputStream(new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".temp")));
+
+				writer.writeLong(now);
+				try {
+					while(true){
+						writer.writeLong(reader.readLong());
+						writer.writeFloat(reader.readFloat());
+						writer.writeFloat(reader.readFloat());
+						writer.writeChar(reader.readChar());					
+					}
+				} catch(EOFException e){					
 				}
-				builder.append(System.currentTimeMillis()-myTime);
-				builder.append('\n');
-				writer.write(builder.toString());
+				writer.writeLong(now);
+				writer.writeFloat(focused.getX()-Hub.map.getX());
+				writer.writeFloat(focused.getY()-Hub.map.getY());
+				writer.writeChar('!');
+
+				reader.close();
 				writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -141,25 +136,46 @@ public class RaceMode implements GameMode{
 	}
 
 	private void handleGhost(){
-		long now = System.currentTimeMillis()-myTime;
-		if(focused.getX()-Hub.map.getX()!=previousX||focused.getY()-Hub.map.getY()!=previousY){
-			previousX = focused.getX()-Hub.map.getX();
-			previousY = focused.getY()-Hub.map.getY();
-			myPath.put(now, new Float[]{previousX,previousY});
-		}
-
-		while(ghostItr.hasNext()&&now>ghostNext){
-			Float[] change = ghostPath.get(ghostNext);
-			wild.setX(change[0]+Hub.map.getX());
-			wild.setY(change[1]+Hub.map.getY());
-			ghostNext=ghostItr.next();			
-		}
-
+		if(ending)return;
+		long now = System.currentTimeMillis()-focused.getGame().getStartTime();
 		String minutes = now<60000?" ":now/60000+"m";
 		String seconds = ((now/1000)%60<10&&!" ".equals(minutes)?"0":"")+(now/1000)%60+"s ";
 		String time = minutes+seconds+now%1000;
 		showTimeBack.change(time);
 		showTime.change(time);
+		if(Client.isConnected())return;
+		if(focused.getX()-Hub.map.getX()!=previousX||focused.getY()-Hub.map.getY()!=previousY){
+			previousX = focused.getX()-Hub.map.getX();
+			previousY = focused.getY()-Hub.map.getY();
+
+			try {
+				myPath.writeLong(now);
+				myPath.writeFloat(previousX);
+				myPath.writeFloat(previousY);
+				myPath.writeChar('\n');
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		while(ghostPath!=null&&now>ghostNext){
+			try {
+				float x = ghostPath.readFloat();
+				float y = ghostPath.readFloat();
+				wild.setX(x+Hub.map.getX());
+				wild.setY(y+Hub.map.getY());
+				char endChar = ghostPath.readChar();
+				if(endChar=='!'){
+					ghostPath.close();
+					ghostPath=null;
+					break;
+				}
+				ghostNext = ghostPath.readLong();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
@@ -196,7 +212,8 @@ public class RaceMode implements GameMode{
 	public void update(double secondsSinceLastFrame){
 		handleGhost();
 		handleViewMovement();
-		handleInterceptions();
+		handleInterceptions();	
+		MoveHeroMessage.update(secondsSinceLastFrame, wild);
 		if(focused.foundSouthWall()){
 			focusedCanJump=true;
 			focusedJumping=false;
@@ -209,38 +226,77 @@ public class RaceMode implements GameMode{
 				focused.setYAcceleration((float) (focused.getYAcceleration()-0.2f*secondsSinceLastFrame));
 			}
 		}
-		if(Client.isConnected()){
-			if(wild.foundSouthWall()){
-				wildJumping=false;
-				wildCanJump=true;
-				if(wild.getYAcceleration()<0){
-					wild.setYAcceleration(0);
-				}
-			}
-			else {
-				if(wild.getYAcceleration()>=-0.06){
-					wild.setYAcceleration((float) (wild.getYAcceleration()-0.2f*secondsSinceLastFrame));
-				}		
-			}
-		}
 		if(focused.getY()<-0.05f||wild.getY()<-0.05f){
-			loseGame();
+			loseGame(focused.isBlack());
 		}
 	}
-
-	public void loseGame(){
+	@Override
+	public void loseGame(boolean isBlack){
+		if(!isBlack||ending){
+			return;
+		}
+		try {
+			if(ghostPath!=null){
+				ghostPath.close();
+				ghostPath = null;
+			}
+			if(myPath!=null){
+				myPath.close();
+				myPath=null;
+				deleteMyPath(Hub.map.getName());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		focused.getGame().transition("Restart", false);
+		if(!Client.isConnected()){
+			HeroEndGameMessage.setAndSend(focused.isBlack(), false, Long.MAX_VALUE);
+			HeroEndGameMessage.setAndSend(!focused.isBlack(), false, bestTime);
+		}
+		ending = true;
 	}
-	public void winGame(String nextMap){
-		saveGhostPath(Hub.map.getName());
+	@Override
+	public void winGame(boolean isBlack,String nextMap){
+		if(!isBlack||ending){
+			return;
+		}
+		long now = System.currentTimeMillis()-focused.getGame().getStartTime();
+		try {
+			if(ghostPath!=null){
+				ghostPath.close();
+				ghostPath = null;
+			}
+			if(myPath!=null){
+				myPath.close();
+				myPath=null;
+				saveGhostPath(Hub.map.getName(),now);
+				deleteMyPath(Hub.map.getName());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		focused.getGame().transition(nextMap, true);
+		if(!Client.isConnected()){
+			HeroEndGameMessage.setAndSend(focused.isBlack(), true, now);
+			HeroEndGameMessage.setAndSend(!focused.isBlack(), true, bestTime);		
+		}
+		ending = true;
 	}
-
+	private void deleteMyPath(String mapName) {
+		File file = new File("data"+File.separatorChar+"saves"+File.separatorChar+mapName+".temp");
+		if(file.exists()){
+			file.delete();
+		}
+	}
 	private void jump(){
 		if(focusedCanJump){
-			focused.setYAcceleration(0.06f);
 			if(focusedJumping){
+				focused.setYAcceleration(focused.getYAcceleration()+0.06f);
 				focusedCanJump=false;
+			}
+			else {
+				focused.setYAcceleration(0.06f);
 			}
 			focusedJumping=true;
 		}
@@ -278,7 +334,11 @@ public class RaceMode implements GameMode{
 		}
 	}
 
-
+	@Override
+	public boolean isCompetetive(){
+		return true;
+	}
+	
 	@Override
 	public boolean continuousKeyboard() {
 		return false;

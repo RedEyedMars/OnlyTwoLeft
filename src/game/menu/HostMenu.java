@@ -343,26 +343,15 @@ public class HostMenu extends Menu implements IDuoMenu{
 				final Process proc = Runtime.getRuntime().exec("java -jar server.jar");
 
 				client = new Client(ip.getText(),"Player One"){
-					private boolean sentEnd = false;
+					private int sentEnd = 0;
 					@Override
-					public void close(){
-						if(!sentEnd){
-							handler.sendNow(new EndServerMessage());
-							sentEnd=true;
-						}
-						else {
-							super.close();
-							if(proc!=null){
-								System.out.println("destroy");
-								proc.destroy();
-								if(proc.isAlive()){
-									proc.destroyForcibly();
-								}
-								else {
-									System.out.println("destroy");
-								}
-							}
-						}
+					public void closing(){
+						handler.sendNow(new EndServerMessage());
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}							
 					}
 				};
 				client.setMenu(host);

@@ -195,16 +195,9 @@ public class GraphicRenderer {
 				public void act(Editor subject) {					
 					loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
 				}});
-			loadImageFromTextureName.put("impact",new ButtonAction(){
-				@Override
-				public void act(Editor subject) {
-					loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
-				}});
-			loadImageFromTextureName.put("impactWhite",new ButtonAction(){
-				@Override
-				public void act(Editor subject) {
-					loadText("impactWhite",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{1f,1f,1f,1}, new float[]{0,0,0,0f});
-				}});
+			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
+			loadText("impactWhite",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{1f,1f,1f,1}, new float[]{0,0,0,0f});
+
 
 			loaded = true;
 		}
@@ -293,7 +286,6 @@ public class GraphicRenderer {
 	}
 
 	public void loadFont(String font) {
-
 		if(loadImageFromTextureName.containsKey(font)){
 			loadImageFromTextureName.remove(font).act(null);
 		}

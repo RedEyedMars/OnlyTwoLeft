@@ -499,7 +499,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		NWs=(Integer) params[3],
 		NEs=(Integer) params[4],
 		SEs=(Integer) params[5],
-		SWs=(Integer) params[6];		
+		SWs=(Integer) params[6];
 		move(deltaX+x,deltaY+y);
 		if(y!=0){
 			//yVel=0;

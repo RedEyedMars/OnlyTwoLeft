@@ -6,7 +6,7 @@ import game.environment.Square;
 public class HazardOnStepAction extends OnStepAction<Square> {
 	@Override
 	public void act(Hero subject) {
-		subject.getGame().loseGame();
+		subject.getGame().loseGame(subject.isBlack());
 	}
 	public boolean isPassible(){
 		return false;

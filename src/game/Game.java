@@ -1,18 +1,14 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import duo.client.Client;
-import duo.messages.EndGameMessage;
-import duo.messages.LoadMapMessage;
+import duo.messages.BlankMessage;
+import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
-import duo.messages.StartGameMessage;
-import duo.messages.TransitionGameMessage;
-import game.environment.Square;
-import game.environment.onstep.OnStepAction;
+import duo.messages.SaveGameMessage;
 import game.environment.onstep.OnStepSquare;
 import game.environment.update.UpdatableSquare;
 import game.menu.MainMenu;
@@ -44,6 +40,7 @@ public class Game extends GraphicView{
 	private String nextMap = "";
 	private boolean successful = false;
 	public Game(boolean colourToControl, long seed){
+		MoveHeroMessage.reset();
 		Main.randomizer = new Random(seed);
 		this.colourToControl = colourToControl;
 		if(Client.isConnected()){
@@ -104,13 +101,13 @@ public class Game extends GraphicView{
 
 			gameMode = Hub.map.getGameMode();
 			if(gameMode!=null){
+				startTime = System.currentTimeMillis();
 				gameMode.setup(colourToControl, black, white, wildWall);
 				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 					addChild(e);
 				}
-				startTime = System.currentTimeMillis();
 			}
-			
+
 
 		}
 	}
@@ -146,41 +143,37 @@ public class Game extends GraphicView{
 	}
 
 	private void enactTransition(){
-		int seconds = (int) ((System.currentTimeMillis()-startTime)/1000);
-		int minutes = seconds/60;
-		seconds = seconds-(60*minutes);
-		boolean canProceed = true;
-		if(Client.isConnected()){
-			String previousMap = Hub.map.getName();
-			Gui.removeOnType(gameMode);
-			Hub.addLayer.clear();
-			String nextMapName = Storage.getMapNameFromFileName(nextMap);
-			if(Hub.map.getFileName()!=null){
-				Client.sendMapMessage(nextMap, new TransitionGameMessage(successful,minutes,seconds,previousMap,nextMapName,colourToControl,false));
-				Gui.setView(new TransitionMenu(false,successful,minutes,seconds,previousMap,nextMapName,colourToControl,true));
-			}
-			else {
-				Client.pass(
-						new LoadMapMessage(
-								nextMap,
-								new TransitionGameMessage(successful,minutes,seconds,previousMap,nextMapName,!colourToControl,true)));
-				Gui.setView(new TransitionMenu(false,successful,minutes,seconds,previousMap,nextMapName,colourToControl,false));
-			}
+		String previousMapName = Hub.map.getName();
+		Gui.removeOnType(gameMode);
+		Hub.addLayer.clear();
+		String nextMapName = Storage.getMapNameFromFileName(nextMap);
+		TransitionMenu menu = new TransitionMenu(gameMode.isCompetetive(),successful,(System.currentTimeMillis()-startTime),previousMapName,nextMapName,colourToControl,Hub.map.getFileName()!=null);
+		HeroEndGameMessage.setMenu(menu);
+		SaveGameMessage.setMenu(menu);
+
+		HeroEndGameMessage.setMapNames(previousMapName,nextMapName);
+		if(Hub.map.getFileName()!=null){
+			HeroEndGameMessage.setNextMapFileName(nextMap);
 		}
-		else {
-			String previousMap = Hub.map.getName();
-			Storage.loadMap(nextMap);
-			Gui.setView(new TransitionMenu(false,successful,minutes,seconds,previousMap,Storage.getMapNameFromFileName(nextMap),colourToControl,canProceed));
+		if(Client.isConnected()){		
+			HeroEndGameMessage.setAndSend(colourToControl,successful,System.currentTimeMillis()-startTime);			
 		}
+		if(HeroEndGameMessage.isFinished()){
+			HeroEndGameMessage.finish();
+		}
+		Gui.setView(menu);		
 	}
 	public static void addUpdateAction(Action<Double> action) {
 		Game.updateActions .add(action);
 	}
-	public void loseGame() {
-		gameMode.loseGame();
+	public void loseGame(boolean isBlack) {
+		gameMode.loseGame(isBlack);
 	}
-	public void winGame(String nextMap) {
-		gameMode.winGame(nextMap);
+	public void winGame(boolean isBlack,String nextMap) {
+		gameMode.winGame(isBlack,nextMap);
+	}
+	public long getStartTime() {
+		return startTime;
 	}
 
 }

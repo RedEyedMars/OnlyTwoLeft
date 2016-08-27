@@ -3,21 +3,29 @@ package editor;
 import game.Action;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
-import main.Hub;
 
-public class Button <T extends Object> extends GraphicEntity{
+/**
+ * This class wraps the a {@link gui.graphics.GraphicEntity} object with an {@link game.Action} which is used by an {@link editor.Editor}.
+ * An example use case would be the buttons that determine colour of the created squares. 
+ * @author Geoffrey
+ *
+ */
+public class Button extends GraphicEntity{
 
-	private Action<T> onClick;
-	private T parent;
+	//The action to perform when this Button is clicked.
+	private Action<Editor> onClick;
+	//The parent editor, this is the editor that will be fed to the onClick action.
+	private Editor parent;
+	//
 	protected Integer frame;
-	private GraphicEntity selected;
-	public Button(String textureName, T parent, Action<T> onClick) {
+
+	public Button(String textureName, Editor parent, Action<Editor> onClick) {
 		this(textureName,null,parent,onClick);
 	}
-	public Button(T parent, Action<T> onClick) {
+	public Button(Editor parent, Action<Editor> onClick) {
 		this("blank",0,parent,onClick);
 	}
-	public Button(String textureName, Integer frame, T parent, Action<T> onClick) {
+	public Button(String textureName, Integer frame, Editor parent, Action<Editor> onClick) {
 		super("editor_button",1);
 		this.onClick = onClick;
 		this.parent = parent;
@@ -40,7 +48,7 @@ public class Button <T extends Object> extends GraphicEntity{
 	public void performOnClick(MotionEvent e){		
 		onClick.act(parent);
 	}
-	public void setAction(Action<T> action) {
+	public void setAction(Action<Editor> action) {
 		this.onClick = action;
 	}
 	public void setSelected(boolean b) {
@@ -64,9 +72,15 @@ public class Button <T extends Object> extends GraphicEntity{
 		}
 	}
 
+	/**
+	 * Buttons cannot be visually turned on by their parent {@link game.environment.Square}.
+	 */
 	@Override
 	public void turnOn(){		
 	}
+	/**
+	 * Buttons cannot be visually turned off by their parent {@link game.environment.Square}.
+	 */
 	@Override
 	public void turnOff(){		
 	}

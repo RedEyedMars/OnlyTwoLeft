@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import duo.client.Client;
+import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
 import game.Hero;
 import game.VisionBubble;
@@ -14,8 +15,6 @@ import gui.inputs.KeyBoardListener;
 import main.Hub;
 
 public class OverheadMode implements GameMode{
-
-
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
@@ -29,8 +28,10 @@ public class OverheadMode implements GameMode{
 	private VisionBubble visionBubble;
 	private GraphicEntity wildWall;
 	private List<GraphicEntity> auxillaryChildren = new ArrayList<GraphicEntity>();
+	private boolean colourToControl;
 	@Override 
 	public void setup(boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+		this.colourToControl = colourToControl;
 		this.black = black;
 		this.white = white;
 		if(colourToControl==true/*black*/){
@@ -87,11 +88,33 @@ public class OverheadMode implements GameMode{
 		wildWall.setX(wild.getX()-0.1f);
 		wildWall.setY(wild.getY()-0.1f);
 	}
-	public void loseGame(){
-		focused.getGame().transition("Restart", false);
+	@Override
+	public void loseGame(boolean isBlack){
+		if(Client.isConnected()){
+			if(colourToControl==isBlack){
+				focused.getGame().transition("Restart", false);
+			}
+		}
+		else {
+			HeroEndGameMessage.setAndSend(isBlack, false, System.currentTimeMillis()-focused.getGame().getStartTime());
+			if(HeroEndGameMessage.isFinished()){
+				focused.getGame().transition("Restart", false);
+			}
+		}
 	}
-	public void winGame(String nextMap){
-		focused.getGame().transition(nextMap, true);
+	@Override
+	public void winGame(boolean isBlack,String nextMap){
+		if(Client.isConnected()){
+			if(colourToControl==isBlack){
+				focused.getGame().transition(nextMap, true);
+			}
+		}
+		else {
+			HeroEndGameMessage.setAndSend(isBlack, true, System.currentTimeMillis()-focused.getGame().getStartTime());
+			if(HeroEndGameMessage.isFinished()){
+				focused.getGame().transition(nextMap, true);
+			}
+		}
 	}
 	@Override
 	public void update(double seconds) {
@@ -173,7 +196,10 @@ public class OverheadMode implements GameMode{
 			}
 		}
 	}
-
+	@Override
+	public boolean isCompetetive(){
+		return false;
+	}
 	@Override
 	public boolean continuousKeyboard() {
 		return false;
