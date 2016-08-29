@@ -24,6 +24,9 @@ public class WinStageOnStepAction extends OnStepAction<Integer>{
 	public int getIndex() {
 		return 6;
 	}
+	public Integer getTarget(){
+		return target;
+	}
 	public int targetType(){
 		return 2;
 	}

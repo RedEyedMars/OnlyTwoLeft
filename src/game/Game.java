@@ -102,7 +102,7 @@ public class Game extends GraphicView{
 			gameMode = Hub.map.getGameMode();
 			if(gameMode!=null){
 				startTime = System.currentTimeMillis();
-				gameMode.setup(colourToControl, black, white, wildWall);
+				gameMode.setup(this,colourToControl, black, white, wildWall);
 				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 					addChild(e);
 				}

@@ -32,6 +32,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				Storage.loadMap(saveTo.getAbsolutePath());
+				myLoadedMap = Hub.map;
 				squares = Hub.map.getSquares();
 				for(Square square:Hub.map.getSquares()){
 					addIconsToSquare(square);
@@ -49,9 +50,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 			else {
 				Hub.map = game.environment.Map.createMap(0);
+				myLoadedMap = Hub.map;
 				squares = Hub.map.getSquares();
+				saveMap();
 			}
-			myLoadedMap = Hub.map;
 			setupHeroButton(0);
 			setupHeroButton(1);
 			setupButtons();
@@ -241,7 +243,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		}
 
 		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
-		myLoadedMap.copyTo(map,squares);
+		myLoadedMap.copyTo(map);
 		for(Square square:squares){
 			square.setView(this);
 		}

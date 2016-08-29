@@ -4,6 +4,7 @@ import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import main.Hub;
+import storage.Storage;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -167,8 +168,15 @@ public class Square extends GraphicEntity implements Colourable{
 		toSave.add(Hub.map.getIntX(getWidth()));
 		toSave.add(Hub.map.getIntY(getHeight()));
 		for(SquareAction action:getActions()){
-			action.saveTo(toSave);
+			if(action!=null){
+				action.saveTo(toSave);
+			}
+			else {
+				toSave.add(-1);
+			}
 		}
+		
+		if(Storage.debug)System.out.println();
 	}
 	public List<SquareAction> getActions() {
 		return new ArrayList<SquareAction>();
@@ -304,6 +312,7 @@ public class Square extends GraphicEntity implements Colourable{
 	}
 
 	private static void addMapNameToInts(List<Integer> ints, int squareAction) {
+		if(OnStepAction.getAction(squareAction)==null)return;
 		if(OnStepAction.getAction(squareAction).targetType()==2){
 			File file = Gui.userSave("maps");
 			while(file==null){

@@ -107,14 +107,12 @@ public class OnStepSquare extends Square {
 	@Override
 	public List<SquareAction> getActions() {
 		List<SquareAction> list = super.getActions();
-		if(blackAction!=null){
-			if(blackAction.targetType()==0){
-				blackAction.setTarget(this);
-			}
-			list.add(blackAction);
+		if(blackAction!=null&&blackAction.targetType()==0){
+			blackAction.setTarget(this);
 		}
-		if(blackAction!=whiteAction&&whiteAction!=null){
-			if(whiteAction.targetType()==0){
+		list.add(blackAction);
+		if(blackAction!=whiteAction){
+			if(whiteAction!=null&&whiteAction.targetType()==0){
 				whiteAction.setTarget(this);
 			}
 			list.add(whiteAction);

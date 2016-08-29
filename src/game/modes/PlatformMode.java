@@ -5,6 +5,7 @@ import java.util.List;
 
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
+import game.Game;
 import game.Hero;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
@@ -32,8 +33,9 @@ public class PlatformMode extends OverheadMode{
 		return auxillaryChildren;
 	}
 	@Override 
-	public void setup(boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
-
+	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+		this.game = game;
+		this.colourToControl = colourToControl;
 		focused = black;
 		wild = white;
 		focused.adjust(0.04f, 0.04f);

@@ -6,6 +6,7 @@ import java.util.List;
 import duo.client.Client;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
+import game.Game;
 import game.Hero;
 import game.VisionBubble;
 import game.environment.onstep.OnStepAction;
@@ -28,9 +29,11 @@ public class OverheadMode implements GameMode{
 	private VisionBubble visionBubble;
 	private GraphicEntity wildWall;
 	private List<GraphicEntity> auxillaryChildren = new ArrayList<GraphicEntity>();
-	private boolean colourToControl;
+	protected boolean colourToControl;
+	protected Game game;
 	@Override 
-	public void setup(boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+		this.game = game;
 		this.colourToControl = colourToControl;
 		this.black = black;
 		this.white = white;
@@ -92,27 +95,27 @@ public class OverheadMode implements GameMode{
 	public void loseGame(boolean isBlack){
 		if(Client.isConnected()){
 			if(colourToControl==isBlack){
-				focused.getGame().transition("Restart", false);
+				game.transition("Restart", false);
 			}
 		}
 		else {
-			HeroEndGameMessage.setAndSend(isBlack, false, System.currentTimeMillis()-focused.getGame().getStartTime());
-			if(HeroEndGameMessage.isFinished()){
-				focused.getGame().transition("Restart", false);
-			}
+			long now = System.currentTimeMillis()-game.getStartTime();
+			HeroEndGameMessage.setAndSend(this.colourToControl, false, now);
+			HeroEndGameMessage.setAndSend(!this.colourToControl, false, now);			
+			game.transition("Restart", false);
 		}
 	}
 	@Override
 	public void winGame(boolean isBlack,String nextMap){
 		if(Client.isConnected()){
 			if(colourToControl==isBlack){
-				focused.getGame().transition(nextMap, true);
+				game.transition(nextMap, true);
 			}
 		}
 		else {
-			HeroEndGameMessage.setAndSend(isBlack, true, System.currentTimeMillis()-focused.getGame().getStartTime());
+			HeroEndGameMessage.setAndSend(isBlack, true, System.currentTimeMillis()-game.getStartTime());
 			if(HeroEndGameMessage.isFinished()){
-				focused.getGame().transition(nextMap, true);
+				game.transition(nextMap, true);
 			}
 		}
 	}

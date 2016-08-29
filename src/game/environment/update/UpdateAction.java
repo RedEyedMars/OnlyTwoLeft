@@ -48,8 +48,8 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public static final Action<UpdateAction> stop = new Action<UpdateAction>(){
 		@Override
 		public void act(UpdateAction action) {
-			action.setFloats(0, 0);
 			action.self.deactivate();
+			action.setFloats(0, 0);
 		}
 	};
 
@@ -63,7 +63,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	protected int onLimitBrokenAction=-1;
 	public void undo() {
 	}
-	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){
+	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){		
 		defaultState=ints.next()==1;
 		x=floats.next();
 		y=floats.next();
@@ -76,6 +76,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public float getFloat(int i){
 		return i==0?x:i==1?y:i==2?limit:limiterStartPercent;
 	}
+	
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
 		saveTo.add(defaultState?1:0);
@@ -143,6 +144,19 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 				sent = true;
 				return self;
 			}};
+	}
+
+	protected void move(float dx, float dy) {
+		for(Hero hero:new Hero[]{Game.black,Game.white}){
+			hero.setX(hero.getX()+hero.getDeltaX());
+			hero.setY(hero.getY()+hero.getDeltaY());
+			if(hero.isWithin(self)){
+				hero.setXVelocity(hero.getXVelocity()+dx);
+				hero.move(dx,dy);
+			}
+			hero.setX(hero.getX()-hero.getDeltaX());
+			hero.setY(hero.getY()-hero.getDeltaY());
+		}
 	}
 	public abstract UpdateAction create(); 
 	static {

@@ -14,6 +14,8 @@ import main.Hub;
 
 public class Storage {
 	
+	public static final boolean debug = false;
+
 	public static String loadMap(String filename){
 		byte[] file = readVerbatum(filename);
 		String mapName = getMapNameFromFileName(filename);
@@ -146,10 +148,12 @@ public class Storage {
 			{
 				add(new Integer(0));
 				add(new Integer(0));
-				add(new Integer(0));				
+				add(new Integer(0));
+				if(Storage.debug)System.out.println();
 			}
 			@Override
 			public boolean add(Object o){
+				if(Storage.debug)System.out.print(o+",");
 				if(o instanceof Integer){
 					++ints;
 				}
@@ -170,7 +174,7 @@ public class Storage {
 				return ret;
 			}
 		};
-		map.saveTo(toSave);		
+		map.saveTo(toSave);
 		save(filename,toSave.toArray(new Object[0]));
 	}
 	public static void save(String filename, Object... toSave) {

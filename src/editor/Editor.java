@@ -820,7 +820,14 @@ public class Editor extends GraphicView {
 								updateAction.add(i);
 							}
 						}
-						builder1 = createSquare(Hub.map.getIntX(usq.getX()),Hub.map.getIntY(usq.getY()+usq.getHeight()),shape,colour,colour2,action1==4?4:3,action2==4?4:3,updateAction,false);
+						int a1=3,a2=3;
+						if(action1==4||action1==-1){
+							a1=action1;
+						}
+						if(action2==4||action2==-1){
+							a2=action2;
+						}
+						builder1 = createSquare(Hub.map.getIntX(usq.getX()),Hub.map.getIntY(usq.getY()+usq.getHeight()),shape,colour,colour2,a1,a2,updateAction,false);
 						usq.addDependant(builder1);
 						builder1.onAddToDrawable();
 					}
@@ -838,6 +845,7 @@ public class Editor extends GraphicView {
 	private void addOnCreateButtonToSquare(final Square ocs){
 		List<SquareAction> actions = ocs.getActions();
 		for(SquareAction<?, ?> temp:actions){
+			if(temp==null)continue;
 			if(temp instanceof OnCreateAction){
 				final Button button = new Button("editor_oncreate_icon",0,this,new ButtonAction(){
 					@Override

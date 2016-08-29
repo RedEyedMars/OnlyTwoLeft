@@ -254,4 +254,6 @@ public class GraphicView implements Graphicable, MouseListener{
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return null;
 	}
+	public void exit() {		
+	}
 }

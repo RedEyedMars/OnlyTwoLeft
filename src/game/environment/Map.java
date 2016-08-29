@@ -9,6 +9,7 @@ import java.util.List;
 import game.Hero;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepSquare;
+import game.environment.onstep.WinStageOnStepAction;
 import game.environment.update.UpdatableSquare;
 import game.modes.GameMode;
 import game.modes.OverheadMode;
@@ -226,10 +227,12 @@ public class Map extends GraphicEntity {
 	}
 	public void saveTo(List<Object> toSave) {
 		toSave.add(getMapId());
+		if(Storage.debug)System.out.println();
 		toSave.add(getStartingXPosition(0));
 		toSave.add(getStartingYPosition(0));
 		toSave.add(getStartingXPosition(1));
 		toSave.add(getStartingYPosition(1));
+		if(Storage.debug)System.out.println();
 		for(String name:nextMaps){
 			toSave.add(name);
 		}
@@ -237,6 +240,7 @@ public class Map extends GraphicEntity {
 		for(Square square:getTemplateSquares()){
 			square.saveTo(toSave);
 		}
+		if(Storage.debug)System.out.println();
 		for(Square square:getSquares()){
 			square.saveTo(toSave);
 		}
@@ -364,7 +368,7 @@ public class Map extends GraphicEntity {
 		private Iterator<Float> floatIterator = new Iterator<Float>(){
 			@Override
 			public boolean hasNext() {
-				return floatIndex<stringIndex;
+				return floatIndex+1<stringIndex;
 			}
 
 			@Override
@@ -411,7 +415,6 @@ public class Map extends GraphicEntity {
 		}
 
 		public Float nextFloat(){
-			//if(floatIndex>=data.length)return 0f;
 			return (Float)data[floatIndex++];
 		}
 
@@ -439,23 +442,48 @@ public class Map extends GraphicEntity {
 		File file = Gui.userSave("maps");
 		while(file!=null){
 			Storage.loadMap(file.getAbsolutePath());
-			Storage.saveMap(file.getAbsolutePath(), Hub.map);
+			game.environment.Map map = game.environment.Map.createMap(Hub.map.getMapId());
+			Hub.map.copyTo(map);
+			Storage.saveMap(file.getAbsolutePath(), map);
 			file = Gui.userSave("maps");
 		}
 	}
 
-	public void copyTo(Map map, List<Square> squares) {
+	public void copyTo(Map map) {
 		for(Square square:Hub.map.allSquares){
 			map.addSquare(square);
+			if(square instanceof OnStepSquare){
+				for(SquareAction action:square.getActions()){
+					if(action instanceof WinStageOnStepAction){
+						WinStageOnStepAction wsosa = (WinStageOnStepAction)action;
+						int index = map.nextMaps.indexOf(wsosa.getTarget());
+						if(index==-1){
+							map.nextMaps.add(nextMaps.get(wsosa.getTarget()));
+							wsosa.setTarget(map.nextMaps.size()-1);
+						}
+						else {
+							wsosa.setTarget(index);
+						}
+					}
+				}
+			}
 		}
 		for(Square square:Hub.map.getTemplateSquares()){
 			map.addTemplateSquare(square);
+			if(square instanceof OnStepSquare){
+				for(SquareAction action:square.getActions()){
+					if(action instanceof WinStageOnStepAction){
+						WinStageOnStepAction wsosa = (WinStageOnStepAction)action;
+						if(!map.nextMaps.contains(nextMaps.get(wsosa.getTarget()))){
+							map.nextMaps.add(nextMaps.get(wsosa.getTarget()));
+						}
+						wsosa.setTarget(map.nextMaps.indexOf(wsosa.getTarget()));
+					}
+				}
+			}
 		}
 		map.setStartPosition(0, getStartingXPosition(0), getStartingYPosition(0));
 		map.setStartPosition(1, getStartingXPosition(1), getStartingYPosition(1));
-		for(String name:nextMaps){
-			map.setNextMap(name);
-		}
 	}
 
 }

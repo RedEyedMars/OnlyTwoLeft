@@ -63,7 +63,7 @@ public class Hero extends GraphicEntity implements Colourable{
 			xVel=Math.signum(xVel)*2f;
 		}
 		yVel=yVel*0.9f+yAcc;
-		if(Math.abs(xVel)>2f){
+		if(Math.abs(yVel)>2f){
 			yVel=Math.signum(yVel)*2f;
 		}
 		deltaX=(float) (xVel*secondsSinceLastFrame);
@@ -102,7 +102,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		return this.index==0?"black":index==1?"white":"OTHER";
 	}
 
-	protected void move(float x, float y) {
+	public void move(float x, float y) {
 		setX(getX()+x);
 		setY(getY()+y);
 	}
@@ -185,8 +185,8 @@ public class Hero extends GraphicEntity implements Colourable{
 				if(smallUp>=bigDown&&smallUp<=bigUp){
 					if(smallVert==target){
 						if(smallHorz==target){
-							NE=safe;
 							NEs=i;
+							NE=safe;
 						}
 						else {
 							NW=safe;
@@ -349,7 +349,7 @@ public class Hero extends GraphicEntity implements Colourable{
 				}
 			}
 		}
-		//System.out.println(target+" "+NE+" "+SE+" "+SW+" "+NW);
+		//System.out.println(target+" "+NW+" "+NE+" "+SW+" "+SE);
 		if(!(NE&&NW&&SE&&SW)&&(NE||NW||SE||SW)){
 			float x = 0f;
 			float y = 0f;
@@ -445,7 +445,8 @@ public class Hero extends GraphicEntity implements Colourable{
 			}
 			return new Object[]{x,y,onCorner,NWs,NEs,SEs,SWs};
 		}
-		return new Object[]{0f,0f,false,null,null,null,null};
+		return new Object[]{0f,0f,false,NWs,NEs,SEs,SWs};
+		//return new Object[]{0f,0f,false,null,null,null,null};
 	}
 	public void handleWalls(List<OnStepSquare> mapSquares){
 
@@ -460,7 +461,7 @@ public class Hero extends GraphicEntity implements Colourable{
 				if(this.isWithin(mapSquares.get(i))){
 					if(this.isOppositeColour(mapSquares.get(i))){
 						entities.add(mapSquares.get(i));
-						actions.add(null);							
+						actions.add(null);		
 						safeties.add(true);
 					}
 					else if(this.isSameColour(mapSquares.get(i))){
@@ -495,11 +496,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		float x = (float) params[0];
 		float y = (float) params[1];
 		onCorner = (boolean)params[2];
-		Integer 
-		NWs=(Integer) params[3],
-		NEs=(Integer) params[4],
-		SEs=(Integer) params[5],
-		SWs=(Integer) params[6];
+		
 		move(deltaX+x,deltaY+y);
 		if(y!=0){
 			//yVel=0;
@@ -514,7 +511,12 @@ public class Hero extends GraphicEntity implements Colourable{
 			//xVel=0;
 			//northWallFound=true;
 		}
-		//System.out.println(NWs+" "+NEs+" "+" "+SWs+" "+SEs);
+		Integer 
+		NWs=(Integer) params[3],
+		NEs=(Integer) params[4],
+		SEs=(Integer) params[5],
+		SWs=(Integer) params[6];
+		//System.out.println(NWs+" "+NEs+" "+SWs+" "+SEs);
 		if(NEs!=null&&actions.get(NEs)!=null){
 			if(actions.get(NEs).targetType()==0){
 				actions.get(NEs).setTarget((Square) entities.get(NEs));
@@ -684,5 +686,18 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	public Game getGame(){
 		return game;
+	}
+
+	public float getDeltaX() {
+		return deltaX;
+	}
+	public float getDeltaY() {
+		return deltaY;
+	}
+	public void setDeltaX(float dx) {
+		this.deltaX=dx;
+	}
+	public void setDeltaY(float dy) {
+		this.deltaY=dy;
 	}
 }

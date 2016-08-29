@@ -215,6 +215,7 @@ public class Gui extends GLApp {
    
 	@Override
 	public void cleanup(){
+		Hub.currentView.exit();
 		Gui.running = false;
 		Main.cleanup();
 		super.cleanup();

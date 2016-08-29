@@ -15,10 +15,10 @@ public class GrowUpdateAction extends UpdateAction{
 		limiter+=Math.sqrt(dx*dx+dy*dy);
 		if(onLimitBrokenAction>-1&&limiter>=limit){
 			if(dx==0){
-				self.adjust(self.getWidth(),self.getHeight()+dy-Math.signum(y)*(limiter-limit));
+				move(0,dy-Math.signum(y)*(limiter-limit));
 			}
 			else if(dy==0){
-				self.adjust(self.getWidth()+dx-Math.signum(x)*(limiter-limit),self.getHeight());
+				move(dx-Math.signum(x)*(limiter-limit),0);
 			}
 			limiters.get(onLimitBrokenAction).act(this);
 			growthW=0f;
@@ -26,8 +26,13 @@ public class GrowUpdateAction extends UpdateAction{
 			limiter=0f;
 		}
 		else {
-			self.adjust(self.getWidth()+dx,self.getHeight()+dy);
+			move(dx,dy);
 		}
+	}
+	@Override
+	protected void move(float dx, float dy) {
+		self.adjust(self.getWidth()+dx,self.getHeight()+dy);
+		super.move(dx,dy);
 	}
 	@Override
 	public void flip(){

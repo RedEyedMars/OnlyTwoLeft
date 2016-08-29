@@ -37,6 +37,7 @@ public class TransitionMenu extends Menu{
 	private int millis;
 	private boolean canProceed;
 	private MenuButton winnerButton;
+	private GraphicEntity returnButton;
 	public TransitionMenu(
 			boolean isCompetitive,boolean isWinner,long millisecondsToComplete,
 			final String previousMapName, final String nextMapName, final boolean myColour, boolean canProceed){
@@ -147,7 +148,7 @@ public class TransitionMenu extends Menu{
 
 		}
 		//}
-		GraphicEntity time = new MenuButton(minutes+"m "+seconds+"s"){
+		GraphicEntity time = new MenuButton((minutes>0?(minutes+"m "):" ")+seconds+"s"){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -159,7 +160,7 @@ public class TransitionMenu extends Menu{
 		time.setY(0.51f);
 		addChild(time);
 
-		GraphicEntity returnButton = new MenuButton("Return to Main Menu"){
+		returnButton = new MenuButton("Return to Main Menu"){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				if(Client.isConnected()){
@@ -202,6 +203,9 @@ public class TransitionMenu extends Menu{
 		Client.endConnectionToTheServer();
 		Gui.setView(new MainMenu());
 	}
+	public void exit() {
+		returnButton.performOnRelease(null);
+	}
 	public void verifyWhoWon(boolean successful, long theirTime) {
 		if(!isCompetitive){
 			if(isWinner&&!successful){
@@ -211,7 +215,6 @@ public class TransitionMenu extends Menu{
 		else {
 			if(isWinner&&successful){
 				long myTime = this.millis+1000*(this.seconds+60*this.minutes);
-				System.out.println(myTime+"vs"+theirTime);
 				if(myTime==theirTime){
 					winnerButton.changeText("Tie");
 					return;

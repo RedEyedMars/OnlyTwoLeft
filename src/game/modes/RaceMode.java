@@ -13,6 +13,7 @@ import java.util.List;
 import duo.client.Client;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
+import game.Game;
 import game.Hero;
 import game.environment.onstep.OnStepSquare;
 import gui.graphics.GraphicEntity;
@@ -44,11 +45,13 @@ public class RaceMode implements GameMode{
 	private GraphicText showTimeBack;
 	private float previousX=0;
 	private float previousY=0;
+	private Game game;
 	public List<GraphicEntity> getAuxillaryChildren(){
 		return auxillaryChildren;
 	}
 	@Override 
-	public void setup(boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+		this.game = game;
 		if(colourToControl){
 			focused = black;
 			wild = white;
@@ -137,7 +140,7 @@ public class RaceMode implements GameMode{
 
 	private void handleGhost(){
 		if(ending)return;
-		long now = System.currentTimeMillis()-focused.getGame().getStartTime();
+		long now = System.currentTimeMillis()-game.getStartTime();
 		String minutes = now<60000?" ":now/60000+"m";
 		String seconds = ((now/1000)%60<10&&!" ".equals(minutes)?"0":"")+(now/1000)%60+"s ";
 		String time = minutes+seconds+now%1000;
@@ -221,6 +224,10 @@ public class RaceMode implements GameMode{
 				focused.setYAcceleration(0);
 			}
 		}
+		else if(focused.foundNorthWall()&&focused.getYAcceleration()>0){
+			focused.setYAcceleration(0);
+			focusedCanJump=false;
+		}
 		else {
 			if(focused.getYAcceleration()>=-0.06){
 				focused.setYAcceleration((float) (focused.getYAcceleration()-0.2f*secondsSinceLastFrame));
@@ -248,7 +255,7 @@ public class RaceMode implements GameMode{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		focused.getGame().transition("Restart", false);
+		game.transition("Restart", false);
 		if(!Client.isConnected()){
 			HeroEndGameMessage.setAndSend(focused.isBlack(), false, Long.MAX_VALUE);
 			HeroEndGameMessage.setAndSend(!focused.isBlack(), false, bestTime);
@@ -260,7 +267,7 @@ public class RaceMode implements GameMode{
 		if(!isBlack||ending){
 			return;
 		}
-		long now = System.currentTimeMillis()-focused.getGame().getStartTime();
+		long now = System.currentTimeMillis()-game.getStartTime();
 		try {
 			if(ghostPath!=null){
 				ghostPath.close();
@@ -276,7 +283,7 @@ public class RaceMode implements GameMode{
 			e.printStackTrace();
 		}
 		
-		focused.getGame().transition(nextMap, true);
+		game.transition(nextMap, true);
 		if(!Client.isConnected()){
 			HeroEndGameMessage.setAndSend(focused.isBlack(), true, now);
 			HeroEndGameMessage.setAndSend(!focused.isBlack(), true, bestTime);		
@@ -293,6 +300,9 @@ public class RaceMode implements GameMode{
 		if(focusedCanJump){
 			if(focusedJumping){
 				focused.setYAcceleration(focused.getYAcceleration()+0.06f);
+				if(focused.getYAcceleration()>0.06f){
+					focused.setYAcceleration(0.06f);					
+				}
 				focusedCanJump=false;
 			}
 			else {

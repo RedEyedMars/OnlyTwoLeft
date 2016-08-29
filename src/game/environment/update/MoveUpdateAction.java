@@ -2,6 +2,9 @@ package game.environment.update;
 
 import java.util.Iterator;
 
+import game.Game;
+import game.Hero;
+
 public class MoveUpdateAction extends UpdateAction {
 	public MoveUpdateAction(){
 		defaultState = true;
@@ -19,19 +22,25 @@ public class MoveUpdateAction extends UpdateAction {
 		limiter  += Math.sqrt(dx*dx+dy*dy);
 		if(onLimitBrokenAction>-1&&limiter>=limit){
 			if(dx==0){
-				self.move(0,dy-Math.signum(y)*(limiter-limit));
+				move(0,dy-Math.signum(y)*(limiter-limit));				
 			}
 			else if(dy==0){
-				self.move(dx-Math.signum(x)*(limiter-limit),0);
+				move(dx-Math.signum(x)*(limiter-limit),0);
 			}
 			limiters.get(onLimitBrokenAction).act(this);
-			movementX=0f;
-			movementY=0f;
-			limiter =0f;
+			if(self.isActive()){
+				movementX=0f;
+				movementY=0f;
+				limiter =0f;
+			}
 		}
 		else {
-			self.move(dx,dy);
+			move(dx,dy);
 		}
+	}
+	protected void move(float dx, float dy) {
+		self.move(dx, dy);
+		super.move(dx,dy);
 	}
 	@Override
 	public void flip(){

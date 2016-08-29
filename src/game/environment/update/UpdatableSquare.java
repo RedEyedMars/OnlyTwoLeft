@@ -10,6 +10,7 @@ import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.onstep.OnStepSquare;
 import main.Hub;
+import storage.Storage;
 
 public class UpdatableSquare extends OnStepSquare {
 	private UpdateAction updateAction;
@@ -18,7 +19,8 @@ public class UpdatableSquare extends OnStepSquare {
 	public UpdatableSquare(int actionType,int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(actionType-3,shapeType,blackColour, whiteColour,ints, floats);
 		this.actionType=actionType;
-		this.updateAction = UpdateAction.getAction(ints.next()).create();		
+		int actionIndex = ints.next();
+		this.updateAction = UpdateAction.getAction(actionIndex).create();
 		this.updateAction.setArgs(ints,floats);
 		this.updateAction.setTarget(this);
 
@@ -46,8 +48,10 @@ public class UpdatableSquare extends OnStepSquare {
 		}
 	}
 	public void activate(){
+		if(!this.activated){
+			this.updateAction.onActivate();
+		}
 		this.activated = true;
-		this.updateAction.onActivate();
 	}
 	public void deactivate(){
 		this.activated = false;
@@ -66,6 +70,7 @@ public class UpdatableSquare extends OnStepSquare {
 	public void addDependant(Square square){
 		this.dependants.add(square);
 		for(SquareAction action:square.getActions()){
+			if(action==null)continue;
 			if(action.targetType()==1){
 				action.setTarget(this);
 			}
@@ -107,8 +112,13 @@ public class UpdatableSquare extends OnStepSquare {
 		super.saveTo(toSave);
 		toSave.add(dependants.size());
 		for(Square square:dependants){
+			if(Storage.debug)System.out.print('\t');
 			square.saveTo(toSave);
 		}
+	}
+	
+	public boolean isActive(){
+		return activated;
 	}
 
 
