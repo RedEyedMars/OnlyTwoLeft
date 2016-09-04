@@ -273,7 +273,7 @@ public class RaceMode implements GameMode{
 	}
 	@Override
 	public void winGame(boolean isBlack,String nextMap){
-		if(isBlack==colourToControl||ending){
+		if(isBlack!=colourToControl||ending){
 			return;
 		}
 		long now = game.getTimeSpent();
