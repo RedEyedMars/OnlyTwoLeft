@@ -182,6 +182,9 @@ public class PlatformMode extends OverheadMode{
 					wild.setXAcceleration(standardAcceleration);
 				}
 			}
+			else if(keycode==1||keycode==25||keycode==197){
+				game.pause();
+			}
 		}
 		else if(b==KeyBoardListener.UP){
 			if(32==keycode){

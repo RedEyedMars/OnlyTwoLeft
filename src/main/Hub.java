@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import duo.client.Client;
+import duo.messages.ActionMessage;
+import duo.messages.BlankMessage;
+import duo.messages.LoadMapMessage;
 import game.Action;
 import game.menu.StoryAction;
 import game.menu.StoryScene;
@@ -18,7 +22,9 @@ import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
+import storage.Storage;
 public class Hub {
+	public static final String RESTART_STRING = "\n";
 	public static GraphicView currentView;
 	public static GraphicRenderer renderer;
 	public static float width;
@@ -38,7 +44,8 @@ public class Hub {
 		}
 		@Override
 		public void onMouseScroll(int distance) {			
-		}};
+		}
+	};
 	public static KeyBoardListener genericKeyBoardListener = new KeyBoardListener(){
 		@Override
 		public void keyCommand(boolean b,char c, int keycode) {			
@@ -47,7 +54,8 @@ public class Hub {
 		@Override
 		public boolean continuousKeyboard() {
 			return false;
-		}};
+		}
+	};
 	public static List<Action> scenes = new ArrayList<Action>();
 	public static int sceneIndex = 7;
 	public static game.environment.Map map;
@@ -69,6 +77,28 @@ public class Hub {
 	public static String getString(String key, Map<String, String> map) {
 		return map.containsKey(key)?map.get(key):"$null";
 	}
-	
-	
+	public static void loadMapFromFileName(String mapFileName) {
+		if(mapFileName!=null){
+			if(Client.isConnected()){
+				Client.sendMapMessage(mapFileName, new BlankMessage());
+			}
+			else {
+				Storage.loadMap(mapFileName);
+			}
+		}
+	}
+	public static void restartMap(Action<Object> onReturn) {
+		if(Hub.map.getFileName()==null){
+			if(onReturn!=null&&Client.isConnected()){
+				Client.pass(new LoadMapMessage(Hub.RESTART_STRING, new ActionMessage(onReturn)));
+			}
+			else {
+				throw new RuntimeException("Tried to Restart the Map without hosting the Map.");
+			}
+		}
+		else {
+			Storage.loadMap(Hub.map.getFileName());
+			onReturn.act(null);
+		}
+	}
 }

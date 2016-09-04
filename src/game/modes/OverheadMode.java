@@ -99,7 +99,7 @@ public class OverheadMode implements GameMode{
 			}
 		}
 		else {
-			long now = System.currentTimeMillis()-game.getStartTime();
+			long now = game.getTimeSpent();
 			HeroEndGameMessage.setAndSend(this.colourToControl, false, now);
 			HeroEndGameMessage.setAndSend(!this.colourToControl, false, now);			
 			game.transition("Restart", false);
@@ -113,7 +113,7 @@ public class OverheadMode implements GameMode{
 			}
 		}
 		else {
-			HeroEndGameMessage.setAndSend(isBlack, true, System.currentTimeMillis()-game.getStartTime());
+			HeroEndGameMessage.setAndSend(isBlack, true, game.getTimeSpent());
 			if(HeroEndGameMessage.isFinished()){
 				game.transition(nextMap, true);
 			}
@@ -153,6 +153,9 @@ public class OverheadMode implements GameMode{
 				else if(keycode==205){//right
 					controlled.getPartner().setXAcceleration(standardAcceleration);
 				}
+			}
+			else if(keycode==1||keycode==25||keycode==197){
+				game.pause();
 			}
 		}
 		else if(b==KeyBoardListener.UP){

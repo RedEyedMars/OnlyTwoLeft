@@ -123,16 +123,17 @@ public class Handler {
 	}	
 
 	public void sendAllMessagesNow() {
-		while(!outgoingMail.isEmpty()){
-			try {
+		try {
+			while(!outgoingMail.isEmpty()){
 				//Send the message immediately.
 				output.writeObject(outgoingMail.remove(0));
-			} catch (IOException e) {
-				e.printStackTrace();
+
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Instead of a {@link duo.messages.Message}, this method sends a byte array. Currently this is used primarily to send Map files from the host client to the joining client.
 	 * @param bytes - Byte array to be sent.

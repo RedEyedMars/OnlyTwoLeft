@@ -39,9 +39,7 @@ public class LoadMapMessage extends Message{
 	@Override
 	public void act(Handler handler) {
 		//Send the map data in the file back to the Joined Client. Note that no further action is needed besides the loading of the map so a BlankMessage is sent as the onEnd.
-		Client.sendMapMessage(filename, new BlankMessage());
-		//The onEnd Message is acted upon, usually this should be the TransitionGameMessage, but has been left for general use. 
-		onEnd.act(handler);
+		Client.sendMapMessage(filename, this.onEnd);
 	}
 
 }

@@ -2,6 +2,7 @@ package duo.messages;
 
 import duo.Handler;
 import duo.client.Client;
+import game.Game;
 import game.menu.TransitionMenu;
 import main.Hub;
 import storage.Storage;
@@ -82,22 +83,14 @@ public class HeroEndGameMessage extends Message{
 		}
 	}
 	public static void finish(){
-		if(nextMapFileName!=null){
-			if(Client.isConnected()){
-				Client.sendMapMessage(nextMapFileName, new BlankMessage());
-			}
-			else {
-				Storage.loadMap(nextMapFileName);
-			}
-		}
+		Hub.loadMapFromFileName(nextMapFileName);
 		if(theirColour!=null){
 			if(theirColour){
 				HeroEndGameMessage.menu.verifyWhoWon(blackWinner,blackTime);
 			}
 			else {
 				HeroEndGameMessage.menu.verifyWhoWon(whiteWinner,whiteTime);				
-			}
-			
+			}			
 		}
 		if(nextMapName!=null){			
 			HeroEndGameMessage.menu.canProceed(previousMapName, nextMapName, myColour);
@@ -121,6 +114,16 @@ public class HeroEndGameMessage extends Message{
 	}
 	public static void setNextMapFileName(String nextMapFileName) {
 		HeroEndGameMessage.nextMapFileName = nextMapFileName;
+	}
+
+	public static boolean partnerHasWon() {
+		if(theirColour==null)return false;
+		if(theirColour){
+			return blackWinner!=null&&blackWinner==true;
+		}
+		else {
+			return whiteWinner!=null&&whiteWinner==true;
+		}
 	}
 
 

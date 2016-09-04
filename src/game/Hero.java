@@ -459,17 +459,21 @@ public class Hero extends GraphicEntity implements Colourable{
 			OnStepAction action = mapSquares.get(i).getOnHitAction(this);
 			if(action!=null){
 				if(this.isWithin(mapSquares.get(i))){
-					if(this.isOppositeColour(mapSquares.get(i))){
-						entities.add(mapSquares.get(i));
-						actions.add(null);		
-						safeties.add(true);
+					if(Game.useLightEffects){
+						if(this.isOppositeColour(mapSquares.get(i))){
+							entities.add(mapSquares.get(i));
+							actions.add(null);		
+							safeties.add(true);
+							continue;
+						}
+						else if(this.isSameColour(mapSquares.get(i))){
+							entities.add(mapSquares.get(i));
+							actions.add(OnStepAction.wall);							
+							safeties.add(false);
+							continue;
+						}
 					}
-					else if(this.isSameColour(mapSquares.get(i))){
-						entities.add(mapSquares.get(i));
-						actions.add(OnStepAction.wall);							
-						safeties.add(false);
-					}
-					else if(action.isPassible()){
+					if(action.isPassible()){
 						entities.add(mapSquares.get(i));
 						actions.add(action);
 						safeties.add(action.isPassible());							
@@ -496,7 +500,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		float x = (float) params[0];
 		float y = (float) params[1];
 		onCorner = (boolean)params[2];
-		
+
 		move(deltaX+x,deltaY+y);
 		if(y!=0){
 			//yVel=0;

@@ -112,6 +112,7 @@ public class Map extends GraphicEntity {
 
 	private float xOffset = 0f;
 	private float yOffset = 0f;
+	private boolean lightDependency = true;
 	@Override
 	public void setX(float x){
 		xOffset = x-getX();
@@ -227,6 +228,7 @@ public class Map extends GraphicEntity {
 	}
 	public void saveTo(List<Object> toSave) {
 		toSave.add(getMapId());
+		toSave.add(lightDependency?0:1);
 		if(Storage.debug)System.out.println();
 		toSave.add(getStartingXPosition(0));
 		toSave.add(getStartingYPosition(0));
@@ -270,6 +272,7 @@ public class Map extends GraphicEntity {
 		}
 		Hub.map.name = name;
 		Hub.map.filename = fileName;
+		Hub.map.lightDependency = loader.nextInteger()==0;
 		for(Iterator<String> names=loader.getStrings();names.hasNext();Hub.map.nextMaps.add(names.next())){			
 		}
 		int i=0;
@@ -332,6 +335,13 @@ public class Map extends GraphicEntity {
 		this.mapId = id;
 	}
 
+
+	public boolean isLightDependent() {
+		return lightDependency ;
+	}
+	public void setLightDependency(boolean dependency){
+		this.lightDependency = dependency;
+	}
 	public GameMode getGameMode() {
 		switch((mapId+20)/-20){
 		case 0:{
@@ -484,6 +494,7 @@ public class Map extends GraphicEntity {
 		}
 		map.setStartPosition(0, getStartingXPosition(0), getStartingYPosition(0));
 		map.setStartPosition(1, getStartingXPosition(1), getStartingYPosition(1));
+		map.setLightDependency(this.isLightDependent());
 	}
 
 }

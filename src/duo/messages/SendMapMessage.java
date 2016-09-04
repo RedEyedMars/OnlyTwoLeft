@@ -2,6 +2,8 @@ package duo.messages;
 
 import duo.Handler;
 import duo.client.Client;
+import game.environment.Map;
+import main.Hub;
 import storage.Storage;
 
 /**
@@ -14,14 +16,14 @@ import storage.Storage;
 public class SendMapMessage extends Message{
 	//For Message sending.
 	private static final long serialVersionUID = -7927768988704831847L;
-	
+
 	//The name of the map which will be sent, this name is used mostly for saving complete times.
 	private String mapName;
 	//The Message that is called after the map has been received.
 	private Message onEnd;
 	//The number of bytes in the map data.
 	private int numberOfBytes;
-	
+
 	/**
 	 * Called by the SendMapMessage.send method, this constructor initializes the {@link duo.messages.Message} with the necessary variables.
 	 * @param mapName - The token name of the map, this name is not protected, and is used primarily for saving completed times.
@@ -48,7 +50,7 @@ public class SendMapMessage extends Message{
 		//onEnd Message is acted upon.
 		onEnd.act(handler);
 	}
-	
+
 	/**
 	 * Opens the map file, then sends it as bytes to the partnered {@link duo.client.Client}.
 	 * The map file is then used to load a map for this {@link duo.client.Client} as well.
@@ -57,6 +59,11 @@ public class SendMapMessage extends Message{
 	 * @param onEnd - {@link duo.messages.Message} that is acted upon after the SendMapMessage has been received.
 	 */
 	public static void send(Client client,String filename, Message onEnd){
+		boolean loadForSelf = true;
+		if(Hub.RESTART_STRING.equals(filename)&&Hub.map!=null&&Hub.map.getFileName()!=null){
+			filename = Hub.map.getFileName();
+			loadForSelf = false;
+		}
 		//Gets the map name from the file name, basically removing the extension ".map" and the folder names.
 		String mapName = Storage.getMapNameFromFileName(filename);
 		//Reads the bytes of the file into an array.
@@ -65,7 +72,9 @@ public class SendMapMessage extends Message{
 		client.getHandler().sendNow(new SendMapMessage(mapName,onEnd,file.length));
 		//Send the bytes from the map file.
 		client.getHandler().sendBytes(file);
-		//Load the map from the bytes.
-		Storage.loadMap(mapName,filename,file);
+		if(loadForSelf){
+			//Load the map from the bytes.
+			Storage.loadMap(mapName,filename,file);
+		}
 	}
 }

@@ -11,6 +11,7 @@ import editor.Editor;
 import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
+import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -76,7 +77,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public float getFloat(int i){
 		return i==0?x:i==1?y:i==2?limit:limiterStartPercent;
 	}
-	
+
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
 		saveTo.add(defaultState?1:0);
@@ -125,7 +126,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		limiter=limit*limiterStartPercent;
 	}
 	public void onDeactivate(){
-		
+
 	}
 	public void flip() {
 
@@ -148,14 +149,22 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 
 	protected void move(float dx, float dy) {
 		for(Hero hero:new Hero[]{Game.black,Game.white}){
-			hero.setX(hero.getX()+hero.getDeltaX());
-			hero.setY(hero.getY()+hero.getDeltaY());
-			if(hero.isWithin(self)){
-				hero.setXVelocity(hero.getXVelocity()+dx);
-				hero.move(dx,dy);
+			OnStepAction action = self.getOnHitAction(hero);
+			if(action!=null){
+				if(action.getIndex()==2){
+					continue;
+				}				
 			}
-			hero.setX(hero.getX()-hero.getDeltaX());
-			hero.setY(hero.getY()-hero.getDeltaY());
+			if(hero.getY()>=self.getY()+self.getHeight()){
+				hero.setX(hero.getX()+hero.getDeltaX());
+				hero.setY(hero.getY()+hero.getDeltaY());
+				if(hero.isWithin(self)){
+					//hero.setXVelocity(hero.getXVelocity()+dx);
+					hero.move(dx,dy);
+				}
+				hero.setX(hero.getX()-hero.getDeltaX());
+				hero.setY(hero.getY()-hero.getDeltaY());
+			}
 		}
 	}
 	public abstract UpdateAction create(); 
@@ -191,5 +200,5 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 			}
 		}
 	}
-	
+
 }

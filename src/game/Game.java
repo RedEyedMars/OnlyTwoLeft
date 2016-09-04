@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Random;
 
 import duo.client.Client;
-import duo.messages.BlankMessage;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
 import duo.messages.SaveGameMessage;
 import game.environment.onstep.OnStepSquare;
 import game.environment.update.UpdatableSquare;
 import game.menu.MainMenu;
+import game.menu.PauseMenu;
 import game.menu.TransitionMenu;
 import game.modes.GameMode;
 import gui.Gui;
@@ -25,6 +25,7 @@ import storage.Storage;
 
 public class Game extends GraphicView{
 
+	public static boolean useLightEffects = false;
 	public static Hero black;
 	public static Hero white;
 	private static List<Action<Double>> updateActions = new ArrayList<Action<Double>>() ;
@@ -34,14 +35,18 @@ public class Game extends GraphicView{
 	protected int tick = 1;
 
 	private GameMode gameMode;
-	private long startTime;
 	private boolean colourToControl;
+	private long seed;
 	private boolean transition = false;
-	private String nextMap = "";
 	private boolean successful = false;
+	private String nextMap = "";
+	private long timeSpentInGame=0;
+	private PauseMenu pauseMenu;
+	private boolean waiting=false;
 	public Game(boolean colourToControl, long seed){
 		MoveHeroMessage.reset();
 		Main.randomizer = new Random(seed);
+		this.seed = seed;
 		this.colourToControl = colourToControl;
 		if(Client.isConnected()){
 			if(colourToControl){
@@ -101,7 +106,6 @@ public class Game extends GraphicView{
 
 			gameMode = Hub.map.getGameMode();
 			if(gameMode!=null){
-				startTime = System.currentTimeMillis();
 				gameMode.setup(this,colourToControl, black, white, wildWall);
 				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 					addChild(e);
@@ -110,6 +114,7 @@ public class Game extends GraphicView{
 
 
 		}
+		useLightEffects = Hub.map.isLightDependent();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return gameMode;
@@ -124,7 +129,8 @@ public class Game extends GraphicView{
 			Hub.addLayer.clear();
 			Gui.setView(new MainMenu());
 		}
-		if(secondsSinceLastFrame>0.1f)return;
+		if((pauseMenu!=null&&pauseMenu.isPaused()) || waiting ||secondsSinceLastFrame>0.1f)return;
+		timeSpentInGame+=secondsSinceLastFrame*1000;
 		super.update(secondsSinceLastFrame);
 		gameMode.update(secondsSinceLastFrame);
 	}
@@ -147,7 +153,7 @@ public class Game extends GraphicView{
 		Gui.removeOnType(gameMode);
 		Hub.addLayer.clear();
 		String nextMapName = Storage.getMapNameFromFileName(nextMap);
-		TransitionMenu menu = new TransitionMenu(gameMode.isCompetetive(),successful,(System.currentTimeMillis()-startTime),previousMapName,nextMapName,colourToControl,Hub.map.getFileName()!=null);
+		TransitionMenu menu = new TransitionMenu(gameMode.isCompetetive(),successful,timeSpentInGame,previousMapName,nextMapName,colourToControl,Hub.map.getFileName()!=null);
 		HeroEndGameMessage.setMenu(menu);
 		SaveGameMessage.setMenu(menu);
 
@@ -156,7 +162,7 @@ public class Game extends GraphicView{
 			HeroEndGameMessage.setNextMapFileName(nextMap);
 		}
 		if(Client.isConnected()){		
-			HeroEndGameMessage.setAndSend(colourToControl,successful,System.currentTimeMillis()-startTime);			
+			HeroEndGameMessage.setAndSend(colourToControl,successful,timeSpentInGame);			
 		}
 		if(HeroEndGameMessage.isFinished()){
 			HeroEndGameMessage.finish();
@@ -172,8 +178,52 @@ public class Game extends GraphicView{
 	public void winGame(boolean isBlack,String nextMap) {
 		gameMode.winGame(isBlack,nextMap);
 	}
-	public long getStartTime() {
-		return startTime;
+	public long getTimeSpent() {
+		return timeSpentInGame;
+	}
+	public void pause() {
+		if(pauseMenu==null){
+			pauseMenu = new PauseMenu(this);
+			addChild(pauseMenu);
+			pauseMenu.onAddToDrawable();
+		}
+		pauseMenu.pause();
+		Gui.giveOnClick(pauseMenu);
+		Gui.giveOnType(pauseMenu);
+	}
+	public void restart() {
+		float otherX = 0f, otherY = 0f;
+		if(colourToControl){
+			Game.black.move(Hub.map.getStartingXPosition(0)-(-Hub.map.getX()+Game.black.getX()), 
+					Hub.map.getStartingYPosition(0)-(-Hub.map.getY()+Game.black.getY()));
+			otherX=Game.white.getX()-Hub.map.getX();
+			otherY=Game.white.getY()-Hub.map.getY();
+		}
+		else {
+			Game.white.move(Hub.map.getStartingXPosition(1)-(-Hub.map.getX()+Game.white.getX()), 
+					Hub.map.getStartingYPosition(1)-(-Hub.map.getY()+Game.white.getY()));
+			otherX=Game.black.getX()-Hub.map.getX();
+			otherY=Game.black.getY()-Hub.map.getY();
+		}
+		final float theirX = otherX;
+		final float theirY = otherY;
+		//unpause();
+		waiting=true;
+		Hub.restartMap(new Action<Object>(){
+			@Override
+			public void act(Object subject) {
+				Gui.setView(new Game(colourToControl,seed));
+				if(colourToControl){
+					Game.white.setX(theirX);
+					Game.white.setY(theirY);
+				}
+				else {
+					Game.black.setX(theirX);
+					Game.black.setY(theirY);
+				}
+				waiting=false;
+			}
+		});
 	}
 
 }

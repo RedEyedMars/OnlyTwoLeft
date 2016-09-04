@@ -27,6 +27,12 @@ public class MoveUpdateAction extends UpdateAction {
 			else if(dy==0){
 				move(dx-Math.signum(x)*(limiter-limit),0);
 			}
+			else if(y>x){
+				move(dx-Math.signum(x)*(limiter-limit)*Math.abs(x/y),dy-Math.signum(y)*(limiter-limit)*(1-Math.abs(x/y)));
+			}
+			else {
+				move(dx-Math.signum(x)*(limiter-limit)*(1-Math.abs(y/x)),dy-Math.signum(y)*(limiter-limit)*Math.abs(y/x));
+			}
 			limiters.get(onLimitBrokenAction).act(this);
 			if(self.isActive()){
 				movementX=0f;

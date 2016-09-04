@@ -46,12 +46,14 @@ public class RaceMode implements GameMode{
 	private float previousX=0;
 	private float previousY=0;
 	private Game game;
+	private boolean colourToControl;
 	public List<GraphicEntity> getAuxillaryChildren(){
 		return auxillaryChildren;
 	}
 	@Override 
 	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
 		this.game = game;
+		this.colourToControl = colourToControl;
 		if(colourToControl){
 			focused = black;
 			wild = white;
@@ -140,13 +142,13 @@ public class RaceMode implements GameMode{
 
 	private void handleGhost(){
 		if(ending)return;
-		long now = System.currentTimeMillis()-game.getStartTime();
+		long now = game.getTimeSpent();
 		String minutes = now<60000?" ":now/60000+"m";
 		String seconds = ((now/1000)%60<10&&!" ".equals(minutes)?"0":"")+(now/1000)%60+"s ";
 		String time = minutes+seconds+now%1000;
 		showTimeBack.change(time);
 		showTime.change(time);
-		if(Client.isConnected())return;
+		if(Client.isConnected()||myPath==null)return;
 		if(focused.getX()-Hub.map.getX()!=previousX||focused.getY()-Hub.map.getY()!=previousY){
 			previousX = focused.getX()-Hub.map.getX();
 			previousY = focused.getY()-Hub.map.getY();
@@ -182,7 +184,7 @@ public class RaceMode implements GameMode{
 	}
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
-		for(Hero hero:new Hero[]{focused,wild}){
+		for(Hero hero:new Hero[]{focused}){
 			hero.handleWalls(mapSquares);
 		}
 	}
@@ -234,12 +236,13 @@ public class RaceMode implements GameMode{
 			}
 		}
 		if(focused.getY()<-0.05f||wild.getY()<-0.05f){
+			System.out.println(focused.isBlack()&&focused.getY()<-0.05f?"black lose":"white lose");
 			loseGame(focused.isBlack());
 		}
 	}
 	@Override
 	public void loseGame(boolean isBlack){
-		if(!isBlack||ending){
+		if(isBlack!=colourToControl||ending){
 			return;
 		}
 		try {
@@ -255,19 +258,25 @@ public class RaceMode implements GameMode{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		if(HeroEndGameMessage.partnerHasWon()){
 		game.transition("Restart", false);
 		if(!Client.isConnected()){
 			HeroEndGameMessage.setAndSend(focused.isBlack(), false, Long.MAX_VALUE);
 			HeroEndGameMessage.setAndSend(!focused.isBlack(), false, bestTime);
 		}
 		ending = true;
+		}
+		else {
+			game.restart();
+		}
 	}
 	@Override
 	public void winGame(boolean isBlack,String nextMap){
-		if(!isBlack||ending){
+		if(isBlack==colourToControl||ending){
 			return;
 		}
-		long now = System.currentTimeMillis()-game.getStartTime();
+		long now = game.getTimeSpent();
 		try {
 			if(ghostPath!=null){
 				ghostPath.close();
@@ -317,14 +326,17 @@ public class RaceMode implements GameMode{
 			if('a'==c){
 				focused.setXAcceleration(-standardAcceleration);
 			}
-			if('d'==c){
+			else if('d'==c){
 				focused.setXAcceleration(standardAcceleration);
 			}
-			if('w'==c){
+			else if('w'==c){
 				jump();
 			}
-			if('s'==c){
+			else if('s'==c){
 				//controlled.setYAcceleration(-standardAcceleration);
+			}
+			else if(keycode==1||keycode==25||keycode==197){
+				game.pause();
 			}
 		}
 		else if(b==KeyBoardListener.UP){

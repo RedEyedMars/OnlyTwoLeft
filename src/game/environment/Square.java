@@ -363,4 +363,9 @@ public class Square extends GraphicEntity implements Colourable{
 	@Override
 	public void setColour(boolean red, boolean green, boolean blue) {
 	}
+
+	public void changeColour(int blackColour, int whiteColour) {
+		this.blackColour=blackColour;
+		this.whiteColour=whiteColour;
+	}
 }

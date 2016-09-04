@@ -40,7 +40,12 @@ public class Storage {
 			++lastSeparator;
 		}
 		int dot = filename.lastIndexOf('.');
-		return filename.substring(lastSeparator, dot);
+		if(dot==-1){
+			return filename.substring(lastSeparator);
+		}
+		else {
+			return filename.substring(lastSeparator, dot);
+		}
 	}
 	
 	public static void loadMap(String name,String filename, byte[] file){

@@ -1,5 +1,8 @@
 package game.environment.update;
 
+import game.Game;
+import game.Hero;
+
 public class GrowUpdateAction extends UpdateAction{
 	private float growthW = 0f;
 	private float growthH = 0f;
@@ -31,8 +34,21 @@ public class GrowUpdateAction extends UpdateAction{
 	}
 	@Override
 	protected void move(float dx, float dy) {
+		for(Hero hero:new Hero[]{Game.black,Game.white}){
+			if(y>0&&hero.getY()>=self.getY()+self.getHeight()||
+					y<0&&hero.getY()+hero.getHeight()<=self.getY()||
+					x>0&&hero.getX()>=self.getX()+self.getWidth()||
+					x<0&&hero.getX()+hero.getWidth()<=self.getX()){
+				hero.setX(hero.getX()+hero.getDeltaX());
+				hero.setY(hero.getY()+hero.getDeltaY());
+				if(hero.isWithin(self)){
+					hero.move(dx,0);
+				}
+				hero.setX(hero.getX()-hero.getDeltaX());
+				hero.setY(hero.getY()-hero.getDeltaY());
+			}
+		}
 		self.adjust(self.getWidth()+dx,self.getHeight()+dy);
-		super.move(dx,dy);
 	}
 	@Override
 	public void flip(){

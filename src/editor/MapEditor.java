@@ -26,6 +26,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private List<GraphicEntity> heroButtons = new ArrayList<GraphicEntity>();
 	private game.environment.Map myLoadedMap;
 	private GraphicEntity gravityShower = new GraphicEntity("gravity_icons",1);
+	private GraphicEntity lightDependencyShower = new GraphicEntity("editor_light_dependency",1);
 	public MapEditor(){
 		super();
 		saveTo = Gui.userSave("maps");
@@ -119,6 +120,12 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		gravityShower.setY(0.96f);
 		addChild(gravityShower);
 		gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
+		
+		this.lightDependencyShower.adjust(0.04f, 0.04f);
+		lightDependencyShower.setX(0.905f);
+		lightDependencyShower.setY(0.91f);
+		addChild(lightDependencyShower);
+		lightDependencyShower.setFrame(myLoadedMap.isLightDependent()?0:1);
 	}
 
 	private void createCopyOfSquare(Square square){
@@ -211,16 +218,20 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				createCopyOfSquare(squares.get(squares.size()-1));
 			}
 			else if(keycode==17||keycode==200){//up
-				moveView(0,-0.5f);
+				moveView(0,-0.2f);
 			}
 			else if(keycode==30||keycode==203){//left
-				moveView(0.5f,0);
+				moveView(0.2f,0);
 			}
 			else if(keycode==31||keycode==208){//down
-				moveView(0,0.5f);
+				moveView(0,0.2f);
 			}
 			else if(keycode==32||keycode==205){//right
-				moveView(-0.5f,0);
+				moveView(-0.2f,0);
+			}
+			else if(keycode==38){//toggle light
+				myLoadedMap.setLightDependency(!myLoadedMap.isLightDependent());
+				lightDependencyShower.setFrame(myLoadedMap.isLightDependent()?0:1);
 			}
 			else if(keycode==34){//toggle gravity
 				myLoadedMap.setMapId(myLoadedMap.getMapId()==-60?-20:myLoadedMap.getMapId()-20);

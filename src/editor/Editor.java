@@ -24,7 +24,7 @@ public class Editor extends GraphicView {
 
 	protected int visibleTo=0;
 	protected int mode=-1;
-	protected int shape = 0;
+	protected int shape = 1;
 	protected int colour = 0;
 	protected int colour2 = 0;
 	protected int action1 = 0;
@@ -70,7 +70,7 @@ public class Editor extends GraphicView {
 		actionMenu.clear();
 		actionMenu2.clear();
 		updateActionMenu.clear();
-		for(int i=0;i<6;++i){
+		for(int i=0;i<7;++i){
 			final int x = i;
 			Button button = new Button("editor_shape_icons",i,this,new ButtonAction(){
 				private int id;
@@ -527,25 +527,46 @@ public class Editor extends GraphicView {
 			if(e.getAction()==MotionEvent.ACTION_DOWN){
 				if(mode==0){
 					if(handleButtons(e))return true;
-					int x = Hub.map.getIntX(e.getX());
-					int y = Hub.map.getIntY(e.getY());
-					if(granityShower.textureIndex()==0){
-						x = (int) (x+2.5f);
-						y = (int) (y+2.5f);
-						x-=x%5;
-						y-=y%5;
+					if(shape>0){
+						int x = Hub.map.getIntX(e.getX());
+						int y = Hub.map.getIntY(e.getY());
+						if(granityShower.textureIndex()==0){
+							x = (int) (x+2.5f);
+							y = (int) (y+2.5f);
+							x-=x%5;
+							y-=y%5;
+						}
+						List<Integer> updateAction = new ArrayList<Integer>();
+						for(int i=0;i<updateActionMenu.size();++i){
+							if(updateActionMenu.get(i).isSelected()){
+								updateAction.add(i);
+							}
+						}
+						builder1 = createSquare(x,y,shape-1,colour,colour2,action1,action2,updateAction,onCreateAction.isSelected());				
+
+						addChild(builder1);
+						builder1.onAddToDrawable();
+						squares.add(builder1);
 					}
-					List<Integer> updateAction = new ArrayList<Integer>();
-					for(int i=0;i<updateActionMenu.size();++i){
-						if(updateActionMenu.get(i).isSelected()){
-							updateAction.add(i);
+					else {//paint
+						for(int i=squares.size()-1;i>=0;--i){
+							if(squares.get(i).isWithin(e.getX(), e.getY())){
+								squares.get(i).changeColour(colour,colour2);
+								squares.get(i).displayFor(visibleTo);
+								return true;
+							}
+							else if(squares.get(i) instanceof UpdatableSquare){
+								List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
+								for(int j=depends.size()-1;j>=0;--j){
+									if(depends.get(j).isWithin(e.getX(), e.getY())){
+										squares.get(i).changeColour(colour,colour2);
+										squares.get(i).displayFor(visibleTo);
+										return true;
+									}
+								}
+							}
 						}
 					}
-					builder1 = createSquare(x,y,shape,colour,colour2,action1,action2,updateAction,onCreateAction.isSelected());				
-
-					addChild(builder1);
-					builder1.onAddToDrawable();
-					squares.add(builder1);
 				}
 				else if(mode==2){
 
@@ -827,7 +848,7 @@ public class Editor extends GraphicView {
 						if(action2==4||action2==-1){
 							a2=action2;
 						}
-						builder1 = createSquare(Hub.map.getIntX(usq.getX()),Hub.map.getIntY(usq.getY()+usq.getHeight()),shape,colour,colour2,a1,a2,updateAction,false);
+						builder1 = createSquare(Hub.map.getIntX(usq.getX()),Hub.map.getIntY(usq.getY()+usq.getHeight()),shape==0?1:(shape-1),colour,colour2,a1,a2,updateAction,false);
 						usq.addDependant(builder1);
 						builder1.onAddToDrawable();
 					}
