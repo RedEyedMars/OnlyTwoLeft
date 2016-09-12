@@ -9,7 +9,7 @@ public class TranslateXOnCreateAction extends OnCreateAction {
 
 	private float dx;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		dx=floats.next();
 	}
 	@Override

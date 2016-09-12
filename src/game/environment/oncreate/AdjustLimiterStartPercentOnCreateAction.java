@@ -11,7 +11,7 @@ public class AdjustLimiterStartPercentOnCreateAction extends OnCreateAction {
 
 	private float dlsp;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		dlsp=floats.next();
 	}
 	@Override

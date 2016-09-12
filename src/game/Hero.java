@@ -7,6 +7,7 @@ import duo.client.Client;
 import duo.messages.MoveHeroMessage;
 import game.environment.Colourable;
 import game.environment.Square;
+import game.environment.onstep.HazardOnStepAction;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
 import gui.graphics.GraphicEntity;
@@ -14,14 +15,19 @@ import main.Hub;
 
 public class Hero extends GraphicEntity implements Colourable{
 
-	public static byte black = 0;
-	public static byte white = 1;
-	private float xVel=0f;
-	private float yVel=0f;
-	private float xAcc=0f;
-	private float yAcc=0f;
+	public final static byte BLACK_COLOUR = 0;
+	public final static byte WHITE_COLOUR = 7;	
+	public final static byte BOTH_INT = 0;
+	public final static byte BLACK_INT = 1;
+	public final static byte WHITE_INT = 2;
+	public final static boolean BLACK_BOOL = true;
+	public final static boolean WHITE_BOOL = false;
 	private float deltaX=0f;
 	private float deltaY=0f;
+	private float velocityX=0f;
+	private float velocityY=0f;
+	private float accelerationX=0f;
+	private float accelerationY=0f;
 
 	private Game game;
 	private Hero partner;
@@ -31,10 +37,16 @@ public class Hero extends GraphicEntity implements Colourable{
 	private boolean onCorner=false;
 	private int index;
 	private float radius=0.01f;
-	public Hero(Game game, byte colour) {
+	public Hero(Game game, boolean colour) {
 		super("heroes",1);
-		index=colour;
-		this.setFrame(colour*7);
+		if(colour==BLACK_BOOL){
+			index=BLACK_INT;
+			this.setFrame(BLACK_COLOUR);
+		}
+		else if(colour==WHITE_BOOL){
+			index=WHITE_INT;
+			this.setFrame(WHITE_COLOUR);
+		}
 		this.adjust(radius*2f, radius*2f);
 		this.game = game;
 	}
@@ -50,24 +62,24 @@ public class Hero extends GraphicEntity implements Colourable{
 		return partner;
 	}
 	public boolean isBlack() {
-		return index==0;
+		return index==BLACK_INT;
 	}
 	public boolean isWhite(){
-		return index==1;
+		return index==WHITE_INT;
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
 
-		xVel=xVel*0.9f+xAcc;
-		if(Math.abs(xVel)>2f){
-			xVel=Math.signum(xVel)*2f;
+		velocityX=velocityX*0.9f+accelerationX;
+		if(Math.abs(velocityX)>2f){
+			velocityX=Math.signum(velocityX)*2f;
 		}
-		yVel=yVel*0.9f+yAcc;
-		if(Math.abs(yVel)>2f){
-			yVel=Math.signum(yVel)*2f;
+		velocityY=velocityY*0.9f+accelerationY;
+		if(Math.abs(velocityY)>2f){
+			velocityY=Math.signum(velocityY)*2f;
 		}
-		deltaX=(float) (xVel*secondsSinceLastFrame);
-		deltaY=(float) (yVel*secondsSinceLastFrame);
+		deltaX=(float) (velocityX*secondsSinceLastFrame);
+		deltaY=(float) (velocityY*secondsSinceLastFrame);
 		super.update(secondsSinceLastFrame);
 	}
 
@@ -99,37 +111,52 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 
 	public String getType() {
-		return this.index==0?"black":index==1?"white":"OTHER";
+		return this.index==BLACK_INT?"black":index==WHITE_INT?"white":"OTHER";
 	}
 
 	public void move(float x, float y) {
 		setX(getX()+x);
 		setY(getY()+y);
 	}
+	public Game getGame(){
+		return game;
+	}
 
+	public float getDeltaX() {
+		return deltaX;
+	}
+	public float getDeltaY() {
+		return deltaY;
+	}
+	public void setDeltaX(float dx) {
+		this.deltaX=dx;
+	}
+	public void setDeltaY(float dy) {
+		this.deltaY=dy;
+	}
 	public void setXVelocity(float dx) {
-		xVel = dx;
+		velocityX = dx;
 	}
 	public void setYVelocity(float dy) {
-		yVel = dy;
+		velocityY = dy;
 	}
 	public void setXAcceleration(float dx) {
-		xAcc=dx;
+		accelerationX=dx;
 	}
 	public void setYAcceleration(float dy) {
-		yAcc=dy;
+		accelerationY=dy;
 	}
 	public float getXAcceleration() {
-		return xAcc;
+		return accelerationX;
 	}
 	public float getYAcceleration() {
-		return yAcc;
+		return accelerationY;
 	}
 	public float getXVelocity() {
-		return xVel;
+		return velocityX;
 	}
 	public float getYVelocity() {
-		return yVel;
+		return velocityY;
 	}
 	public boolean foundSouthWall() {
 		if(southWallFound){
@@ -459,7 +486,7 @@ public class Hero extends GraphicEntity implements Colourable{
 			OnStepAction action = mapSquares.get(i).getOnHitAction(this);
 			if(action!=null){
 				if(this.isWithin(mapSquares.get(i))){
-					if(Game.useLightEffects){
+					if(Hub.map.isLightDependent()){
 						if(this.isOppositeColour(mapSquares.get(i))){
 							entities.add(mapSquares.get(i));
 							actions.add(null);		
@@ -580,7 +607,7 @@ public class Hero extends GraphicEntity implements Colourable{
 				safeties.add(true);
 			}
 			else {
-				safeties.add(mapSquares.get(i).getOnHitAction(this).getIndex()==2);
+				safeties.add(mapSquares.get(i).getOnHitAction(this) instanceof HazardOnStepAction);
 			}
 			if(safeties.get(safeties.size()-1)&&subject.isCompletelyWithin(mapSquares.get(i))){
 				break;
@@ -688,20 +715,5 @@ public class Hero extends GraphicEntity implements Colourable{
 		if(theirColour==null)return false;
 		return myColour[0]!=theirColour[0]&&myColour[1]!=theirColour[1]&&myColour[2]!=theirColour[2];
 	}
-	public Game getGame(){
-		return game;
-	}
 
-	public float getDeltaX() {
-		return deltaX;
-	}
-	public float getDeltaY() {
-		return deltaY;
-	}
-	public void setDeltaX(float dx) {
-		this.deltaX=dx;
-	}
-	public void setDeltaY(float dy) {
-		this.deltaY=dy;
-	}
 }

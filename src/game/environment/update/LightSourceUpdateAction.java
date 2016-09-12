@@ -24,7 +24,7 @@ public class LightSourceUpdateAction extends UpdateAction{
 		if(!self.isVisible())return;
 		boolean horizontal = x!=0;
 
-		Object closest =getClosest(true,horizontal);//can be null
+		Object closest =getClosest(Hero.BLACK_BOOL,horizontal);//can be null
 		OnStepSquare closestBlack = null;
 		Hero closestBlackHero = null;
 		if(closest!=null){
@@ -36,7 +36,7 @@ public class LightSourceUpdateAction extends UpdateAction{
 			}
 		}
 		float blackDis = minDis;
-		closest = getClosest(false,horizontal);//can be null
+		closest = getClosest(Hero.WHITE_BOOL,horizontal);//can be null
 		OnStepSquare closestWhite = null;
 		Hero closestWhiteHero = null;
 		if(closest!=null){
@@ -50,8 +50,8 @@ public class LightSourceUpdateAction extends UpdateAction{
 		float whiteDis = minDis;
 		if(horizontal){
 			if(blackLight==null){
-				blackLight = new OnStepSquare(0,self.getColour(0),-1,blackDis,self.getHeight(),-1,-1);
-				whiteLight = new OnStepSquare(0,-1,self.getColour(1),whiteDis,self.getHeight(),-1,-1);
+				blackLight = new OnStepSquare(0,self.getColour(Hero.BLACK_INT),-1,blackDis,self.getHeight(),-1,-1);
+				whiteLight = new OnStepSquare(0,-1,self.getColour(Hero.WHITE_INT),whiteDis,self.getHeight(),-1,-1);
 				Hub.map.displaySquare(blackLight);
 				Hub.map.displaySquare(whiteLight);
 				self.addChild(blackLight);
@@ -78,8 +78,8 @@ public class LightSourceUpdateAction extends UpdateAction{
 		}
 		else {
 			if(blackLight==null){
-				blackLight = new Square(self.getColour(0),-1,self.getWidth(),blackDis);
-				whiteLight = new Square(-1,self.getColour(1),self.getWidth(),whiteDis);
+				blackLight = new Square(self.getColour(Hero.BLACK_INT),-1,self.getWidth(),blackDis);
+				whiteLight = new Square(-1,self.getColour(Hero.WHITE_INT),self.getWidth(),whiteDis);
 				Hub.map.displaySquare(blackLight);
 				Hub.map.displaySquare(whiteLight);
 				self.addChild(blackLight);
@@ -104,10 +104,10 @@ public class LightSourceUpdateAction extends UpdateAction{
 			blackLight.setX(self.getX());
 			whiteLight.setX(self.getX());
 		}
-		blackReflector = makeReflector(closestBlack,blackReflector,0,seconds);
-		whiteReflector = makeReflector(closestWhite,whiteReflector,1,seconds);
-		handleHero(closestBlackHero,self.getColour(0));
-		handleHero(closestWhiteHero,self.getColour(1));
+		blackReflector = makeReflector(closestBlack,blackReflector,Hero.BLACK_INT,seconds);
+		whiteReflector = makeReflector(closestWhite,whiteReflector,Hero.WHITE_INT,seconds);
+		handleHero(closestBlackHero,self.getColour(Hero.BLACK_INT));
+		handleHero(closestWhiteHero,self.getColour(Hero.WHITE_INT));
 	}
 	@Override
 	public void flip() {
@@ -119,7 +119,9 @@ public class LightSourceUpdateAction extends UpdateAction{
 		}
 	}
 	private UpdatableSquare makeReflector(OnStepSquare closest,UpdatableSquare reflector,int colour,double seconds) {
-		if(self.getColour(colour)!=-1&&closest!=null&&closest.getReflectTriangle(closest.getColour(colour))!=-1){
+		if(self.getColour(colour)!=-1&&
+				closest!=null&&
+				closest.getReflectTriangle(closest.getColour(colour))!=-1){
 			int reflectorShape = closest.getReflectTriangle(closest.getColour(colour));
 			float reflectorX = x;
 			float reflectorY = y;
@@ -198,18 +200,11 @@ public class LightSourceUpdateAction extends UpdateAction{
 		}
 		return reflector;
 	}
-	private GraphicEntity getClosest(boolean black, boolean horizontal){
+	private GraphicEntity getClosest(boolean colour, boolean horizontal){
 		List<OnStepSquare> squares = Hub.map.getFunctionalSquares();
 		GraphicEntity stopSquare = null;
-		minDis=1000f;
-		/*Hero hero=null;
-		if(black){
-			hero=Game.black;
-		}
-		else {
-			hero=Game.white;
-		}*/
-		for(Hero hero:new Hero[]{Game.black,Game.white}){
+		minDis=Float.MAX_VALUE;
+		for(Hero hero:Hub.getBothHeroes()){
 			if(hero!=null){
 				if(horizontal&&
 						(self.getY()+self.getHeight()/2f>=hero.getY()&&
@@ -248,7 +243,9 @@ public class LightSourceUpdateAction extends UpdateAction{
 		for(int i=squares.size()-1;i>=0;--i){
 			if(squares.get(i)==self)continue;
 			OnStepSquare square = squares.get(i);
-			if(black?(square.getBlackAction()!=null&&!square.getBlackAction().isPassible()):(square.getWhiteAction()!=null&&!square.getWhiteAction().isPassible())){
+			if(colour==Hero.BLACK_BOOL?
+				(square.getBlackAction()!=null&&!square.getBlackAction().isPassible()):
+				(square.getWhiteAction()!=null&&!square.getWhiteAction().isPassible())){
 				if(horizontal&&
 						(self.getY()+self.getHeight()/2f>=square.getY()&&
 						self.getY()+self.getHeight()/2f<=square.getY()+square.getHeight()||

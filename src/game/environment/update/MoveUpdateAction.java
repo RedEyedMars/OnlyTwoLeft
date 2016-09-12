@@ -61,8 +61,8 @@ public class MoveUpdateAction extends UpdateAction {
 		setFloats(origXvel,origYvel);
 	}
 	@Override
-	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){
-		super.setArgs(ints,floats);
+	public void loadFrom(Iterator<Integer> ints,Iterator<Float> floats){
+		super.loadFrom(ints,floats);
 		origXvel=getFloat(0);
 		origYvel=getFloat(1);
 	}

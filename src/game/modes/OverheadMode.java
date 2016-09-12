@@ -20,8 +20,6 @@ public class OverheadMode implements GameMode{
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
 	private static final float standardAcceleration = 0.03f;
-	private Hero black;
-	private Hero white;
 
 	private Hero controlled;
 	private Hero wild;
@@ -32,23 +30,15 @@ public class OverheadMode implements GameMode{
 	protected boolean colourToControl;
 	protected Game game;
 	@Override 
-	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+	public void setup(Game game, boolean colourToControl, GraphicEntity wildWall){
 		this.game = game;
 		this.colourToControl = colourToControl;
-		this.black = black;
-		this.white = white;
-		if(colourToControl==true/*black*/){
-			controlled = black;
-			wild = white;
-			focused = black;
-		}
-		else {
-			controlled = white;
-			wild = black;
-			focused = white;			
-		}
+		controlled = Hub.getHero(colourToControl);
+		wild = Hub.getHero(!colourToControl);
+		focused = controlled;
+
 		this.wildWall = wildWall;
-		visionBubble = new VisionBubble(colourToControl?black:white,colourToControl?white:black);
+		visionBubble = new VisionBubble(focused,wild);
 		auxillaryChildren.add(visionBubble);
 
 		if(Client.isConnected()){
@@ -62,7 +52,7 @@ public class OverheadMode implements GameMode{
 	}
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
-		for(Hero hero:new Hero[]{black,white}){
+		for(Hero hero:new Hero[]{focused,wild}){
 			hero.handleWalls(mapSquares);
 		}
 	}
@@ -92,9 +82,9 @@ public class OverheadMode implements GameMode{
 		wildWall.setY(wild.getY()-0.1f);
 	}
 	@Override
-	public void loseGame(boolean isBlack){
+	public void loseGame(boolean colour){
 		if(Client.isConnected()){
-			if(colourToControl==isBlack){
+			if(colourToControl==colour){
 				game.transition("Restart", false);
 			}
 		}
@@ -106,14 +96,14 @@ public class OverheadMode implements GameMode{
 		}
 	}
 	@Override
-	public void winGame(boolean isBlack,String nextMap){
+	public void winGame(boolean colour,String nextMap){
 		if(Client.isConnected()){
-			if(colourToControl==isBlack){
+			if(colourToControl==colour){
 				game.transition(nextMap, true);
 			}
 		}
 		else {
-			HeroEndGameMessage.setAndSend(isBlack, true, game.getTimeSpent());
+			HeroEndGameMessage.setAndSend(colour, true, game.getTimeSpent());
 			if(HeroEndGameMessage.isFinished()){
 				game.transition(nextMap, true);
 			}
@@ -172,16 +162,10 @@ public class OverheadMode implements GameMode{
 				controlled.setYAcceleration(0f);
 			}
 			else if(57==keycode){//space
-				if(focused==black){
-					focused = white;
-					wild = black;
-				}
-				else if(focused==white){
-					focused = black;
-					wild = white;
-				}
-				Hub.map.setVisibleSquares(focused.isBlack()?1:2);
-
+				Hero temp = focused;
+				focused = wild;
+				wild = temp;
+				Hub.map.setVisibleSquares(focused.isBlack()?Hero.BLACK_INT:focused.isWhite()?Hero.WHITE_INT:0);
 				if(!Client.isConnected()){
 					visionBubble.setHeroes(focused,wild);
 				}

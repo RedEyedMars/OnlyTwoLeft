@@ -2,24 +2,22 @@ package game.environment;
 
 import gui.Gui;
 import gui.graphics.GraphicEntity;
-import gui.graphics.GraphicView;
 import main.Hub;
 import storage.Storage;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import game.Action;
 import game.Hero;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
+import game.environment.program.ProgrammableSquare;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
-public class Square extends GraphicEntity implements Colourable{
+public class Square extends GraphicEntity implements Colourable, Saveable{
 
 	public static final byte green = 0;
 	public static final byte darkGreen = 1;
@@ -34,22 +32,11 @@ public class Square extends GraphicEntity implements Colourable{
 	private int whiteColour=-1;
 	protected int actionType = 0;
 	private int shapeType;
-	public Square(int shapeType, int blackColour,int whiteColour,Iterator<Integer> ints, Iterator<Float> floats) {
+	public Square(int actionType, int shapeType, int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super("squares");
 		this.blackColour = blackColour%16;
 		this.whiteColour = whiteColour%16;
-		this.displayFor(0);/*
-		setX(floats.next());
-		setY(floats.next());
-		if(ints.next()==3){//bufferSize
-			float size = floats.next();
-			adjust(size,size);
-		}
-		else {
-			float w = floats.next();
-			float h = floats.next();
-			adjust(w,h);		
-		}*/
+		this.displayFor(Hero.BOTH_INT);
 		this.shapeType = shapeType;
 		this.setShape(shapeType);
 		setX(Hub.map.getRealX(ints.next()));
@@ -57,8 +44,14 @@ public class Square extends GraphicEntity implements Colourable{
 		float w = Hub.map.getRealX(ints.next());		
 		float h = Hub.map.getRealY(ints.next());
 		adjust(w,h);
+		this.actionType = actionType;
+		loadActions(ints,floats);
 	}
-
+	public Square(int shapeType, int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
+		this(0,shapeType,blackColour,whiteColour,ints,floats);
+	}
+	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats) {
+	}
 	public Square(int colour, float width, float height){
 		this(colour,colour,width,height);
 	}
@@ -67,7 +60,7 @@ public class Square extends GraphicEntity implements Colourable{
 		adjust(width,height);
 		this.blackColour = blackColour;
 		this.whiteColour = whiteColour;
-		displayFor(0);
+		displayFor(Hero.BOTH_INT);
 	}
 	public boolean isFunctional() {
 		return false;
@@ -78,30 +71,51 @@ public class Square extends GraphicEntity implements Colourable{
 	public boolean visibleToWhite() {
 		return whiteColour>=0;
 	}
+
+	public void showChildren() {
+		for(GraphicEntity child:children){
+			if(child instanceof Square){
+				((Square)child).showChildren();
+			}
+			else {
+				child.setVisible(true);
+			}
+		}
+	}
+	public void hideChildren() {
+		for(GraphicEntity child:children){
+			if(child instanceof Square){
+				((Square)child).hideChildren();
+			}
+			else {
+				child.setVisible(false);
+			}
+		}
+	}
 	public void displayFor(int colour){
-		if(blackColour==-1&&whiteColour==-1){
+		if(!visibleToBlack()&&!visibleToWhite()){
 			turnOff();
 		}
-		else if(colour==0){
-			if(blackColour>=0){
+		else if(colour==Hero.BOTH_INT){
+			if(visibleToBlack()){
 				turnOn();
 				setFrame(blackColour);
 			}
-			else if(whiteColour>=0){
+			else if(visibleToWhite()){
 				turnOn();
 				setFrame(whiteColour);
 			}
 			else turnOff();
 		}
-		else if(colour==1){
-			if(blackColour>=0){
+		else if(colour==Hero.BLACK_INT){
+			if(visibleToBlack()){
 				turnOn();
 				setFrame(blackColour);
 			}
 			else turnOff();
 		}
-		else if(colour==2){
-			if(whiteColour>=0){
+		else if(colour==Hero.WHITE_INT){
+			if(visibleToWhite()){
 				turnOn();
 				setFrame(whiteColour);
 			}
@@ -109,11 +123,11 @@ public class Square extends GraphicEntity implements Colourable{
 		}
 		else turnOff();
 	}
-	public int getColour(int i) {
-		if(i==0){
+	public int getColour(int colour) {
+		if(colour==Hero.BLACK_INT){
 			return blackColour;
 		}
-		else if(i==1){
+		else if(colour==Hero.WHITE_INT){
 			return whiteColour;
 		}
 		else return blackColour;
@@ -186,6 +200,9 @@ public class Square extends GraphicEntity implements Colourable{
 		//later we can do "only reflect if the colour is right" right now just reflects everything
 		return entity.getReflectedShape();
 	}
+	public int saveType(){
+		return 2;
+	}
 	public static Square create(Iterator<Integer> ints, Iterator<Float> floats){		
 		Square square = null;
 		int actionType = ints.next();
@@ -204,13 +221,16 @@ public class Square extends GraphicEntity implements Colourable{
 		else if(actionType==6){
 			square = new OnCreateSquare(shapeType,blackColour,whiteColour,ints,floats);
 		}
+		else if(actionType==7){
+			square = new ProgrammableSquare(shapeType,blackColour,whiteColour,ints,floats);
+		}
 		return square;
 	}
 	public static Iterator<Integer> makeInts(
-			int squareAction1, int squareAction2, List<Integer> updateAction, boolean onCreateAction,
+			int squareAction1, int squareAction2, List<Integer> updateAction, boolean onCreateAction, boolean programAction,
 			int shapeType, int colour, int colour2,int x, int y, int w, int h) {		
 		List<Integer> ints = new ArrayList<Integer>();
-		if(!onCreateAction){
+		if(!onCreateAction&&!programAction){
 			if(squareAction1==-1&&squareAction2==-1&&updateAction.size()==0){
 				ints.add(0);
 				ints.add(shapeType);
@@ -295,7 +315,7 @@ public class Square extends GraphicEntity implements Colourable{
 				ints.add(0);//The size of dependants, 0 because no depends have been assigned yet
 			}
 		}
-		else{
+		else if(onCreateAction){
 			ints.add(6);
 			ints.add(shapeType);
 			ints.add(colour);
@@ -305,6 +325,27 @@ public class Square extends GraphicEntity implements Colourable{
 			ints.add(w);
 			ints.add(h);
 			ints.add(0);
+		}
+		else if(programAction){
+			ints.add(7);
+			ints.add(shapeType);
+			ints.add(colour);
+			ints.add(colour);
+			ints.add(x);
+			ints.add(y);
+			ints.add(w);
+			ints.add(h);
+			ints.add(7);
+			ints.add(7);
+			ints.add(3);
+			ints.add(UpdateAction.getAction(3).getDefaultState()?1:0);
+			ints.add(-1);
+			//
+			ints.add(0);//condition
+			ints.add(0);//actions
+			ints.add(-1);//states
+			//
+			ints.add(0);//dependants
 		}
 
 
@@ -364,8 +405,15 @@ public class Square extends GraphicEntity implements Colourable{
 	public void setColour(boolean red, boolean green, boolean blue) {
 	}
 
-	public void changeColour(int blackColour, int whiteColour) {
-		this.blackColour=blackColour;
-		this.whiteColour=whiteColour;
+	public void changeColour(Integer blackColour, Integer whiteColour) {
+		if(blackColour!=null){
+			this.blackColour=blackColour;
+		}
+		if(whiteColour!=null){
+			this.whiteColour=whiteColour;
+		}
+		displayFor(Hub.map.getVisibleColour());
 	}
+
+	
 }

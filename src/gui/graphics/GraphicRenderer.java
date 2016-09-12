@@ -1,13 +1,17 @@
 package gui.graphics;
 
 import gui.Gui;
-import gui.gl.GLFont;
+import gui.gl.GLApp;
 import gui.gl.GLImage;
 import main.Hub;
 import main.Log;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +39,8 @@ public class GraphicRenderer {
 
 	private Map<String,ButtonAction> loadImageFromTextureName = new HashMap<String,ButtonAction>();
 	private Map<String,Integer> texMap = new HashMap<String,Integer>();
-	private Map<String,Integer> sizMap = new HashMap<String,Integer>();
-	private Map<Integer,FloatBuffer[]> textureBuffers = new HashMap<Integer,FloatBuffer[]>();
+	private Map<String,String> sizMap = new HashMap<String,String>();
+	private Map<String,FloatBuffer[]> textureBuffers = new HashMap<String,FloatBuffer[]>();
 
 	private List<String> toLoadtext = new ArrayList<String>();
 
@@ -49,7 +53,7 @@ public class GraphicRenderer {
 
 	public GraphicRenderer() {
 	}
-
+/*
 	public void setupTextureBuffer(int k) {
 		float length = (float)k;
 		FloatBuffer[] textureBuffer = new FloatBuffer[k];
@@ -70,8 +74,8 @@ public class GraphicRenderer {
 			textureBuffer[t].put(textures);
 			textureBuffer[t].position(0);
 		}
-		textureBuffers.put(k, textureBuffer);
-	}
+		textureBuffers.put(k+"x1", textureBuffer);
+	}*/
 	public void setupTextureBuffer(int xMax, int yMax) {
 		float length = (float)xMax;
 		float height = (float)yMax;
@@ -94,7 +98,7 @@ public class GraphicRenderer {
 				textureBuffer[y*xMax+x].position(0);
 			}
 		}
-		textureBuffers.put(xMax*yMax, textureBuffer);
+		textureBuffers.put(xMax+"x"+yMax, textureBuffer);
 	}
 	public void display(){
 		while(!Hub.addLayer.isEmpty()){
@@ -151,22 +155,16 @@ public class GraphicRenderer {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, texMap.get(d.getTextureName()));
 			previousTexture = texMap.get(d.getTextureName());
 		}
-		GL11.glTexCoordPointer(2, 0, textureBuffers.get(sizMap.get(d.getTextureName()))[d.textureIndex()]);
+		GL11.glTexCoordPointer(2, 0, textureBuffers.get(sizMap.get(d.getTextureName()))[d.getFrame()]);
 		d.draw();
 	}
 
-	public boolean buffersInclude(int key) {
-		return textureBuffers.containsKey(key);
+	public boolean buffersInclude(int sizeX, Integer sizeY) {
+		return textureBuffers.containsKey(sizeX+"x"+sizeY);
 	}
 
 	public void loadImages(){
 		if(!loaded ){
-			if(!buffersInclude(8*8)){
-				setupTextureBuffer(8,8);
-			}
-			if(!buffersInclude(16*16)){
-				setupTextureBuffer(16,16);
-			}
 			InputStream url = R.class.getResourceAsStream("images/image.list");
 			StringBuilder fileBuilder = new StringBuilder();
 			try {
@@ -178,21 +176,34 @@ public class GraphicRenderer {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			int currentSizeX = 1;
+			int currentSizeY = 1;
 			for(final String filename:fileBuilder.toString().split("\n")){
-				if(filename.matches("\\s*"))continue;
-				String[] args = filename.split("\\Q/\\E");
-				final String name = args[1].substring(0,args[1].indexOf('.'));
-				final Integer size = Integer.parseInt(args[0]);
-				loadImageFromTextureName.put(name,new ButtonAction(){
-					@Override
-					public void act(Editor subject) {
-						loadImageFromPath("images/"+filename,size,name);
-					}				
-				});
+				if(filename.matches("\\s*"))continue;				
+				if(filename.matches("\\d+:")){
+					currentSizeX = Integer.parseInt(filename.substring(0,filename.length()-1));
+					currentSizeY = 1;
+				}
+				else if(filename.matches("\\d+x\\d+:")){
+					currentSizeX = Integer.parseInt(filename.substring(0,filename.indexOf('x')));
+					currentSizeY = Integer.parseInt(filename.substring(filename.indexOf('x')+1,filename.length()-1));
+				}
+				else {					
+					final String name = filename.substring(1,filename.lastIndexOf('.'));
+					final Integer sizeX = currentSizeX;
+					final Integer sizeY = currentSizeY;
+					final String imageFilename = currentSizeY==1?("images/"+sizeX+"/"+name+".png"):("images/"+sizeX+"x"+sizeY+"/"+name+".png");
+					loadImageFromTextureName.put(name,new ButtonAction(){
+						@Override
+						public void act(Object subject) {
+							loadImageFromPath(imageFilename,sizeX,sizeY,name);
+						}				
+					});
+				}
 			}
 			loadImageFromTextureName.put("timesnewroman",new ButtonAction(){
 				@Override
-				public void act(Editor subject) {					
+				public void act(Object subject) {					
 					loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
 				}});
 			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
@@ -209,30 +220,33 @@ public class GraphicRenderer {
 
 	public Map<String,List<Float>> letterWidths= new HashMap<String,List<Float>>();
 	private void loadText(String fontName,Font font, int size, float[] foregroundColour, float[] backgroundColour){
+		if(!buffersInclude(16,16)){
+			setupTextureBuffer(16,16);			
+		}
 		letterWidths.put(fontName, new ArrayList<Float>());
 		loadImageFromGLImage(
-				GLFont.createCharImage(
+				createCharImage(
 						fontName, 
 						font,size, foregroundColour, backgroundColour),
 				"$"+fontName,
-				16*16);
+				16,16);
 	}
 
-	public void loadImageFromPath(String path, int size, String name){
-		if(!buffersInclude(size)){
-			setupTextureBuffer(size);			
+	public void loadImageFromPath(String path, int sizeX, Integer sizeY, String name){
+		if(!buffersInclude(sizeX,sizeY)){
+			setupTextureBuffer(sizeX,sizeY);			
 		}
 		int tex = Gui.makeTexture(R.getResource(path));
 		texMap.put(name, tex);
-		sizMap.put(name, size);
+		sizMap.put(name, sizeX+"x"+sizeY);
 	}
-	public void loadImageFromExternalPath(String path, int size, String name){
-		if(!buffersInclude(size)){
-			setupTextureBuffer(size);			
+	public void loadImageFromExternalPath(String path, int sizeX, Integer sizeY, String name){
+		if(!buffersInclude(sizeX,sizeY)){			
+			setupTextureBuffer(sizeX,sizeY);			
 		}
 		int tex = Gui.makeTexture(path);
 		texMap.put(name, tex);
-		sizMap.put(name, size);
+		sizMap.put(name, sizeX+"x"+sizeY);
 	}
 	public void loadImageFromGLImage(BufferedImage img, String name){
 		GLImage textureImg = new GLImage(img);
@@ -241,32 +255,32 @@ public class GraphicRenderer {
 			tex = Gui.makeTexture(textureImg);
 		}
 		texMap.put(name, tex);
-		sizMap.put(name, 1);
+		sizMap.put(name, "1x1");
 	}
-	public void loadImageFromGLImage(BufferedImage img, String name, int size){
+	public void loadImageFromGLImage(BufferedImage img, String name, int sizeX, int sizeY){
 		GLImage textureImg = new GLImage(img);
 		int tex = 0;
 		if (textureImg != null) {
 			tex = Gui.makeTexture(textureImg);
 		}
 		texMap.put(name, tex);
-		sizMap.put(name, size);
+		sizMap.put(name, sizeX+"x"+sizeY);
 	}
 	public void deleteTexture(String textureName) {
 		sizMap.remove(textureName);
 		GL11.glDeleteTextures(texMap.remove(textureName));
 	}
 
-	public void reloadTexture(String textureName, String texturePath, int newSize){
+	public void reloadTexture(String textureName, String texturePath, int newSizeX, int newSizeY){
 		sizMap.remove(textureName);
 		GL11.glDeleteTextures(texMap.remove(textureName));
-		loadImageFromPath(texturePath,newSize,textureName);
+		loadImageFromPath(texturePath,newSizeX,newSizeY,textureName);
 	}	
 
-	public void reloadExternalTexture(String textureName, String texturePath, int newSize){
+	public void reloadExternalTexture(String textureName, String texturePath, int newSizeX, int newSizeY){
 		sizMap.remove(textureName);
 		GL11.glDeleteTextures(texMap.remove(textureName));
-		loadImageFromExternalPath(texturePath,newSize,textureName);
+		loadImageFromExternalPath(texturePath,newSizeX,newSizeY,textureName);
 	}
 	public void translate(float x, float y, float z){
 		viewX+=x;
@@ -289,5 +303,74 @@ public class GraphicRenderer {
 		if(loadImageFromTextureName.containsKey(font)){
 			loadImageFromTextureName.remove(font).act(null);
 		}
+	}
+
+	/**
+	 * return a BufferedImage containing the given character drawn with the given font.
+	 * Character will be drawn on its baseline, and centered horizontally in the image.
+	 * 
+	 * @param text     a single character to render
+	 * @param font     the font to render with
+	 * @param fgColor  foreground (text) color as rgb or rgba values in range 0-1
+	 * @param bgColor  background color as rgb or rgba values in range 0-1 (set alpha to 0 to make transparent)
+	 * @return
+	 */
+	public static BufferedImage createCharImage(String fontName, Font font, int size, float[] fgColor, float[] bgColor) {
+		Color bg = bgColor==null? new Color(0,0,0,0) : (bgColor.length==3? new Color(bgColor[0],bgColor[1],bgColor[2],1) : new Color(bgColor[0],bgColor[1],bgColor[2],bgColor[3]));
+		Color fg = fgColor==null? new Color(1,1,1,1) : (fgColor.length==3? new Color(fgColor[0],fgColor[1],fgColor[2],1) : new Color(fgColor[0],fgColor[1],fgColor[2],fgColor[3]));
+		boolean isAntiAliased = true;
+		boolean usesFractionalMetrics = false;
+
+		// get size of texture image needed to hold largest character of this font
+		//int maxCharSize = getFontSize(font);
+		int imgSizeW = size*16;
+		int imgSizeH = size*16;
+		if (imgSizeW > 2048) {
+			GLApp.err("GLFont.createCharImage(): texture size will be too big (" + imgSizeW + ") Make the font size smaller.");
+			return null;
+		}
+
+		// we'll draw text into this image
+		BufferedImage image = new BufferedImage(imgSizeW, imgSizeH, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+
+		// Clear image with background color (make transparent if color has alpha value)
+		if (bg.getAlpha() < 255) {
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, (float)bg.getAlpha()/255f));
+		}
+		g.setColor(bg);
+		g.fillRect(0,0,imgSizeW,imgSizeH);
+
+		// prepare to draw character in foreground color
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+		g.setColor(fg);
+		g.setFont(font);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, isAntiAliased? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, usesFractionalMetrics? RenderingHints.VALUE_FRACTIONALMETRICS_ON : RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+		// place the character (on baseline, centered horizontally)
+		FontMetrics fm = g.getFontMetrics();
+		int cwidth = fm.charWidth('M');
+		int height = fm.getHeight();
+		int ascent = fm.getAscent();
+		int hborder = 2;
+		int vborder = height-ascent/2-1;
+		
+		char[] data = new char[128];
+		for(int i=0;i<128;++i){
+			data[i]=((char)i);
+		}
+		int index = 0;
+		for(int y=0;y<8;++y){
+			for(int x=0;x<16;++x){
+				Hub.renderer.letterWidths.get(fontName).add((float) (fm.charWidth(data[index]))/cwidth);
+				g.drawChars(data, index, 1, hborder+x*size, vborder+y*size+1);
+				++index;
+			}
+		}
+
+		g.dispose();
+		return image;
 	}
 }

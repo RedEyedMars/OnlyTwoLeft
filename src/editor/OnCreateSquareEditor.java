@@ -72,12 +72,12 @@ public class OnCreateSquareEditor extends Editor{
 		Map<Integer,ButtonAction> ctrlCommands = new HashMap<Integer,ButtonAction>();
 		ctrlCommands.put(45, new ButtonAction(){
 			@Override
-			public void act(Editor subject) {
+			public void act(Object subject) {
 				saveAndReturnToEditor();
 			}});
 		ctrlCommands.put(57, new ButtonAction(){
 			@Override
-			public void act(Editor subject) {
+			public void act(Object subject) {
 				if(visibleTo==0){
 					visibleTo = 1;
 					visibleToShower.setFrame(0);
@@ -95,37 +95,37 @@ public class OnCreateSquareEditor extends Editor{
 		});
 		ctrlCommands.put(17,  new ButtonAction(){
 			@Override
-			public void act(Editor subject){
+			public void act(Object subject){
 				moveView(0,-0.25f);
 			}
 		});
 		ctrlCommands.put(30, new ButtonAction(){
 			@Override
-			public void act(Editor subject){
+			public void act(Object subject){
 				moveView(0.25f,0);
 
 			}
 		});
 		ctrlCommands.put(31, new ButtonAction(){
 			@Override
-			public void act(Editor subject){
+			public void act(Object subject){
 				moveView(0,0.25f);			
 			}
 		});
 		ctrlCommands.put(32, new ButtonAction(){
 			@Override
-			public void act(Editor subject){
+			public void act(Object subject){
 				moveView(-0.25f,0);
 			}
 		});
 		ctrlCommands.put(33, new ButtonAction(){
 			@Override
-			public void act(Editor subject) {
+			public void act(Object subject) {
 				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
 			}});
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
-		mode = -1;
+		mode = Editor.MODE_WAIT_FOR_RELEASE;
 	}
 	@Override
 	public void addIconsToSquare(Square square1){
@@ -268,7 +268,7 @@ public class OnCreateSquareEditor extends Editor{
 				}
 			}
 		}
-		action.setArgs(ints.iterator(), floats.iterator());
+		action.loadFrom(ints.iterator(), floats.iterator());
 		return action;
 	}
 	private void moveView(float x, float y){
@@ -277,5 +277,5 @@ public class OnCreateSquareEditor extends Editor{
 			squares.get(i).setY(squares.get(i).getY()+y);
 		}
 	}
-
+	
 }

@@ -12,14 +12,7 @@ import gui.inputs.MotionEvent;
 
 
 
-public class GraphicElement implements Graphicable{
-	public static final int SQUARE=0;
-	public static final int TRIANGLE=1;
-	public static final int HEXAGON=2;
-	protected String texName;
-	protected float x = 0f;
-	protected float y = 0f;
-	protected float angle = 0.0f;
+public class GraphicElement {
 	protected static FloatBuffer squareBuffer;
 	protected static FloatBuffer triangleBuffer;
 	protected static FloatBuffer trTriangleBuffer;
@@ -27,14 +20,22 @@ public class GraphicElement implements Graphicable{
 	protected static FloatBuffer brTriangleBuffer;
 	protected static FloatBuffer blTriangleBuffer;	
 	protected static FloatBuffer hexagonBuffer;
-	protected FloatBuffer vertexBuffer;
-	protected int vertexNumber = 4;
-	protected boolean isVisible = true;
-	protected boolean on = true;
-	protected int textureIndex = 0;
+
+	protected float x = 0f;
+	protected float y = 0f;
 	protected float width = 1f;
 	protected float height = 1f;
+	protected float angle = 0.0f;
+	
+	protected int vertexNumber = 4;
+	protected FloatBuffer vertexBuffer;
+
+	protected String texName;
+	protected int frame = 0;
 	protected int layer = 0;
+
+	protected boolean isVisible = true;
+	protected boolean on = true;
 	
 	protected float visualX = 0f;
 	protected float visualY = 0f;
@@ -42,12 +43,10 @@ public class GraphicElement implements Graphicable{
 	protected float visualH = 0f;
 
 	private GraphicView view;
+
 	public GraphicElement(String textureName, GraphicView view) {
-		this(textureName,view,1f,1f);
-	}
-	public GraphicElement(String textureName, GraphicView view, float f, float g) {
 		this.view = view;
-		adjust(width,height);
+		adjust(1f,1f);
 		setTextureName(textureName);
 		this.vertexBuffer=squareBuffer;
 	}
@@ -170,9 +169,6 @@ public class GraphicElement implements Graphicable{
 		hexagonBuffer.put(vertices);
 		hexagonBuffer.position(0);
 	}
-	/*B00BIES2 
-	BHaskic0322 or
-	5832201BH*/
 	public void setTextureName(String n){
 		texName = n;
 	}
@@ -229,13 +225,8 @@ public class GraphicElement implements Graphicable{
 	public void rotate(float r){
 		angle = r;
 	}
-	@Override
 	public boolean isVisible(){
 		return isVisible;
-	}
-	@Override
-	public int textureIndex(){
-		return textureIndex ;
 	}
 	public void adjust(float w, float h) {
 		width = w;
@@ -257,13 +248,6 @@ public class GraphicElement implements Graphicable{
 		
 	}
 
-	@Override
-	public void onAddToDrawable() {
-	}
-
-	@Override
-	public void onRemoveFromDrawable() {
-	}
 	public float getHeight(){
 		return height;
 	}
@@ -271,8 +255,11 @@ public class GraphicElement implements Graphicable{
 		return width;
 	}
 
-	public void setFrame(int imageIndex) {
-		textureIndex = imageIndex;
+	public int getFrame(){
+		return frame ;
+	}
+	public void setFrame(int frame) {
+		this.frame = frame;
 	}
 
 	public boolean isWithin(float dx, float dy) {
@@ -282,9 +269,6 @@ public class GraphicElement implements Graphicable{
 
 	public void setVisible(boolean b) {
 		this.isVisible = b;
-	}
-	@Override
-	public void animate() {		
 	}
 	
 	public void on(boolean b) {

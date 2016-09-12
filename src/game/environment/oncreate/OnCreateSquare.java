@@ -5,12 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.Action;
+import game.environment.Creatable;
 import game.environment.Square;
 import game.environment.SquareAction;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
-public class OnCreateSquare extends Square{
+public class OnCreateSquare extends Square implements Creatable{
 
 	private OnCreateAction action;
 	private List<Object> data = new ArrayList<Object>();
@@ -19,10 +20,10 @@ public class OnCreateSquare extends Square{
 		super(shapeType,blackColour,whiteColour, ints, floats);
 		actionType = 6;
 		this.action = OnCreateAction.section.create();
-		this.action.setArgs(ints, floats);
+		this.action.loadFrom(ints, floats);
 	}
 
-	public void act(){
+	public void create(){
 		this.action.act(this);
 	}
 

@@ -31,6 +31,7 @@ import duo.messages.GameListMessage;
 import duo.messages.KickFromGameMessage;
 import duo.messages.PassMessage;
 import duo.messages.PingMessage;
+import duo.messages.ReadyWhenYouAreMessage;
 import duo.messages.RemoveGameMessage;
 import duo.messages.SendMapMessage;
 import duo.messages.StartGameMessage;
@@ -38,6 +39,7 @@ import editor.MapEditor;
 import editor.OnCreateSquareEditor;
 import editor.TextWriter;
 import game.Game;
+import game.Hero;
 import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -201,7 +203,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		button.setY(0.03f);
 		addChild(button);
 
-		ip = new MenuButton("52.35.55.220"){
+		ip = new MenuButton(Client.defaultServerIP){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -265,9 +267,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 			SendMapMessage.send(
 					client,
 					mapFile.getAbsolutePath(),
-					new StartGameMessage(whiteButton.isVisible()));
-			Game game = new Game(blackButton.isVisible(),seed);
-			Gui.setView(game);
+					new ReadyWhenYouAreMessage(whiteButton.isVisible(),seed));
 		}
 	}
 	public void flipColour(){
@@ -305,7 +305,9 @@ public class HostMenu extends Menu implements IDuoMenu{
 		}
 	}
 	@Override
-	public void startGame(boolean colour, long seed) {		
+	public void startGame(boolean colour, long seed) {
+		Game game = new Game(colour,seed);
+		Gui.setView(game);
 	}
 	public void returnToMain(){
 		Client.endConnectionToTheServer();

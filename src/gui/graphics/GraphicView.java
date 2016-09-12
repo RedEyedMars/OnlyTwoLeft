@@ -7,7 +7,7 @@ import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 
-public class GraphicView implements Graphicable, MouseListener{
+public class GraphicView implements MouseListener{
 	@SuppressWarnings("unused")
 	private boolean temporary;
 	protected List<GraphicEntity> children = new ArrayList<GraphicEntity>();
@@ -30,43 +30,22 @@ public class GraphicView implements Graphicable, MouseListener{
 		}
 	}
 
-	@Override
-	public void draw() {
-
-	}
-
-	@Override
-	public int textureIndex() {
-		return -1;
-	}
-
-	@Override
-	public String getTextureName() {
-		return null;
-	}
-
-	@Override
 	public void setVisible(boolean b) {
 		for(int i=0;i<children.size();++i){
 			children.get(i).setVisible(b);
 		}
 	}
 
-	@Override
-	public boolean isVisible() {
-		return false;
-	}
-
-	@Override
 	public void animate() {
+		for(int i=0;i<children.size();++i){
+			children.get(i).animate();
+		}
 	}
 
 	public float getX(){
 		return x;
 	}
 
-
-	@Override
 	public void setX(float x) {
 		this.x = x;
 		for(int i=0;i<children.size();++i){
@@ -80,7 +59,6 @@ public class GraphicView implements Graphicable, MouseListener{
 		return y;
 	}
 
-	@Override
 	public void setY(float y) {
 		this.y = y;
 		for(int i=0;i<children.size();++i){
@@ -92,7 +70,6 @@ public class GraphicView implements Graphicable, MouseListener{
 		return 0;
 	}
 
-	@Override
 	public void adjust(float width, float height) {
 		this.height = height;
 		this.width = width;
@@ -108,29 +85,22 @@ public class GraphicView implements Graphicable, MouseListener{
 			children.get(i).adjust(dWidth,dHeight);
 		}
 	}
-
-	@Override
-	public void onDraw() {
-
+	public boolean isVisible(){
+		return false;
 	}
-
-	@Override
 	public float getWidth() {
 		return width;
 	}
 
-	@Override
 	public float getHeight() {
 		return height;
 	}
-	@Override
 	public void onAddToDrawable() {
 		for(int i=0;i<children.size();++i){
 			children.get(i).onAddToDrawable();
 		}
 	}
 
-	@Override
 	public void onRemoveFromDrawable() {
 		while(!children.isEmpty()){
 			removeChild(0);
@@ -252,7 +222,10 @@ public class GraphicView implements Graphicable, MouseListener{
 	public void rotate(float f) {
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
-		return null;
+		if(this instanceof KeyBoardListener){
+			return (KeyBoardListener)this;
+		}
+		else return null;
 	}
 	public void exit() {		
 	}

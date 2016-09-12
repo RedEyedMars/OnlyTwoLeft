@@ -61,12 +61,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		}
 
 	}
-	public KeyBoardListener getDefaultKeyBoardListener(){
-		return this;
-	}
+	
 
 	public void setupHeroButton(final int colour){
-		final Button button = new Button("circles",colour,this,null);
+		final Button button = new Button("circles",colour,null);
 		final MouseListener mouseListener = new MouseListener(){
 			@Override
 			public boolean onClick(MotionEvent event) {
@@ -98,7 +96,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		};
 		button.setAction(new ButtonAction(){
 			@Override
-			public void act(Editor subject) {
+			public void act(Object subject) {
 				mode = -2;
 				Gui.giveOnClick(mouseListener);
 			}
@@ -284,11 +282,24 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		if(square!=null){
 			squares.add(square);
 		}
-		
+		int restartWithSpecial = -1;
+		for(int i=0;i<specialActionMenu.size();++i){
+			if(specialActionMenu.get(i).isSelected()){
+				restartWithSpecial = i;
+				break;
+			}
+		}
 		buttons.clear();
 		setupHeroButton(0);
 		setupHeroButton(1);
 		setupButtons();
+		if(restartWithSpecial>=0){
+			for(int i=0;i<actionMenu.size();++i){
+				actionMenu.get(i).setSelected(false);
+				actionMenu2.get(i).setSelected(false);
+			}
+			specialActionMenu.get(restartWithSpecial).setSelected(true);
+		}
 		for(Square sqr:squares){
 			addChild(sqr);
 			addIconsToSquare(sqr);

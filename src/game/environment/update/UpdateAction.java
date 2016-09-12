@@ -29,6 +29,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public static final UpdateAction grow = new GrowUpdateAction();
 	public static final UpdateAction move = new MoveUpdateAction();
 	public static final UpdateAction light = new LightSourceUpdateAction();
+	public static final UpdateAction null_action = new NullUpdateAction();
 
 	public final static UpdateAction  combine = new CombinedUpdateActions();
 
@@ -64,7 +65,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	protected int onLimitBrokenAction=-1;
 	public void undo() {
 	}
-	public void setArgs(Iterator<Integer> ints,Iterator<Float> floats){		
+	public void loadFrom(Iterator<Integer> ints,Iterator<Float> floats){		
 		defaultState=ints.next()==1;
 		x=floats.next();
 		y=floats.next();
@@ -109,6 +110,12 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		this.x=x;
 		this.y=y;
 	}
+	public void setX(Float x) {
+		this.x = x;
+	}
+	public void setY(Float y) {
+		this.y = y;
+	}
 	public void setLimit(float limit){
 		this.limit = limit;
 	}
@@ -121,6 +128,10 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	}
 	public void setLimiter(int limiter) {
 		this.onLimitBrokenAction=limiter;
+	}
+
+	public boolean hasCrestedLimit() {
+		return limiter==0f;
 	}
 	public void onActivate(){
 		limiter=limit*limiterStartPercent;
@@ -148,7 +159,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	}
 
 	protected void move(float dx, float dy) {
-		for(Hero hero:new Hero[]{Game.black,Game.white}){
+		for(Hero hero:Hub.getBothHeroes()){
 			OnStepAction action = self.getOnHitAction(hero);
 			if(action!=null){
 				if(action.getIndex()==2){
@@ -166,6 +177,9 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 				hero.setY(hero.getY()-hero.getDeltaY());
 			}
 		}
+	}
+	public int saveType(){
+		return 4;
 	}
 	public abstract UpdateAction create(); 
 	static {

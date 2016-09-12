@@ -2,6 +2,7 @@ package game.environment.update;
 
 import game.Game;
 import game.Hero;
+import main.Hub;
 
 public class GrowUpdateAction extends UpdateAction{
 	private float growthW = 0f;
@@ -34,7 +35,7 @@ public class GrowUpdateAction extends UpdateAction{
 	}
 	@Override
 	protected void move(float dx, float dy) {
-		for(Hero hero:new Hero[]{Game.black,Game.white}){
+		for(Hero hero:Hub.getBothHeroes()){
 			if(y>0&&hero.getY()>=self.getY()+self.getHeight()||
 					y<0&&hero.getY()+hero.getHeight()<=self.getY()||
 					x>0&&hero.getX()>=self.getX()+self.getWidth()||

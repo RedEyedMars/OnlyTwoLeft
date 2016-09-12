@@ -48,7 +48,6 @@ public class GraphicEntity extends GraphicView {
 		if(Hub.currentView==parent){
 			Hub.addLayer.add(entity);
 		}
-		entity.onAddToDrawable();
 		super.onAddToDrawable();
 	}
 
@@ -57,18 +56,12 @@ public class GraphicEntity extends GraphicView {
 		if(Hub.currentView==parent){
 			Hub.removeLayer.add(entity);
 		}
-		entity.onRemoveFromDrawable();
 		super.onRemoveFromDrawable();
 
 	}
 
 	@Override
-	public void draw(){
-	}
-
-	@Override
 	public void animate(){
-		entity.animate();
 		super.animate();
 	}
 	@Override
@@ -79,11 +72,6 @@ public class GraphicEntity extends GraphicView {
 	@Override
 	public boolean isVisible(){
 		return entity.isVisible();
-	}
-	@Override
-	public void onDraw(){
-		entity.onDraw();
-		super.onDraw();
 	}	
 
 	@Override
@@ -108,16 +96,14 @@ public class GraphicEntity extends GraphicView {
 	public void setTextureName(String string) {
 		this.entity.setTextureName(string);
 	}
-	@Override
 	public String getTextureName() {
 		return entity.getTextureName();
 	}
 	public GraphicElement getGraphicElement() {
 		return entity;
 	}
-	@Override
 	public int textureIndex(){
-		return entity.textureIndex();
+		return entity.getFrame();
 	}
 	@Override
 	public boolean isWithin(float dx, float dy) {

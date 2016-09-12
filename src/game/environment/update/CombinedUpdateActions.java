@@ -7,12 +7,12 @@ import java.util.List;
 public class CombinedUpdateActions extends UpdateAction{
 	List<UpdateAction> actions = new ArrayList<UpdateAction>();
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		this.defaultState=true;
 		int size = ints.next();
 		for(int i=0;i<size;++i){
 			UpdateAction action = UpdateAction.getAction(ints.next()).create();
-			action.setArgs(ints, floats);
+			action.loadFrom(ints, floats);
 			action.setTarget(self);
 			actions.add(action);
 		}

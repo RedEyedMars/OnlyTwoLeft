@@ -11,7 +11,7 @@ public class CreateSquaresOnCreateAction extends OnCreateAction {
 
 	private List<Square> list = new ArrayList<Square>();		
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		int size = ints.next();
 		for(int i=0;i<size;++i){
 			int index = ints.next();

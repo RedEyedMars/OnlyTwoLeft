@@ -7,7 +7,7 @@ public class SquareIndexOffsetOnCreateAction extends OnCreateAction {
 
 	private int index;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		index=ints.next();
 		squareIndexOffset = index;
 	}

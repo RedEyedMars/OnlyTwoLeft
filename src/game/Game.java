@@ -25,10 +25,6 @@ import storage.Storage;
 
 public class Game extends GraphicView{
 
-	public static boolean useLightEffects = false;
-	public static Hero black;
-	public static Hero white;
-	private static List<Action<Double>> updateActions = new ArrayList<Action<Double>>() ;
 	private float pointerX = 0.05f;
 	private float pointerY = 0.05f;
 
@@ -48,28 +44,30 @@ public class Game extends GraphicView{
 		Main.randomizer = new Random(seed);
 		this.seed = seed;
 		this.colourToControl = colourToControl;
+		Hero black = null;
+		Hero white = null;
 		if(Client.isConnected()){
 			if(colourToControl){
-				black = new Hero(this,Hero.black){
+				black = new Hero(this,Hero.BLACK_BOOL){
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
 						MoveHeroMessage.send(x,y);
 					}
 				};
-				white = new Hero(this,Hero.white){
+				white = new Hero(this,Hero.WHITE_BOOL){
 					@Override
 					public void move(float x, float y){
 					}
 				};
 			}
 			else {
-				black = new Hero(this,Hero.black){
+				black = new Hero(this,Hero.BLACK_BOOL){
 					@Override
 					public void move(float x, float y){
 					}
 				};
-				white = new Hero(this,Hero.white){
+				white = new Hero(this,Hero.WHITE_BOOL){
 					@Override
 					public void move(float x, float y){
 						super.move(x,y);
@@ -79,8 +77,8 @@ public class Game extends GraphicView{
 			}
 		}
 		else {
-			black = new Hero(this,Hero.black);
-			white = new Hero(this,Hero.white);
+			black = new Hero(this,Hero.BLACK_BOOL);
+			white = new Hero(this,Hero.WHITE_BOOL);
 		}
 		black.setPartner(white);
 		white.setPartner(black);
@@ -101,12 +99,14 @@ public class Game extends GraphicView{
 			Hub.map.moveToStart(white);
 			addChild(black);
 			addChild(white);
+			Hub.setHeroes(black, white);
 
-			Hub.map.setVisibleSquares(colourToControl?1:2);
+			Hub.map.setVisibleSquares(colourToControl==Hero.BLACK_BOOL?Hero.BLACK_INT:
+									  colourToControl==Hero.WHITE_BOOL?Hero.WHITE_INT:0);
 
 			gameMode = Hub.map.getGameMode();
 			if(gameMode!=null){
-				gameMode.setup(this,colourToControl, black, white, wildWall);
+				gameMode.setup(this,colourToControl, wildWall);
 				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 					addChild(e);
 				}
@@ -114,7 +114,6 @@ public class Game extends GraphicView{
 
 
 		}
-		useLightEffects = Hub.map.isLightDependent();
 	}
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return gameMode;
@@ -169,14 +168,11 @@ public class Game extends GraphicView{
 		}
 		Gui.setView(menu);		
 	}
-	public static void addUpdateAction(Action<Double> action) {
-		Game.updateActions .add(action);
+	public void loseGame(boolean heroColour) {
+		gameMode.loseGame(heroColour);
 	}
-	public void loseGame(boolean isBlack) {
-		gameMode.loseGame(isBlack);
-	}
-	public void winGame(boolean isBlack,String nextMap) {
-		gameMode.winGame(isBlack,nextMap);
+	public void winGame(boolean heroColour,String nextMap) {
+		gameMode.winGame(heroColour,nextMap);
 	}
 	public long getTimeSpent() {
 		return timeSpentInGame;
@@ -192,35 +188,19 @@ public class Game extends GraphicView{
 		Gui.giveOnType(pauseMenu);
 	}
 	public void restart() {
-		float otherX = 0f, otherY = 0f;
-		if(colourToControl){
-			Game.black.move(Hub.map.getStartingXPosition(0)-(-Hub.map.getX()+Game.black.getX()), 
-					Hub.map.getStartingYPosition(0)-(-Hub.map.getY()+Game.black.getY()));
-			otherX=Game.white.getX()-Hub.map.getX();
-			otherY=Game.white.getY()-Hub.map.getY();
-		}
-		else {
-			Game.white.move(Hub.map.getStartingXPosition(1)-(-Hub.map.getX()+Game.white.getX()), 
-					Hub.map.getStartingYPosition(1)-(-Hub.map.getY()+Game.white.getY()));
-			otherX=Game.black.getX()-Hub.map.getX();
-			otherY=Game.black.getY()-Hub.map.getY();
-		}
-		final float theirX = otherX;
-		final float theirY = otherY;
+		Hub.getHero(colourToControl).move(
+				Hub.map.getStartingXPosition(0)-(-Hub.map.getX()+Hub.getHero(colourToControl).getX()), 
+				Hub.map.getStartingYPosition(0)-(-Hub.map.getY()+Hub.getHero(colourToControl).getY()));
+		final float theirX=Hub.getHero(!colourToControl).getX()-Hub.map.getX();
+		final float theirY =Hub.getHero(!colourToControl).getY()-Hub.map.getY();
 		//unpause();
 		waiting=true;
 		Hub.restartMap(new Action<Object>(){
 			@Override
 			public void act(Object subject) {
 				Gui.setView(new Game(colourToControl,seed));
-				if(colourToControl){
-					Game.white.setX(theirX);
-					Game.white.setY(theirY);
-				}
-				else {
-					Game.black.setX(theirX);
-					Game.black.setY(theirY);
-				}
+				Hub.getHero(!colourToControl).setX(theirX);
+				Hub.getHero(!colourToControl).setY(theirY);
 				waiting=false;
 			}
 		});

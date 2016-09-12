@@ -13,42 +13,40 @@ import gui.inputs.MotionEvent;
 public class Button extends GraphicEntity{
 
 	//The action to perform when this Button is clicked.
-	private Action<Editor> onClick;
-	//The parent editor, this is the editor that will be fed to the onClick action.
-	private Editor parent;
-	//
+	private Action<Object> onClick;
+	private GraphicEntity icon;
+
 	protected Integer frame;
 
-	public Button(String textureName, Editor parent, Action<Editor> onClick) {
-		this(textureName,null,parent,onClick);
+	public Button(String textureName, Action<Object> onClick) {
+		this(textureName,null,onClick);
 	}
-	public Button(Editor parent, Action<Editor> onClick) {
-		this("blank",0,parent,onClick);
+	public Button(Action<Object> onClick) {
+		this("blank",0,onClick);
 	}
-	public Button(String textureName, Integer frame, Editor parent, Action<Editor> onClick) {
+	public Button(String textureName, Integer frame, Action<Object> onClick) {
 		super("editor_button",1);
 		this.onClick = onClick;
-		this.parent = parent;
 
 		if(frame>=0){
-			GraphicEntity e = new GraphicEntity(textureName,1);
-			e.setFrame(frame);
+			icon = new GraphicEntity(textureName,1);
+			icon.setFrame(frame);
 			this.frame = frame;
-			addChild(e);
+			addChild(icon);
 		}
 		else {
-			GraphicEntity e = new GraphicEntity("editor_button",1);
-			e.setFrame(1);
+			icon = new GraphicEntity("editor_button",1);
+			icon.setFrame(1);
 			this.frame = frame;
-			addChild(e);
+			addChild(icon);
 		}
 	}
 
 	@Override
 	public void performOnClick(MotionEvent e){		
-		onClick.act(parent);
+		onClick.act(null);
 	}
-	public void setAction(Action<Editor> action) {
+	public void setAction(Action<Object> action) {
 		this.onClick = action;
 	}
 	public void setSelected(boolean b) {
@@ -61,7 +59,9 @@ public class Button extends GraphicEntity{
 	public boolean isSelected() {
 		return textureIndex()==2;
 	}
-
+	public GraphicEntity getIcon() {
+		return icon;
+	}
 	@Override
 	public void adjust(float width, float height, float dWidth, float dHeight){
 		if(frame>=0){

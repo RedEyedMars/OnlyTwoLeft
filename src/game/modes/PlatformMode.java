@@ -33,11 +33,11 @@ public class PlatformMode extends OverheadMode{
 		return auxillaryChildren;
 	}
 	@Override 
-	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+	public void setup(Game game, boolean colourToControl, GraphicEntity wildWall){
 		this.game = game;
 		this.colourToControl = colourToControl;
-		focused = black;
-		wild = white;
+		focused = Hub.getHero(true);
+		wild = Hub.getHero(false);
 		focused.adjust(0.04f, 0.04f);
 		wild.adjust(0.04f, 0.04f);
 		if(colourToControl==false/*white*/){

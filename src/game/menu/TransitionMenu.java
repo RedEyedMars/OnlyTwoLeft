@@ -234,7 +234,7 @@ public class TransitionMenu extends Menu{
 					long seed = Main.getNewRandomSeed();
 					if(Client.isConnected()){
 						Client.pass(new SaveGameMessage(previousMapName,minutes,seconds));						
-						Client.pass(new StartGameMessage(!myColour));
+						Client.pass(new StartGameMessage(!myColour,Main.seed));
 					}
 					saveTime(previousMapName);
 					Game game = new Game(myColour,seed);

@@ -3,6 +3,7 @@ package duo.messages;
 import duo.Handler;
 import duo.client.Client;
 import game.Game;
+import game.Hero;
 import game.menu.TransitionMenu;
 import main.Hub;
 import storage.Storage;
@@ -61,11 +62,11 @@ public class HeroEndGameMessage extends Message{
 		else {
 			return;
 		}
-		if(colourToControl){
+		if(colourToControl==Hero.BLACK_BOOL){
 			blackWinner = isWinner;
 			blackTime = time;
 		}
-		else {
+		else if(colourToControl==Hero.WHITE_BOOL){
 			whiteWinner = isWinner;
 			whiteTime = time;
 		}
@@ -118,12 +119,13 @@ public class HeroEndGameMessage extends Message{
 
 	public static boolean partnerHasWon() {
 		if(theirColour==null)return false;
-		if(theirColour){
+		if(theirColour==Hero.BLACK_BOOL){
 			return blackWinner!=null&&blackWinner==true;
 		}
-		else {
+		else if(theirColour==Hero.WHITE_BOOL){
 			return whiteWinner!=null&&whiteWinner==true;
 		}
+		else return false;
 	}
 
 

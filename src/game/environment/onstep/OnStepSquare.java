@@ -9,6 +9,7 @@ import game.Action;
 import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
+import game.environment.update.UpdateAction;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
@@ -26,9 +27,12 @@ public class OnStepSquare extends Square {
 		this(blackColour, whiteColour, size,size, blackAction, whiteAction);
 	}
 	public OnStepSquare(int actionType,int shapeType, int blackColour,int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
-		super(shapeType,blackColour,whiteColour,ints, floats);
+		super(actionType,shapeType,blackColour,whiteColour,ints, floats);
+	}
+	@Override
+	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats) {
+		super.loadActions(ints,floats);
 		if(actionType==1){
-			this.actionType=1;
 			this.blackAction = OnStepAction.getAction(ints.next());
 			if(this.blackAction!=null){
 				this.blackAction=this.blackAction.create();
@@ -39,7 +43,6 @@ public class OnStepSquare extends Square {
 			}
 		}
 		else if(actionType==2){
-			this.actionType=2;
 			this.blackAction = OnStepAction.getAction(ints.next());
 			if(this.blackAction!=null){
 				this.blackAction=this.blackAction.create();
@@ -119,4 +122,5 @@ public class OnStepSquare extends Square {
 		}
 		return list;
 	}
+	
 }

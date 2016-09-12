@@ -20,6 +20,7 @@ public abstract class OnStepAction<TargetType extends Object> implements SquareA
 	public static final OnStepAction<UpdatableSquare> deactivate = new DeactivateOnStepAction();
 	public static final OnStepAction<OnStepSquare> move = new MoveOnStepAction();
 	public static final OnStepAction<Integer> win_stage = new WinStageOnStepAction();
+	public static final OnStepAction<Object> null_action = new NullOnStepAction();
 
 	protected TargetType target;
 	public void setTarget(TargetType target){
@@ -36,6 +37,9 @@ public abstract class OnStepAction<TargetType extends Object> implements SquareA
 	}
 	public boolean resolve(Hero subject){
 		return false;
+	}
+	public int saveType(){
+		return 3;
 	}
 	public abstract OnStepAction<TargetType> create();
 	static {

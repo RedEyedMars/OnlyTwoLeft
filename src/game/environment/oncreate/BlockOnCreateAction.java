@@ -11,16 +11,16 @@ public abstract class BlockOnCreateAction extends OnCreateAction implements List
 	protected List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
 	
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		this.ints.clear();
 		this.floats.clear();
 		this.actions.clear();
-		super.setArgs(ints, floats);
+		super.loadFrom(ints, floats);
 		int numberOfActions = this.ints.get(0);
 		for(int i=0;i<numberOfActions;++i){
 			int actionIndex = ints.next();
 			OnCreateAction action = OnCreateAction.actions.get(actionIndex).create();
-			action.setArgs(ints, floats);
+			action.loadFrom(ints, floats);
 			this.actions.add(action);
 		}
 	}

@@ -12,6 +12,8 @@ import duo.messages.ActionMessage;
 import duo.messages.BlankMessage;
 import duo.messages.LoadMapMessage;
 import game.Action;
+import game.Hero;
+import game.environment.Square;
 import game.menu.StoryAction;
 import game.menu.StoryScene;
 import gui.Gui;
@@ -25,6 +27,7 @@ import gui.inputs.MouseListener;
 import storage.Storage;
 public class Hub {
 	public static final String RESTART_STRING = "\n";
+
 	public static GraphicView currentView;
 	public static GraphicRenderer renderer;
 	public static float width;
@@ -56,27 +59,7 @@ public class Hub {
 			return false;
 		}
 	};
-	public static List<Action> scenes = new ArrayList<Action>();
-	public static int sceneIndex = 7;
 	public static game.environment.Map map;
-	public static void updateIfHigher(String key, Integer integer, String name, Map<String, Integer> map, Map<String, String> namesMap) {
-		if(map.containsKey(key)&&map.get(key)>integer){
-			return;
-		}
-		else if("$null".equals(name)){
-			return;
-		}
-		else {
-			map.put(key,integer);
-			namesMap.put(key,name);
-		}
-	}
-	public static Integer getValue(String key, Map<String, Integer> map) {
-		return map.containsKey(key)?map.get(key):0;
-	}
-	public static String getString(String key, Map<String, String> map) {
-		return map.containsKey(key)?map.get(key):"$null";
-	}
 	public static void loadMapFromFileName(String mapFileName) {
 		if(mapFileName!=null){
 			if(Client.isConnected()){
@@ -100,5 +83,22 @@ public class Hub {
 			Storage.loadMap(Hub.map.getFileName());
 			onReturn.act(null);
 		}
+	}
+	private static Hero black;
+	private static Hero white;
+	private static Hero[] both;
+	public static void setHeroes(Hero black, Hero white){
+		Hub.black = black;
+		Hub.white = white;
+		Hub.both = new Hero[]{black,white};
+	}
+	public static Hero getHero(boolean colourToControl) {
+		return colourToControl?black:white;
+	}
+	public static Hero[] getHeroAsArray(boolean colourToControl) {
+		return new Hero[]{colourToControl?black:white};
+	}
+	public static Hero[] getBothHeroes() {
+		return both;
 	}
 }

@@ -10,14 +10,14 @@ public class DisplayListOnCreateAction extends OnCreateAction {
 
 	private int indexOfList;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		indexOfList=ints.next();
 	}
 	@Override
 	public void act(OnCreateSquare square) {
 		List<Object> list = (List<Object>) square.getData().get(indexOfList);
-		float dx = 10000f;
-		float dy = 10000f;
+		float dx = Float.MAX_VALUE;
+		float dy = Float.MAX_VALUE;
 		for(Object sqr:list){
 			if(((Square)sqr).getX()<dx){
 				dx=((Square)sqr).getX();

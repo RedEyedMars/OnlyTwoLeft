@@ -1,6 +1,7 @@
 package duo.messages;
 
 import duo.Handler;
+import game.Hero;
 
 /**
  * Adds a Game to the Server. 
@@ -31,7 +32,7 @@ public class AddGameMessage extends Message{
 	public AddGameMessage(String gameName, String mapName, String colour){
 		this.gameName = gameName;
 		this.mapName = mapName;
-		this.colour = colour.equals("black")?true:colour.equals("white")?false:null;
+		this.colour = colour.equals("black")?Hero.BLACK_BOOL:colour.equals("white")?Hero.WHITE_BOOL:null;
 	}	
 
 	/**

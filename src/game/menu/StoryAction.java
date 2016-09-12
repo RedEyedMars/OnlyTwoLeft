@@ -64,8 +64,8 @@ public abstract class StoryAction implements Action<StoryScene>{
 
 			@Override
 			public void act(StoryScene scene) {
-				Hub.sceneIndex = i;
-				Hub.scenes.get(Hub.sceneIndex).act(null);
+				//Hub.sceneIndex = i;
+				//Hub.scenes.get(Hub.sceneIndex).act(null);
 			}
 
 			@Override

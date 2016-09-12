@@ -10,7 +10,7 @@ public class CreateSquareOnCreateAction extends OnCreateAction {
 
 	private Square square;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		int index = ints.next();
 		if(index<Hub.map.size()){
 			square = Hub.map.getTemplateSquares().get(index);

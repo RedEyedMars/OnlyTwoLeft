@@ -28,7 +28,7 @@ public class Map extends GraphicEntity {
 	private List<Square> allSquares = new ArrayList<Square>();
 	private List<OnStepSquare> functionalSquares = new ArrayList<OnStepSquare>();
 	private List<UpdatableSquare> updateSquares = new ArrayList<UpdatableSquare>();
-	private List<OnCreateSquare> onCreates = new ArrayList<OnCreateSquare>();
+	private List<Creatable> onCreates = new ArrayList<Creatable>();
 	private List<Square> templateSquares = new ArrayList<Square>();
 	private List<Square> displaySquares = new ArrayList<Square>();
 
@@ -82,8 +82,8 @@ public class Map extends GraphicEntity {
 			updateSquares.add((UpdatableSquare)square);
 			((UpdatableSquare)square).display();
 		}
-		if(square instanceof OnCreateSquare){
-			onCreates.add((OnCreateSquare) square);
+		if(square instanceof Creatable){
+			onCreates.add((Creatable) square);
 		}
 		displaySquares.add(square);
 		square.displayFor(visibleColour);
@@ -97,17 +97,21 @@ public class Map extends GraphicEntity {
 			updateSquares.remove((UpdatableSquare)square);
 			((UpdatableSquare)square).undisplay();
 		}
-		if(square instanceof OnCreateSquare){
-			onCreates.remove((OnCreateSquare) square);
+		if(square instanceof Creatable){
+			onCreates.remove((Creatable) square);
 		}
 		displaySquares.remove(square);
 	}
 
 	public void setVisibleSquares(int colour){
+		System.out.println(colour);
 		for(Square square:displaySquares){
 			square.displayFor(colour);
 		}
 		visibleColour = colour;
+	}
+	public int getVisibleColour() {
+		return visibleColour;
 	}
 
 	private float xOffset = 0f;
@@ -151,8 +155,8 @@ public class Map extends GraphicEntity {
 	}
 
 	public void onCreate() {
-		for(OnCreateSquare square:onCreates){
-			square.act();
+		for(Creatable square:onCreates){
+			square.create();
 		}
 		for(OnStepSquare square:functionalSquares){
 			List<OnStepSquare> list = new ArrayList<OnStepSquare>();
@@ -420,7 +424,6 @@ public class Map extends GraphicEntity {
 		}
 
 		public Integer nextInteger(){
-			if(integerIndex>=maxIntegers)return 0;
 			return (Integer)data[integerIndex++];
 		}
 
@@ -496,5 +499,6 @@ public class Map extends GraphicEntity {
 		map.setStartPosition(1, getStartingXPosition(1), getStartingYPosition(1));
 		map.setLightDependency(this.isLightDependent());
 	}
+
 
 }

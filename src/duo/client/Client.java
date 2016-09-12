@@ -13,6 +13,7 @@ import duo.messages.SendMapMessage;
 import duo.messages.StartGameMessage;
 import game.Hero;
 import game.menu.IDuoMenu;
+import main.Main;
 
 /**
  * Client is the general, less functional class which handles communication between the two Players in the game, and the Server
@@ -23,6 +24,7 @@ import game.menu.IDuoMenu;
  * @author Geoffrey
  */
 public class Client {
+	public static final String defaultServerIP = "52.35.55.220";
 	//For the static Client method to interact with the inner client method.
 	//Also, if this client is null, the client is said to be disconnected/closed/off.
 	private static Client client;
@@ -176,7 +178,7 @@ public class Client {
 			System.out.println("Sending");
 			SendMapMessage.send(client,
 					"data/maps/Forest1.map",
-					new StartGameMessage(false));
+					new StartGameMessage(false,Main.seed));
 			System.out.println("Sent");
 			//Client.endConnection();
 		}

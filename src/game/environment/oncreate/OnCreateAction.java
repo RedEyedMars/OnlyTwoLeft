@@ -50,7 +50,7 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Obje
 	public int numberOfInts(){
 		return 0;
 	}
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		for(int i=0;i<numberOfFloats();++i){
 			this.floats.add(floats.next());
 		}
@@ -63,7 +63,9 @@ public abstract class OnCreateAction implements SquareAction<OnCreateSquare,Obje
 		saveTo.add(getIndex());
 		saveArgs(saveTo);
 	}
-
+	public int saveType(){
+		return 5;
+	}
 	public abstract OnCreateAction create();
 	public boolean isBlock(){
 		return false;

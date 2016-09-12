@@ -13,16 +13,12 @@ import main.Hub;
 import storage.Storage;
 
 public class UpdatableSquare extends OnStepSquare {
-	private UpdateAction updateAction;
+	protected UpdateAction updateAction;
 	private boolean activated = false;
 	private List<Square> dependants = new ArrayList<Square>();
 	public UpdatableSquare(int actionType,int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(actionType-3,shapeType,blackColour, whiteColour,ints, floats);
 		this.actionType=actionType;
-		int actionIndex = ints.next();
-		this.updateAction = UpdateAction.getAction(actionIndex).create();
-		this.updateAction.setArgs(ints,floats);
-		this.updateAction.setTarget(this);
 
 		int depends = ints.next();
 		for(int i=0;i<depends;++i){
@@ -37,6 +33,14 @@ public class UpdatableSquare extends OnStepSquare {
 		this.updateAction.setTarget(this);
 	}
 
+	@Override
+	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats){
+		super.loadActions(ints,floats);
+		int actionIndex = ints.next();
+		this.updateAction = UpdateAction.getAction(actionIndex).create();
+		this.updateAction.loadFrom(ints,floats);
+		this.updateAction.setTarget(this);
+	}
 	public void recycle() {
 		updateAction.undo();
 	}
@@ -115,6 +119,7 @@ public class UpdatableSquare extends OnStepSquare {
 			if(Storage.debug)System.out.print('\t');
 			square.saveTo(toSave);
 		}
+		if(Storage.debug)System.out.print('\n');
 	}
 	
 	public boolean isActive(){

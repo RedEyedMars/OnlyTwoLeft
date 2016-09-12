@@ -1,7 +1,6 @@
 package gui;
 
 import gui.gl.GLApp;
-import gui.gl.GLFont;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicRenderer;
 import gui.graphics.GraphicView;

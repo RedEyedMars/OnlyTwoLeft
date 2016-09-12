@@ -51,17 +51,12 @@ public class RaceMode implements GameMode{
 		return auxillaryChildren;
 	}
 	@Override 
-	public void setup(Game game, boolean colourToControl, Hero black, Hero white, GraphicEntity wildWall){
+	public void setup(Game game, boolean colourToControl, GraphicEntity wildWall){
 		this.game = game;
 		this.colourToControl = colourToControl;
-		if(colourToControl){
-			focused = black;
-			wild = white;
-		}
-		else {
-			focused = white;
-			wild = black;
-		}
+		focused = Hub.getHero(colourToControl);
+		wild = Hub.getHero(!colourToControl);
+		
 		focused.adjust(0.04f, 0.04f);
 		wild.adjust(0.04f, 0.04f);
 		this.wildWall = wildWall;
@@ -241,8 +236,8 @@ public class RaceMode implements GameMode{
 		}
 	}
 	@Override
-	public void loseGame(boolean isBlack){
-		if(isBlack!=colourToControl||ending){
+	public void loseGame(boolean colour){
+		if(colour!=colourToControl||ending){
 			return;
 		}
 		try {
@@ -272,8 +267,8 @@ public class RaceMode implements GameMode{
 		}
 	}
 	@Override
-	public void winGame(boolean isBlack,String nextMap){
-		if(isBlack!=colourToControl||ending){
+	public void winGame(boolean colour,String nextMap){
+		if(colour!=colourToControl||ending){
 			return;
 		}
 		long now = game.getTimeSpent();

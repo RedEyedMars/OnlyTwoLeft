@@ -6,7 +6,7 @@ import java.util.List;
 public class GetOnCreateAction extends OnCreateAction {
 	private int indexOfList;
 	@Override
-	public void setArgs(Iterator<Integer> ints, Iterator<Float> floats){
+	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
 		indexOfList=ints.next();
 	}
 	@Override
