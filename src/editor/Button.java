@@ -57,18 +57,18 @@ public class Button extends GraphicEntity{
 	}
 
 	public boolean isSelected() {
-		return textureIndex()==2;
+		return getFrame()==2;
 	}
 	public GraphicEntity getIcon() {
 		return icon;
 	}
 	@Override
-	public void adjust(float width, float height, float dWidth, float dHeight){
+	public void resize(float width, float height, float dWidth, float dHeight){
 		if(frame>=0){
-			super.adjust(width, height, dWidth, dHeight);
+			super.resize(width, height, dWidth, dHeight);
 		}
 		else{
-			super.adjust(width, height);
+			super.resize(width, height);
 		}
 	}
 

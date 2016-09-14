@@ -12,8 +12,8 @@ import duo.messages.ActionMessage;
 import duo.messages.BlankMessage;
 import duo.messages.LoadMapMessage;
 import game.Action;
-import game.Hero;
 import game.environment.Square;
+import game.hero.Hero;
 import game.menu.StoryAction;
 import game.menu.StoryScene;
 import gui.Gui;
@@ -38,16 +38,15 @@ public class Hub {
 	public static List<GraphicElement> drawTopLayer = new ArrayList<GraphicElement>();
 	public static MouseListener genericMouseListener = new MouseListener(){
 		@Override
-		public boolean onClick(MotionEvent event) {
-			return false;
-		}
+		public boolean onClick(MotionEvent event) {	return false; }
 		@Override
-		public boolean onHover(MotionEvent event) {
-			return false;
-		}
+		public boolean onHover(MotionEvent event) { return false; }
 		@Override
-		public void onMouseScroll(int distance) {			
-		}
+		public void onMouseScroll(int distance) {}
+		@Override
+		public void onListenToMouse() {}
+		@Override
+		public void onMuteMouse() {}
 	};
 	public static KeyBoardListener genericKeyBoardListener = new KeyBoardListener(){
 		@Override
@@ -71,7 +70,11 @@ public class Hub {
 		}
 	}
 	public static void restartMap(Action<Object> onReturn) {
-		if(Hub.map.getFileName()==null){
+		if(!Client.isConnected()||Hub.map.getFileName()!=null) {
+			Storage.loadMap(Hub.map.getFileName());
+			onReturn.act(null);
+		}
+		else if(Client.isConnected()&&Hub.map.getFileName()==null){
 			if(onReturn!=null&&Client.isConnected()){
 				Client.pass(new LoadMapMessage(Hub.RESTART_STRING, new ActionMessage(onReturn)));
 			}
@@ -80,8 +83,7 @@ public class Hub {
 			}
 		}
 		else {
-			Storage.loadMap(Hub.map.getFileName());
-			onReturn.act(null);
+			throw new RuntimeException("Tried to Restart the Map without hosting the Map.");
 		}
 	}
 	private static Hero black;

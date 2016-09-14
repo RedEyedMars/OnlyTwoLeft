@@ -1,9 +1,9 @@
 package game.environment.onstep;
 
-import game.Hero;
 import game.environment.Square;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
+import game.hero.Hero;
 
 public class SafeOnStepAction extends OnStepAction<Square>{
 	@Override

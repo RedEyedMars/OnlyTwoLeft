@@ -22,8 +22,7 @@ public class DuoMenu extends Menu {
 					host();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.51f);
+		button.reposition(0.2f,0.51f);
 		addChild(button);
 		
 		button = new MenuButton("Join"){
@@ -32,8 +31,7 @@ public class DuoMenu extends Menu {
 				join();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.35f);
+		button.reposition(0.2f,0.35f);
 		addChild(button);
 		
 		button = new MenuButton("Return"){
@@ -42,8 +40,7 @@ public class DuoMenu extends Menu {
 					returnToMain();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.19f);
+		button.reposition(0.2f,0.19f);
 		addChild(button);
 	}
 	

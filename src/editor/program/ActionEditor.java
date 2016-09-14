@@ -34,10 +34,10 @@ public abstract class ActionEditor extends Button implements DataRetriever, Clon
 	public boolean onClick(MotionEvent e){
 		if(MotionEvent.ACTION_UP==e.getAction()){
 			if(state==null){
-				setX(e.getX()-getWidth()/2f);
-				setY(e.getY()-getHeight()/2f);
+				reposition(e.getX()-getWidth()/2f,
+					 e.getY()-getHeight()/2f);
 				editor.removeTransitioningActionEditor(this);
-				this.state = editor.getRoot().addActionEditor(this);
+				this.state = editor.getStateRoot().addActionEditor(this);
 				Gui.removeOnClick(this);
 			}
 		}
@@ -45,8 +45,8 @@ public abstract class ActionEditor extends Button implements DataRetriever, Clon
 	}
 
 	public boolean onHover(MotionEvent e){
-		setX(e.getX()-getWidth()/2f);
-		setY(e.getY()-getHeight()/2f);
+		reposition(e.getX()-getWidth()/2f,
+			   e.getY()-getHeight()/2f);
 		return true;
 	}
 	@Override
@@ -59,8 +59,8 @@ public abstract class ActionEditor extends Button implements DataRetriever, Clon
 		}
 	}
 	@Override
-	public void adjust(float dx, float dy){
-		super.adjust(dx,dy);
-		arrow.adjust(dx*2f,dy);
+	public void resize(float dx, float dy){
+		super.resize(dx,dy);
+		arrow.resize(dx*2f,dy);
 	}
 }

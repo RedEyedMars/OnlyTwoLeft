@@ -3,7 +3,7 @@ package game.modes;
 import java.util.List;
 
 import game.Game;
-import game.Hero;
+import game.hero.Hero;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 
@@ -14,4 +14,6 @@ public interface GameMode extends KeyBoardListener{
 	public void loseGame(boolean isBlack);
 	public void winGame(boolean isBlack,String nextMap);
 	public boolean isCompetetive();
+	public Hero createConnectedHero(boolean control, Game game, boolean whiteBool);
+	public Hero createHero(Game game, boolean whiteBool);
 }

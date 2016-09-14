@@ -1,7 +1,7 @@
 package game.environment.onstep;
 
-import game.Hero;
 import game.environment.Square;
+import game.hero.Hero;
 
 public class HazardOnStepAction extends OnStepAction<Square> {
 	@Override

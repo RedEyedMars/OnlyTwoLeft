@@ -4,10 +4,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.update.UpdatableSquare;
+import game.hero.Hero;
 
 public abstract class OnStepAction<TargetType extends Object> implements SquareAction<Hero,TargetType> {
 

@@ -31,7 +31,7 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		String[] nameSplit = names.split("\n");
 		text.setWidthFactor(1f);
 		text.setHeightFactor(1f);
-		adjust(0.3f,0.13f);
+		resize(0.3f,0.13f);
 		for(int i=0;i<nameSplit.length;++i){
 			float dx = 0.065f;
 			for(char c:nameSplit[i].toCharArray()){
@@ -51,24 +51,22 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		for(OnClickFieldComponent<SubjectType> oc:onClicks){
 			addChild(oc);
 		}
-		setX(getX());
-		setY(getY());
-		this.listenToRelease = true;
+		reposition(getX(),getY());
 	}
 	public void nextType() {
 		++this.currentOnType;
 	}
 	@Override
-	public void adjust(float x, float y){
-		super.adjust(x, y);
+	public void resize(float x, float y){
+		super.resize(x, y);
 		if(onClicks==null)return;
 		for(int i=0;i<onClicks.length;++i){
-			onClicks[i].adjust(0.04f, 0.04f);
+			onClicks[i].resize(0.04f, 0.04f);
 		}
 		if(onTypes==null)return;
 		for(int i=0;i<onTypes.length;++i){
 			if(i>=xOffsets.size())return;
-			onTypes[i].adjust(getWidth()-xOffsets.get(i)-getChild(2).getWidth()/2f, 0.025f);
+			onTypes[i].resize(getWidth()-xOffsets.get(i)-getChild(2).getWidth()/2f, 0.025f);
 		}
 	}
 	@Override

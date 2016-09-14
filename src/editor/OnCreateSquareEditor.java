@@ -11,10 +11,12 @@ import java.util.Stack;
 import game.environment.Square;
 import game.environment.oncreate.OnCreateAction;
 import game.environment.oncreate.OnCreateSquare;
+import game.menu.GetFileMenu;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
+import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
 import main.Hub;
 import storage.Storage;
@@ -22,24 +24,23 @@ import storage.Storage;
 public class OnCreateSquareEditor extends Editor{
 
 	private File saveTo = null;
-	private MapEditor editor;
 	private float square_x;
 	private float square_y;
 	private float square_w;
 	private float square_h;
 
 	private TextWriter writer;
+	private GraphicView parentView;
 
-	public OnCreateSquareEditor(MapEditor parent,float x, float y, float w, float h){
+	public OnCreateSquareEditor(GraphicView parentView,float x, float y, float w, float h){
 		super();
 
 		setupButtons();
-		Square guide2 = new Square(15,0,w,h);
-		guide2.setX(x);
-		guide2.setY(y);
-		addChild(guide2);
+		Square guide = new Square(15,0,w,h);
+		guide.reposition(x,y);
+		addChild(guide);
 		String text = "";
-		saveTo = Gui.userSave("ocs");
+		saveTo = GetFileMenu.getFile(this,"ocs");
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				text = Storage.loadText(saveTo.getAbsolutePath());
@@ -63,7 +64,7 @@ public class OnCreateSquareEditor extends Editor{
 			}
 		}
 
-		this.editor = parent;
+		this.parentView = parentView;
 		this.square_x = x;
 		this.square_y = y;
 		this.square_w = w;
@@ -121,7 +122,7 @@ public class OnCreateSquareEditor extends Editor{
 		ctrlCommands.put(33, new ButtonAction(){
 			@Override
 			public void act(Object subject) {
-				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
+				granityShower.setFrame(granityShower.getFrame()==0?1:0);
 			}});
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
@@ -131,8 +132,8 @@ public class OnCreateSquareEditor extends Editor{
 	public void addIconsToSquare(Square square1){
 		super.addIconsToSquare(square1);
 		GraphicEntity e = new GraphicText("impact",""+squares.indexOf(square1),0);
-		e.setX(square1.getX());
-		e.setY(square1.getY()+square1.getHeight()-0.03f);
+		e.reposition(square1.getX(),
+				 square1.getY()+square1.getHeight()-0.03f);
 		square1.addChild(e);
 	}
 	@Override
@@ -142,13 +143,7 @@ public class OnCreateSquareEditor extends Editor{
 	@Override
 	public void update(double seconds){
 		if(saveTo==null){
-			if(editor==null){
-				Gui.setView(new MainMenu());
-			}
-			else {
-				editor.restartWith(null);
-				Gui.setView(editor);
-			}
+			Gui.setView(parentView);
 		}
 		super.update(seconds);
 	}
@@ -194,7 +189,6 @@ public class OnCreateSquareEditor extends Editor{
 			@Override
 			public boolean add(Object obj){
 				if(obj instanceof Integer){
-					System.out.print(obj+" ");
 					return ints.add((Integer) obj);
 				}
 				else if(obj instanceof Float){
@@ -210,23 +204,18 @@ public class OnCreateSquareEditor extends Editor{
 		ints.add(actions.size());
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
-			System.out.println();
 		}
 
 		OnCreateAction.squareIndexOffset=0;
 		OnCreateSquare square = new OnCreateSquare(0,-1,-1,ints.iterator(),floats.iterator());
-		if(editor==null){
-			for(GraphicEntity child:square.getChildren()){
-				child.onAddToDrawable();
-			}
-		}
-		else {
+		if(parentView instanceof MapEditor){
 			while(!square.getChildren().isEmpty()){
 				square.removeChild(0);
 			}
-			editor.restartWith(square);
-			Gui.setView(editor);			
+			((MapEditor)parentView).addSquare(square);
+			
 		}
+		Gui.setView(parentView);
 	}
 
 	public OnCreateAction createFromString(String toParse){
@@ -273,8 +262,8 @@ public class OnCreateSquareEditor extends Editor{
 	}
 	private void moveView(float x, float y){
 		for(int i=0;i<squares.size();++i){
-			squares.get(i).setX(squares.get(i).getX()+x);
-			squares.get(i).setY(squares.get(i).getY()+y);
+			squares.get(i).reposition(squares.get(i).getX()+x,
+					              squares.get(i).getY()+y);
 		}
 	}
 	

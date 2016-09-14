@@ -1,7 +1,7 @@
 package game.environment.onstep;
 
-import game.Hero;
 import game.environment.update.UpdatableSquare;
+import game.hero.Hero;
 
 public class DeactivateOnStepAction extends OnStepAction<UpdatableSquare>{
 	@Override

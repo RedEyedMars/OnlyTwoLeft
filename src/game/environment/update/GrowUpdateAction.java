@@ -1,7 +1,7 @@
 package game.environment.update;
 
 import game.Game;
-import game.Hero;
+import game.hero.Hero;
 import main.Hub;
 
 public class GrowUpdateAction extends UpdateAction{
@@ -40,16 +40,16 @@ public class GrowUpdateAction extends UpdateAction{
 					y<0&&hero.getY()+hero.getHeight()<=self.getY()||
 					x>0&&hero.getX()>=self.getX()+self.getWidth()||
 					x<0&&hero.getX()+hero.getWidth()<=self.getX()){
-				hero.setX(hero.getX()+hero.getDeltaX());
-				hero.setY(hero.getY()+hero.getDeltaY());
+				hero.reposition(hero.getX()+hero.getDeltaX(),
+						    hero.getY()+hero.getDeltaY());
 				if(hero.isWithin(self)){
 					hero.move(dx,0);
 				}
-				hero.setX(hero.getX()-hero.getDeltaX());
-				hero.setY(hero.getY()-hero.getDeltaY());
+				hero.reposition(hero.getX()-hero.getDeltaX(),
+						  hero.getY()-hero.getDeltaY());
 			}
 		}
-		self.adjust(self.getWidth()+dx,self.getHeight()+dy);
+		self.resize(self.getWidth()+dx,self.getHeight()+dy);
 	}
 	@Override
 	public void flip(){
@@ -58,7 +58,7 @@ public class GrowUpdateAction extends UpdateAction{
 	}
 	@Override
 	public void undo(){
-		self.adjust(self.getWidth()-growthW, self.getHeight()-growthH);
+		self.resize(self.getWidth()-growthW, self.getHeight()-growthH);
 	}
 	@Override
 	public int getIndex() {

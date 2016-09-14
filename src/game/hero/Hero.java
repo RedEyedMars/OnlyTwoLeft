@@ -1,10 +1,12 @@
-package game;
+package game.hero;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import duo.client.Client;
 import duo.messages.MoveHeroMessage;
+import game.Action;
+import game.Game;
 import game.environment.Colourable;
 import game.environment.Square;
 import game.environment.onstep.HazardOnStepAction;
@@ -37,8 +39,12 @@ public class Hero extends GraphicEntity implements Colourable{
 	private boolean onCorner=false;
 	private int index;
 	private float radius=0.01f;
+	private boolean isJumping = false;
 	public Hero(Game game, boolean colour) {
-		super("heroes",1);
+		this("heroes",game,colour);
+	}
+	public Hero(String texture,Game game, boolean colour) {
+		super(texture,1);
 		if(colour==BLACK_BOOL){
 			index=BLACK_INT;
 			this.setFrame(BLACK_COLOUR);
@@ -47,13 +53,13 @@ public class Hero extends GraphicEntity implements Colourable{
 			index=WHITE_INT;
 			this.setFrame(WHITE_COLOUR);
 		}
-		this.adjust(radius*2f, radius*2f);
+		this.resize(radius*2f, radius*2f);
 		this.game = game;
 	}
 	@Override
-	public void adjust(float x, float y){
+	public void resize(float x, float y){
 		this.radius = (x+y)/4f;
-		super.adjust(x, y);
+		super.resize(x, y);
 	}
 	public void setPartner(Hero hero){
 		this.partner = hero;
@@ -115,8 +121,7 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 
 	public void move(float x, float y) {
-		setX(getX()+x);
-		setY(getY()+y);
+		reposition(getX()+x,getY()+y);
 	}
 	public Game getGame(){
 		return game;
@@ -163,6 +168,9 @@ public class Hero extends GraphicEntity implements Colourable{
 			southWallFound=false;
 			return true;
 		} else return false;
+	}
+	public boolean isSouthWallTouching(){
+		return southWallFound;
 	}
 	public boolean foundNorthWall() {
 		if(northWallFound){
@@ -477,8 +485,7 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	public void handleWalls(List<OnStepSquare> mapSquares){
 
-		setX(getX()+deltaX);
-		setY(getY()+deltaY);
+		reposition(getX()+deltaX,getY()+deltaY);
 		List<GraphicEntity> entities = new ArrayList<GraphicEntity>();
 		List<OnStepAction> actions = new ArrayList<OnStepAction>();
 		List<Boolean> safeties            = new ArrayList<Boolean>();
@@ -522,8 +529,8 @@ public class Hero extends GraphicEntity implements Colourable{
 			}
 		}
 		Object[] params = Hero.handleWalls(this, entities, safeties);
-		setX(getX()-deltaX);
-		setY(getY()-deltaY);
+		reposition(getX()-deltaX,
+			 getY()-deltaY);
 		float x = (float) params[0];
 		float y = (float) params[1];
 		onCorner = (boolean)params[2];
@@ -593,8 +600,8 @@ public class Hero extends GraphicEntity implements Colourable{
 			x = (float) params[0];
 			y = (float) params[1];
 			if(x!=0||y!=0){
-				subject.setX(subject.getX()-x);
-				subject.setY(subject.getY()-y);
+				subject.reposition(subject.getX()-x,
+						     subject.getY()-y);
 				return false;
 			}
 		}
@@ -614,19 +621,19 @@ public class Hero extends GraphicEntity implements Colourable{
 			}
 		}
 		subject.move(0.0001f,0.0001f);
-		subject.adjust(subject.getWidth()-0.0002f,subject.getHeight()-0.0002f);
+		subject.resize(subject.getWidth()-0.0002f,subject.getHeight()-0.0002f);
 		params = Hero.handleWalls(subject, squaresFound, safeties);
 		x = (float) params[0];
 		y = (float) params[1];	
 		subject.move(x-0.0001f,y-0.0001f);
-		subject.adjust(subject.getWidth()+0.0002f,subject.getHeight()+0.0002f);
+		subject.resize(subject.getWidth()+0.0002f,subject.getHeight()+0.0002f);
 		return x==0&&y==0;
 	}
 	public Boolean[] getColours(boolean isBlack){
 
-		boolean myGreen=textureIndex()==2||textureIndex()==3||textureIndex()==4||textureIndex()==7;
-		boolean myRed=textureIndex()==1||textureIndex()==2||textureIndex()==6||textureIndex()==7;
-		boolean myBlue=textureIndex()==4||textureIndex()==5||textureIndex()==6||textureIndex()==7;
+		boolean myGreen=getFrame()==2||getFrame()==3||getFrame()==4||getFrame()==7;
+		boolean myRed=getFrame()==1||getFrame()==2||getFrame()==6||getFrame()==7;
+		boolean myBlue=getFrame()==4||getFrame()==5||getFrame()==6||getFrame()==7;
 		return new Boolean[]{myRed, myGreen, myBlue};
 	}
 	public void addToColour(Colourable other) {
@@ -715,5 +722,13 @@ public class Hero extends GraphicEntity implements Colourable{
 		if(theirColour==null)return false;
 		return myColour[0]!=theirColour[0]&&myColour[1]!=theirColour[1]&&myColour[2]!=theirColour[2];
 	}
-
+	public void jump(Action<Hero> action){
+		this.isJumping = true;
+	}
+	public boolean isJumping() {
+		return this.isJumping ;
+	}
+	public void setJumping(boolean jumping) {
+		this.isJumping = jumping;		
+	}
 }

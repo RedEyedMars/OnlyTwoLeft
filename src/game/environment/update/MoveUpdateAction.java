@@ -3,7 +3,7 @@ package game.environment.update;
 import java.util.Iterator;
 
 import game.Game;
-import game.Hero;
+import game.hero.Hero;
 
 public class MoveUpdateAction extends UpdateAction {
 	public MoveUpdateAction(){
@@ -56,8 +56,8 @@ public class MoveUpdateAction extends UpdateAction {
 	}
 	@Override
 	public void undo(){
-		self.setX(self.getX()-movementX);
-		self.setY(self.getY()-movementY);
+		self.reposition(self.getX()-movementX,
+				  self.getY()-movementY);
 		setFloats(origXvel,origYvel);
 	}
 	@Override
@@ -82,15 +82,15 @@ public class MoveUpdateAction extends UpdateAction {
 			return;
 		}
 		else if(y==0){
-			self.setX(self.getX()+Math.signum(x)*limiter);
+			self.reposition(self.getX()+Math.signum(x)*limiter,self.getY());
 		}
 		else if(x==0){
-			self.setY(self.getY()+Math.signum(y)*limiter);
+			self.reposition(self.getX(),self.getY()+Math.signum(y)*limiter);
 		}
 		else {
 			double angle = Math.atan2(y,x);
-			self.setX((float) (self.getX()+Math.cos(angle)*limiter));
-			self.setY((float) (self.getY()+Math.sin(angle)*limiter));
+			self.reposition((float) (self.getX()+Math.cos(angle)*limiter),
+					    (float) (self.getY()+Math.sin(angle)*limiter));
 		}
 	}
 }

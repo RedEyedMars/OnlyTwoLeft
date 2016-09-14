@@ -21,9 +21,9 @@ public abstract class SquareActionEditor extends ActionEditor {
 		else return super.offsetY(i);
 	}
 	@Override
-	public void adjust(float dx, float dy){
-		super.adjust(dx,dy);
-		getIcon().adjust(dx*0.625f,dy*0.625f);
+	public void resize(float dx, float dy){
+		super.resize(dx,dy);
+		getIcon().resize(dx*0.625f,dy*0.625f);
 	}
 
 

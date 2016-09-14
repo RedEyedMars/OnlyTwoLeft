@@ -3,7 +3,7 @@ package duo.messages;
 import duo.Handler;
 import duo.client.Client;
 import game.Game;
-import game.Hero;
+import game.hero.Hero;
 import game.menu.TransitionMenu;
 import main.Hub;
 import storage.Storage;

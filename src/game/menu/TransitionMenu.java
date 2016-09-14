@@ -92,8 +92,7 @@ public class TransitionMenu extends Menu{
 			e.printStackTrace();
 		}
 		winnerButton = new MenuButton(isCompetitive?isWinner?"Victory!":"Defeat":isWinner?"Completed!":"Failed");
-		winnerButton.setX(0.2f);
-		winnerButton.setY(0.83f);
+		winnerButton.reposition(0.2f,0.83f);
 		addChild(winnerButton);
 		boolean won = bestWin!=Long.MAX_VALUE;
 		isBest = false;
@@ -104,7 +103,7 @@ public class TransitionMenu extends Menu{
 				{
 					setWidthFactor(1.4f);
 					setHeightFactor(3f);
-					adjust(getWidth(), getHeight());
+					resize(getWidth(), getHeight());
 					charIndex=text.length();
 					index=text.length();
 				}
@@ -136,13 +135,11 @@ public class TransitionMenu extends Menu{
 					}
 				}
 			};
-			nameButton.adjust(0.8f, 0.15f);
-			nameButton.setX(0.1f);
-			nameButton.setY(0.67f);
+			nameButton.resize(0.8f, 0.15f);
+			nameButton.reposition(0.1f,0.67f);
 
 
-			playerName.setX(0.325f);
-			playerName.setY(0.69f);
+			playerName.reposition(0.325f,0.69f);
 			addChild(nameButton);
 			addChild(playerName);
 
@@ -156,8 +153,7 @@ public class TransitionMenu extends Menu{
 				clip.setContents(stringSelection, null);
 			}
 		};
-		time.setX(0.2f);
-		time.setY(0.51f);
+		time.reposition(0.2f,0.51f);
 		addChild(time);
 
 		returnButton = new MenuButton("Return to Main Menu"){
@@ -171,18 +167,16 @@ public class TransitionMenu extends Menu{
 				returnToMain();
 			}
 		};
-		returnButton.setX(0.2f);
-		returnButton.setY(0.19f);
+		returnButton.reposition(0.2f,0.19f);
 		addChild(returnButton);
 		if(isBest){
 			GraphicEntity bestIndicator = new GraphicEntity("menu_best_indicator",1);
-			bestIndicator.adjust(0.075f, 0.075f);
-			bestIndicator.setX(0.6f);
-			bestIndicator.setY(0.56f);
+			bestIndicator.resize(0.075f, 0.075f);
+			bestIndicator.reposition(0.6f,0.56f);
 			addChild(bestIndicator);
 		}
 		else {
-			winnerButton.setY(0.67f);
+			winnerButton.reposition(winnerButton.getX(),0.67f);
 		}
 	}
 
@@ -241,10 +235,8 @@ public class TransitionMenu extends Menu{
 					Gui.setView(game);
 				}
 			};
-			proceedButton.setX(0.2f);
-			proceedButton.setY(0.35f);
+			proceedButton.reposition(0.2f,0.35f);
 			addChild(proceedButton);
-			proceedButton.onAddToDrawable();
 		}
 	}
 

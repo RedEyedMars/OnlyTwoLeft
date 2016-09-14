@@ -1,7 +1,7 @@
 package duo.messages;
 
 import duo.Handler;
-import game.Hero;
+import game.hero.Hero;
 
 /**
  * Adds a Game to the Server. 

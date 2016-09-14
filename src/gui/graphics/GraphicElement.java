@@ -8,8 +8,6 @@ import main.Hub;
 
 import org.lwjgl.opengl.GL11;
 
-import gui.inputs.MotionEvent;
-
 
 
 public class GraphicElement {
@@ -46,7 +44,7 @@ public class GraphicElement {
 
 	public GraphicElement(String textureName, GraphicView view) {
 		this.view = view;
-		adjust(1f,1f);
+		resize(1f,1f);
 		setTextureName(textureName);
 		this.vertexBuffer=squareBuffer;
 	}
@@ -228,7 +226,7 @@ public class GraphicElement {
 	public boolean isVisible(){
 		return isVisible;
 	}
-	public void adjust(float w, float h) {
+	public void resize(float w, float h) {
 		width = w;
 		if(width<0){
 			visualX= x+width;

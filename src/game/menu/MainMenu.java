@@ -1,5 +1,6 @@
 package game.menu;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 import main.Hub;
 import main.Main;
+import storage.Storage;
 
 public class MainMenu extends Menu{
 
@@ -31,8 +33,7 @@ public class MainMenu extends Menu{
 				solo();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.51f);
+		button.reposition(0.2f,0.51f);
 		addChild(button);
 
 		button = new MenuButton("Duo"){
@@ -41,8 +42,7 @@ public class MainMenu extends Menu{
 				duo();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.35f);
+		button.reposition(0.2f,0.35f);
 		addChild(button);
 
 		button = new MenuButton("Editors"){
@@ -51,8 +51,7 @@ public class MainMenu extends Menu{
 				editor();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.19f);
+		button.reposition(0.2f,0.19f);
 		addChild(button);
 	}
 
@@ -61,7 +60,9 @@ public class MainMenu extends Menu{
 	}
 
 	public void solo(){
-		if(Main.loadMap()){
+		File file = GetFileMenu.getFile(this,"maps");
+		if(file!=null){
+			Storage.loadMap(file.getAbsolutePath());
 			Gui.setView(new Game(true,Main.getNewRandomSeed()));
 		}
 	}

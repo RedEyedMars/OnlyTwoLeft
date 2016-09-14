@@ -5,6 +5,7 @@ import editor.OnCreateSquareEditor;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class EditorMenu extends Menu {
 	public EditorMenu() {
@@ -15,18 +16,17 @@ public class EditorMenu extends Menu {
 					Gui.setView(new MapEditor());
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.51f);
+		button.reposition(0.2f,0.51f);
 		addChild(button);
 		
+		final EditorMenu self = this;
 		button = new MenuButton("Square"){
 			@Override
 			public void performOnRelease(MotionEvent e){
-					Gui.setView(new OnCreateSquareEditor(null,0f,0f,1f,1f));
+					Gui.setView(new OnCreateSquareEditor(self,0f,0f,1f,1f));
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.35f);
+		button.reposition(0.2f,0.35f);
 		addChild(button);
 		
 		button = new MenuButton("Return"){
@@ -35,8 +35,7 @@ public class EditorMenu extends Menu {
 					returnToMain();
 			}
 		};
-		button.setX(0.2f);
-		button.setY(0.19f);
+		button.reposition(0.2f,0.19f);
 		addChild(button);
 		
 	}
@@ -44,5 +43,11 @@ public class EditorMenu extends Menu {
 
 	public void returnToMain(){
 		Gui.setView(new MainMenu());
+	}
+	
+	@Override
+	public void update(double seconds){
+		Hub.renderer.loadFont("timesnewroman");
+		super.update(seconds);
 	}
 }

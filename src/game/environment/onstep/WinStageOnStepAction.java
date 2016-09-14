@@ -2,8 +2,8 @@ package game.environment.onstep;
 
 import java.util.List;
 
-import game.Hero;
 import game.environment.update.UpdatableSquare;
+import game.hero.Hero;
 import main.Hub;
 
 public class WinStageOnStepAction extends OnStepAction<Integer>{

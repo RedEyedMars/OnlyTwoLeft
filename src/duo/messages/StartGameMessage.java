@@ -19,7 +19,7 @@ public class StartGameMessage extends Message {
 
 	/**
 	 * Initializes the StartGameMessage with the colour which the partnered {@link game.Game} will be loaded as. Also grabs the random seed.
-	 * @param colour - if true, the {@link game.Game} will control the Black coloured {@link game.Hero}, if false, then the controlled {@link game.Hero} will be the White one.
+	 * @param colour - if true, the {@link game.Game} will control the Black coloured {@link game.hero.Hero}, if false, then the controlled {@link game.hero.Hero} will be the White one.
 	 */
 	public StartGameMessage(boolean colour, Long seed){
 		//Get this main's random seed to send to the partnered Client.

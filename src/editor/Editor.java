@@ -10,7 +10,6 @@ import editor.field.FloatFieldComponent;
 import editor.field.OnClickFieldComponent;
 import editor.field.TextFieldComponent;
 import editor.program.ProgramSquareEditor;
-import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.oncreate.OnCreateAction;
@@ -19,15 +18,17 @@ import game.environment.onstep.OnStepAction;
 import game.environment.program.ProgrammableSquare;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
+import game.hero.Hero;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 import main.Hub;
 
 public class Editor extends GraphicView {
-	
+
 	public static final int MODE_WAIT_FOR_RELEASE = -1;
 	public static final int MODE_NEUTRAL = 0;
 	public static final int MODE_MAKE_SQUARE = 2;
@@ -84,9 +85,8 @@ public class Editor extends GraphicView {
 					shape=id;
 				}
 			});
-			button.setX(0.92f);
-			button.setY(0.03f+i*0.05f);
-			button.adjust(0.05f,0.05f);
+			button.reposition(0.92f,0.03f+i*0.05f);
+			button.resize(0.05f,0.05f);
 			shapeMenu.add(button);
 			buttons.add(button);
 			addChild(button);
@@ -119,9 +119,8 @@ public class Editor extends GraphicView {
 					return frame>=0?0.01125f:0f;
 				}
 			};
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.03f);
-			button.adjust(0.05f,0.06f,0.03125f, 0.0375f);
+			button.reposition(0.08f+i*0.05f,0.03f);
+			button.resize(0.05f,0.06f,0.03125f, 0.0375f);
 			addChild(button);
 			colourMenu.add(button);
 			buttons.add(button);
@@ -146,9 +145,8 @@ public class Editor extends GraphicView {
 					return frame>=0?0.01125f:0f;
 				}
 			};
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.09f);
-			button.adjust(0.05f,0.06f,0.03125f, 0.0375f);
+			button.reposition(0.08f+i*0.05f,0.09f);
+			button.resize(0.05f,0.06f,0.03125f, 0.0375f);
 			addChild(button);
 			colour2Menu.add(button);
 			buttons.add(button);
@@ -171,9 +169,8 @@ public class Editor extends GraphicView {
 					whiteAction=id;
 				}
 			});
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.15f);
-			button.adjust(0.05f,0.05f);
+			button.reposition(0.08f+i*0.05f,0.15f);
+			button.resize(0.05f,0.05f);
 			actionMenu.add(button);
 			buttons.add(button);
 			addChild(button);
@@ -194,9 +191,8 @@ public class Editor extends GraphicView {
 				}
 
 			});
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.2f);
-			button.adjust(0.05f,0.05f);
+			button.reposition(0.08f+i*0.05f,0.2f);
+			button.resize(0.05f,0.05f);
 			actionMenu2.add(button);
 			addChild(button);
 			buttons.add(button);
@@ -204,9 +200,6 @@ public class Editor extends GraphicView {
 		for(int i=0;i<3;++i){
 			final int index = i;
 			Button button = new Button("editor_update_icons",i,new ButtonAction(){public void act(Object subject) {}}){
-				{
-					this.listenToRelease = true;
-				}
 				@Override
 				public void performOnRelease(MotionEvent event) {
 					for(int i=0;i<specialActionMenu.size();++i){
@@ -218,9 +211,8 @@ public class Editor extends GraphicView {
 
 				}
 			};
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.25f);
-			button.adjust(0.05f,0.05f);
+			button.reposition(0.08f+i*0.05f,0.25f);
+			button.resize(0.05f,0.05f);
 			updateActionMenu.add(button);
 			buttons.add(button);
 			addChild(button);
@@ -228,9 +220,6 @@ public class Editor extends GraphicView {
 		for(int i=0;i<2;++i){
 			final int id = i;
 			Button button = new Button("editor_special_icons",i,new ButtonAction(){public void act(Object subject) {}}){
-				{
-					this.listenToRelease = true;
-				}			
 				@Override
 				public void performOnRelease(MotionEvent e) {
 					if(!specialActionMenu.get(id).isSelected()){
@@ -274,9 +263,8 @@ public class Editor extends GraphicView {
 					}
 				}
 			};
-			button.setX(0.08f+i*0.05f);
-			button.setY(0.3f);
-			button.adjust(0.05f,0.05f);
+			button.reposition(0.08f+i*0.05f,0.3f);
+			button.resize(0.05f,0.05f);
 			buttons.add(button);
 			addChild(button);
 			button.setSelected(false);
@@ -289,15 +277,13 @@ public class Editor extends GraphicView {
 		actionMenu.get(blackAction+1).setSelected(true);
 		actionMenu2.get(whiteAction+1).setSelected(true);
 
-		visibleToShower.setX(0.95f);
-		visibleToShower.setY(0.95f);
-		visibleToShower.adjust(0.05f, 0.05f);
+		visibleToShower.reposition(0.95f,0.95f);
+		visibleToShower.resize(0.05f, 0.05f);
 		visibleToShower.setFrame(3);
 		addChild(visibleToShower);		
 
-		granityShower.adjust(0.04f, 0.04f);
-		granityShower.setX(0.86f);
-		granityShower.setY(0.96f);
+		granityShower.reposition(0.86f,0.96f);
+		granityShower.resize(0.04f, 0.04f);
 		addChild(granityShower);
 		granityShower.setFrame(0);
 
@@ -326,7 +312,7 @@ public class Editor extends GraphicView {
 				changeTextOnLine(""+subject.getFloat(1), 0);
 			}
 		};;
-		
+
 		FloatFieldComponent<UpdateAction> updatableSquareLimitField = new FloatFieldComponent<UpdateAction>("impact"){
 			@Override
 			public void act(Float subject) {
@@ -380,13 +366,13 @@ public class Editor extends GraphicView {
 						updatableSquareYField,
 						updatableSquareLimitField,
 						updatableSquareLimiterPercentField
-				},
+		},
 				new OnClickFieldComponent[]{
 						updatableSquareDefaultStateIndicator,
 						updatableSquareLimiterIndicator
-				});
+		});
 		addChild(updatableSquareDataField);
-		updatableSquareDataField.adjust(0.3f, 0.13f);
+		updatableSquareDataField.resize(0.3f, 0.13f);
 		updatableSquareDataField.setVisible(false);
 
 
@@ -412,7 +398,7 @@ public class Editor extends GraphicView {
 					if(shape>0){
 						int x = Hub.map.getIntX(e.getX());
 						int y = Hub.map.getIntY(e.getY());
-						if(granityShower.textureIndex()==0){
+						if(granityShower.getFrame()==0){
 							x = (int) (x+2.5f);
 							y = (int) (y+2.5f);
 							x-=x%5;
@@ -425,9 +411,8 @@ public class Editor extends GraphicView {
 							}
 						}
 						builder1 = createSquare(x,y,shape-1,blackColour,whiteColour,blackAction,whiteAction,updateAction,specialActionMenu.get(0).isSelected(),specialActionMenu.get(1).isSelected());				
-						builder1.adjust(0.05f, 0.05f);
+						builder1.resize(0.05f, 0.05f);
 						addChild(builder1);
-						builder1.onAddToDrawable();
 						squares.add(builder1);
 					}
 					else {//paint
@@ -454,7 +439,7 @@ public class Editor extends GraphicView {
 
 					int x = Hub.map.getIntX(e.getX());
 					int y = Hub.map.getIntY(e.getY());
-					if(granityShower.textureIndex()==0){
+					if(granityShower.getFrame()==0){
 						x = (int) (x+2.5f);
 						y = (int) (y+2.5f);
 						x-=x%5;
@@ -462,11 +447,9 @@ public class Editor extends GraphicView {
 					}
 					if(Hub.map.getRealX(x)-builder1.getX()!=0f&&Hub.map.getRealY(y)-builder1.getY()!=0f){
 
-						builder1.adjust(Hub.map.getRealX(x)-builder1.getX(), Hub.map.getRealY(y)-builder1.getY());
-						//removeChild(builder1);
-						builder1.onRemoveFromDrawable();
-						//addChild(builder1);
-						builder1.onAddToDrawable();
+						builder1.resize(Hub.map.getRealX(x)-builder1.getX(), Hub.map.getRealY(y)-builder1.getY());
+
+
 					}
 				}
 			}
@@ -478,16 +461,10 @@ public class Editor extends GraphicView {
 					mode=MODE_NEUTRAL;
 
 					if(squares.get(0)==builder1&&this instanceof MapEditor){
-						squares.get(0).setX(0f);
-						squares.get(0).setY(0f);
-						squares.get(0).adjust(1f,1f);
+						squares.get(0).reposition(0f,0f);
+						squares.get(0).resize(1f,1f);
 					}
-
-					//removeChild(builder1);
-					builder1.onRemoveFromDrawable();
 					addIconsToSquare(builder1);
-					//addChild(builder1);
-					builder1.onAddToDrawable();
 				}
 				else {
 					for(GraphicEntity child:buttons){
@@ -527,17 +504,40 @@ public class Editor extends GraphicView {
 	@Override
 	public boolean onHover(MotionEvent e){
 		if(mode==2)return false;
-		for(int i=squares.size()-1;i>=0;--i){
-			if(squares.get(i).isWithin(e.getX(), e.getY())){
-				if(hoveringOnSquare!=null){
-					hoveringOnSquare.hideChildren();
-				}
-				squares.get(i).showChildren();
-				hoveringOnSquare = squares.get(i);
-				break;
+		if(squares!=null){
+			for(int i=squares.size()-1;i>=0;--i){
+				if(hoverOnSquare(squares.get(i),e)) break;
 			}
 		}
 		return true;
+	}
+	public boolean hoverOnSquare(Square square, MotionEvent e){
+		for(int j=0;j<square.size();++j){
+			if(square.getChild(j) instanceof Square){
+				if(hoverOnSquare((Square)square.getChild(j),e))return true;
+			}
+		}	
+		if(square.isWithin(e.getX(), e.getY())){			
+			if(hoveringOnSquare!=null){
+				for(int j=0;j<hoveringOnSquare.size();++j){
+					if(!(hoveringOnSquare.getChild(j) instanceof Button)&&
+							!(hoveringOnSquare.getChild(j) instanceof Square)&&
+							!(hoveringOnSquare.getChild(j) instanceof GraphicText)){
+						hoveringOnSquare.removeChild(j);
+						--j;
+					}
+				}					
+				hoveringOnSquare.hideChildren();
+			}
+			addActionIconToSquare(square,
+					square.getX()+square.getWidth()-0.025f,
+					square.getY(),
+					0.025f);
+			square.showChildren();
+			hoveringOnSquare = square;
+			return true;
+		}
+		return false;
 	}
 
 	protected Square createSquare(int x, int y,int shape, int colour, int colour2, int a1, int a2, List<Integer> ua, boolean oc, boolean pc){
@@ -552,7 +552,7 @@ public class Editor extends GraphicView {
 			floats.add(0f);
 			floats.add(0f);			
 		}
-		Iterator<Integer> ints = Square.makeInts(a1,a2,ua,oc,pc,shape,colour,colour2,x,y,1,1);
+		Iterator<Integer> ints = Square.makeInts(this,a1,a2,ua,oc,pc,shape,colour,colour2,x,y,1,1);
 		Square created = Square.create(ints, floats.iterator());
 		if(hoveringOnSquare!=null){
 			hoveringOnSquare.hideChildren();
@@ -573,7 +573,6 @@ public class Editor extends GraphicView {
 	}
 
 	protected void addIconsToSquare(Square square) {
-		addActionIconToSquare(square,square.getX()+square.getWidth()-0.025f,square.getY(),0.025f);
 		addAdjustPositionButtonToSquare(square);
 		addAdjustSizeButtonToSquare(square);
 		if(square instanceof UpdatableSquare){
@@ -609,7 +608,7 @@ public class Editor extends GraphicView {
 			public boolean onHover(MotionEvent event) {
 				int x = Hub.map.getIntX(event.getX());
 				int y = Hub.map.getIntY(event.getY());
-				if(granityShower.textureIndex()==0){
+				if(granityShower.getFrame()==0){
 					x = (int) (x+2.5f);
 					y = (int) (y+2.5f);
 					x-=x%5;
@@ -617,13 +616,20 @@ public class Editor extends GraphicView {
 				}
 				float dx = Hub.map.getRealX(x)-square.getX();
 				float dy = Hub.map.getRealY(y)-square.getY();
-				square.setX(square.getX()+dx);
-				square.setY(square.getY()+dy);
+				square.reposition(square.getX()+dx,square.getY()+dy);
 				return false;
 			}
 
 			@Override
 			public void onMouseScroll(int distance) {				
+			}
+
+			@Override
+			public void onListenToMouse() {				
+			}
+
+			@Override
+			public void onMuteMouse() {				
 			}
 		};
 		button.setAction(new ButtonAction(){
@@ -634,9 +640,8 @@ public class Editor extends GraphicView {
 			}
 		});
 
-		button.setX(square.getX());
-		button.setY(square.getY());
-		button.adjust(0.015f, 0.015f);
+		button.reposition(square.getX(),square.getY());
+		button.resize(0.015f, 0.015f);
 		buttons.add(button);
 		square.addChild(button);
 	}
@@ -657,23 +662,30 @@ public class Editor extends GraphicView {
 
 				int x = Hub.map.getIntX(event.getX());
 				int y = Hub.map.getIntY(event.getY());
-				if(granityShower.textureIndex()==0){
+				if(granityShower.getFrame()==0){
 					x = (int) (x+2.5f);
 					y = (int) (y+2.5f);
 					x-=x%5;
 					y-=y%5;
 				}
 				if(Hub.map.getRealX(x)-square.getX()!=0f&&Hub.map.getRealY(y)-square.getY()!=0f){
-					System.out.println((Hub.map.getRealX(x)-square.getX())+","+(Hub.map.getRealY(y)-square.getY()));
-					square.adjust(Hub.map.getRealX(x)-square.getX(), Hub.map.getRealY(y)-square.getY());
-					button.setX(square.getX()+square.getWidth()-0.015f);
-					button.setY(square.getY()+square.getHeight()-0.015f);
+					square.resize(Hub.map.getRealX(x)-square.getX(), Hub.map.getRealY(y)-square.getY());
+					button.reposition(square.getX()+square.getWidth()-0.015f,
+							square.getY()+square.getHeight()-0.015f);
 				}
 				return false;
 			}
 
 			@Override
 			public void onMouseScroll(int distance) {				
+			}
+
+			@Override
+			public void onListenToMouse() {				
+			}
+
+			@Override
+			public void onMuteMouse() {				
 			}
 		};
 		button.setAction(new ButtonAction(){
@@ -684,9 +696,9 @@ public class Editor extends GraphicView {
 			}
 		});
 
-		button.setX(square.getX()+square.getWidth()-0.015f);
-		button.setY(square.getY()+square.getHeight()-0.015f);
-		button.adjust(0.015f, 0.015f);
+		button.reposition(square.getX()+square.getWidth()-0.015f,
+				square.getY()+square.getHeight()-0.015f);
+		button.resize(0.015f, 0.015f);
 		buttons.add(button);
 		square.addChild(button);
 	}
@@ -716,9 +728,8 @@ public class Editor extends GraphicView {
 				e = new GraphicEntity("editor_special_icons");
 				e.setFrame(0);
 			}
-			e.setX(x);
-			e.setY(y);
-			e.adjust(size, size);
+			e.reposition(x,y);
+			e.resize(size, size);
 			x-=size;
 			fsq.addChild(e);
 		}
@@ -735,17 +746,17 @@ public class Editor extends GraphicView {
 					Button button = new Button("editor_update_icons",innerAction.getIndex(),new ButtonAction(){
 						@Override
 						public void act(Object subject) {
-							updatableSquareDataField.setX(usq.getX()+0.015f);
-							updatableSquareDataField.setY(usq.getY()+0.015f);
+							updatableSquareDataField.reposition(usq.getX()+0.015f,
+									usq.getY()+0.015f);
 							updatableSquareDataField.updateWith(myAction);
 							updatableSquareDataField.setVisible(true);							
 							Gui.giveOnClick(updatableSquareDataField);						
 							Gui.giveOnType(updatableSquareDataField.getDefaultKeyBoardListener());
 						}
 					});
-					button.setX(usq.getX()+0.015f+0.025f*(xOffset++));
-					button.setY(usq.getY()+0.015f);
-					button.adjust(0.025f, 0.025f);
+					button.reposition(usq.getX()+0.015f+0.025f*(xOffset++),
+							usq.getY()+0.015f);
+					button.resize(0.025f, 0.025f);
 					usq.addChild(button);
 					buttons.add(button);
 				}		
@@ -769,13 +780,12 @@ public class Editor extends GraphicView {
 						}
 						builder1 = createSquare(Hub.map.getIntX(usq.getX()),Hub.map.getIntY(usq.getY()+usq.getHeight()),shape==0?1:(shape-1),blackColour,whiteColour,a1,a2,updateAction,false,false);
 						usq.addDependant(builder1);
-						builder1.onAddToDrawable();
 					}
 				});
 
-				activator.setX(usq.getX()+0.015f+0.025f*xOffset);
-				activator.setY(usq.getY()+0.015f);
-				activator.adjust(0.025f, 0.025f);
+				activator.reposition(usq.getX()+0.015f+0.025f*xOffset,
+						usq.getY()+0.015f);
+				activator.resize(0.025f, 0.025f);
 				usq.addChild(activator);
 				buttons.add(activator);
 			}
@@ -796,9 +806,9 @@ public class Editor extends GraphicView {
 						ocs.getX(),ocs.getY(),ocs.getWidth(),ocs.getHeight()));
 			}
 		});
-		button.setX(ocs.getX()+0.015f);
-		button.setY(ocs.getY()+0.015f);
-		button.adjust(0.025f, 0.025f);
+		button.reposition(ocs.getX()+0.015f,
+				ocs.getY()+0.015f);
+		button.resize(0.025f, 0.025f);
 		ocs.addChild(button);
 		buttons.add(button);
 
@@ -811,14 +821,21 @@ public class Editor extends GraphicView {
 				Gui.setView(new ProgramSquareEditor(editor,ps));
 			}
 		});
-		button.setX(ps.getX()+0.015f);
-		button.setY(ps.getY()+0.015f);
-		button.adjust(0.025f, 0.025f);
+		button.reposition(ps.getX()+0.015f,
+				ps.getY()+0.015f);
+		button.resize(0.025f, 0.025f);
 		ps.addChild(button);
 		buttons.add(button);
 	}
 
 
+
+
+	public void addSquare(Square square) {
+		squares.add(square);
+		addIconsToSquare(square);
+		addChild(square);
+	}
 	public void setVisibleSquares(int colour){
 		for(Square square:squares){
 			square.displayFor(colour);

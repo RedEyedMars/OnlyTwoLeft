@@ -5,7 +5,7 @@ import game.menu.MainMenu;
 import gui.Gui;
 
 /**
- * When the {@link game.Game} ends (usually due to a {@link game.Hero} dying), this {@link duo.messages.Message} is sent.
+ * When the {@link game.Game} ends (usually due to a {@link game.hero.Hero} dying), this {@link duo.messages.Message} is sent.
  * Tells the other Game to also end.
  * @author Geoffrey
  *

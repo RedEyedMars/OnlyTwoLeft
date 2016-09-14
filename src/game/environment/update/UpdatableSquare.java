@@ -47,8 +47,8 @@ public class UpdatableSquare extends OnStepSquare {
 	public void move(float x, float y){
 		super.move(x, y);
 		for(Square square:dependants){
-			square.setX(square.getX()-x);
-			square.setY(square.getY()-y);
+			square.reposition(square.getX()-x,
+					      square.getY()-y);
 		}
 	}
 	public void activate(){

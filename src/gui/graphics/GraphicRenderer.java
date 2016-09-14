@@ -101,6 +101,7 @@ public class GraphicRenderer {
 		textureBuffers.put(xMax+"x"+yMax, textureBuffer);
 	}
 	public void display(){
+		
 		while(!Hub.addLayer.isEmpty()){
 			GraphicElement e = Hub.addLayer.remove(0);
 			if(loadImageFromTextureName.containsKey(e.getTextureName())){
@@ -115,6 +116,7 @@ public class GraphicRenderer {
 		}
 		while(!Hub.removeLayer.isEmpty()){
 			GraphicElement e = Hub.removeLayer.remove(0);
+			if(e==null)continue;
 			if(e.getLayer()==1){
 				Hub.drawTopLayer.remove(e);
 			}

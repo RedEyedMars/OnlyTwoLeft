@@ -16,16 +16,11 @@ public class Menu extends GraphicView{
 	
 	public Menu(){
 		super();		
-		this.listenToRelease = true;
 		addChild(new GraphicEntity("squares"));
 		getChild(0).setFrame(15);
-	}
-	@Override
-	public void onAddToDrawable(){
 		for(Square square:squares){
 			addChild(square);
 		}
-		super.onAddToDrawable();
 	}
 	@Override
 	public boolean onHover(MotionEvent e){
@@ -40,10 +35,10 @@ public class Menu extends GraphicView{
 			since-=0.1f;
 			float w = (float) (0.4*Math.random());
 			squares.add(new Square((int)(16*Math.random()),w,w));
-			squares.get(squares.size()-1).setY(1f+1.5f*(float)Math.random());
-			squares.get(squares.size()-1).setX((float) (-0.2f+1.4*Math.random()));
+			squares.get(squares.size()-1).reposition(
+					   (float) (-0.2f+1.4*Math.random()),
+						1f+1.5f*(float)Math.random());
 			addChild(squares.get(squares.size()-1));
-			squares.get(squares.size()-1).onAddToDrawable();
 			squares.get(squares.size()-1).getGraphicElement().rotate((float)(Math.random()-0.5f));
 		}
 		for(int i=0;i<squares.size();++i){
@@ -52,7 +47,7 @@ public class Menu extends GraphicView{
 			if(square.getY()>1f){
 			//	square.setX((float) (square.getX()+(mouseX-square.getX())/2f*seconds));
 			}
-			square.setY((float) (square.getY()-0.1f*seconds));
+			square.reposition(square.getX(),(float) (square.getY()-0.1f*seconds));
 			if(square.getY()<-1f){
 				removeChild(square);
 				squares.remove(square);

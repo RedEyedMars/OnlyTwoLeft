@@ -11,7 +11,7 @@ import duo.messages.EndConnectionMessage;
 import duo.messages.Message;
 import duo.messages.SendMapMessage;
 import duo.messages.StartGameMessage;
-import game.Hero;
+import game.hero.Hero;
 import game.menu.IDuoMenu;
 import main.Main;
 
@@ -209,7 +209,7 @@ public class Client {
 	}
 
 	/**
-	 * Sets the {@link game.Hero} handled by this Client.
+	 * Sets the {@link game.hero.Hero} handled by this Client.
 	 * @param hero - to be handled
 	 */
 	public static void setHero(Hero hero) {

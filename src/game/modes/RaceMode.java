@@ -13,9 +13,13 @@ import java.util.List;
 import duo.client.Client;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
+import game.Action;
 import game.Game;
-import game.Hero;
 import game.environment.onstep.OnStepSquare;
+import game.hero.ConnectedHero;
+import game.hero.ConnectedHumanoidHero;
+import game.hero.Hero;
+import game.hero.HumanoidHero;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
@@ -27,7 +31,6 @@ public class RaceMode implements GameMode{
 	private static final float lowerViewBorder = 0.4f;
 	private static final float standardAcceleration = 0.02f;
 	private boolean focusedCanJump = false;
-	private boolean focusedJumping = true;
 
 	private Hero wild;
 	private Hero focused;
@@ -57,11 +60,10 @@ public class RaceMode implements GameMode{
 		focused = Hub.getHero(colourToControl);
 		wild = Hub.getHero(!colourToControl);
 		
-		focused.adjust(0.04f, 0.04f);
-		wild.adjust(0.04f, 0.04f);
+		focused.resize(0.04f, 0.04f);
+		wild.resize(0.04f, 0.04f);
 		this.wildWall = wildWall;
-		wild.setX(focused.getX());
-		wild.setY(focused.getY());
+		wild.reposition(focused.getX(),focused.getY());
 		if(Client.isConnected()){
 			Client.setHero(focused);
 		}
@@ -69,14 +71,12 @@ public class RaceMode implements GameMode{
 			setupPathStreams(Hub.map.getName());			
 		}
 		showTimeBack = new GraphicText("impact","0",1);
-		showTimeBack.setX(0.445f);
-		showTimeBack.setY(0.895f);
+		showTimeBack.reposition(0.445f,0.895f);
 		showTimeBack.setWidthFactor(1.45f);
 		showTimeBack.setHeightFactor(3.2f);
 		auxillaryChildren.add(showTimeBack);
 		showTime = new GraphicText("impactWhite","0",1);
-		showTime.setX(0.45f);
-		showTime.setY(0.9f);
+		showTime.reposition(0.45f,0.9f);
 		showTime.setWidthFactor(1.4f);
 		showTime.setHeightFactor(3f);
 		auxillaryChildren.add(showTime);
@@ -162,8 +162,8 @@ public class RaceMode implements GameMode{
 			try {
 				float x = ghostPath.readFloat();
 				float y = ghostPath.readFloat();
-				wild.setX(x+Hub.map.getX());
-				wild.setY(y+Hub.map.getY());
+				wild.reposition(x+Hub.map.getX(),
+						    y+Hub.map.getY());
 				char endChar = ghostPath.readChar();
 				if(endChar=='!'){
 					ghostPath.close();
@@ -185,28 +185,28 @@ public class RaceMode implements GameMode{
 	}
 
 	private void handleViewMovement(){
+		float heroMoveX = focused.getX();
+		float heroMoveY = focused.getY();
 		if(focused.getX()>uppderViewBorder){
-			Hub.map.setX(Hub.map.getX()-(focused.getX()-uppderViewBorder));
-			wild.setX(wild.getX()-(focused.getX()-uppderViewBorder));
-			focused.setX(uppderViewBorder);
+			heroMoveX = uppderViewBorder;
 		}
 		else if(focused.getX()<lowerViewBorder){
-			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));
-			wild.setX(wild.getX()+(lowerViewBorder-focused.getX()));
-			focused.setX(lowerViewBorder);
+			heroMoveX = lowerViewBorder;
 		}
 		if(focused.getY()>uppderViewBorder){
-			Hub.map.setY(Hub.map.getY()-(focused.getY()-uppderViewBorder));
-			wild.setY(wild.getY()-(focused.getY()-uppderViewBorder));
-			focused.setY(uppderViewBorder);
+			heroMoveY = uppderViewBorder;
 		}
 		else if(Hub.map.getY()<0&&focused.getY()<lowerViewBorder){
-			Hub.map.setY(Hub.map.getY()+(lowerViewBorder-focused.getY()));
-			wild.setY(wild.getY()+(lowerViewBorder-focused.getY()));
-			focused.setY(lowerViewBorder);
+			heroMoveY = lowerViewBorder;
 		}
-		wildWall.setX(wild.getX()-0.25f);
-		wildWall.setY(wild.getY()-0.25f);
+
+		Hub.map.reposition(Hub.map.getX()+(heroMoveX-focused.getX()),
+				       Hub.map.getY()+(heroMoveY-focused.getY()));
+		wild.reposition(wild.getX()+(heroMoveX-focused.getX()),
+				    wild.getY()+(heroMoveY-focused.getY()));
+		focused.reposition(heroMoveX,heroMoveY);
+		wildWall.reposition(wild.getX()-0.25f,
+				        wild.getY()-0.25f);
 	}
 	@Override 
 	public void update(double secondsSinceLastFrame){
@@ -216,7 +216,7 @@ public class RaceMode implements GameMode{
 		MoveHeroMessage.update(secondsSinceLastFrame, wild);
 		if(focused.foundSouthWall()){
 			focusedCanJump=true;
-			focusedJumping=false;
+			focused.setJumping(false);
 			if(focused.getYAcceleration()<0){
 				focused.setYAcceleration(0);
 			}
@@ -231,9 +231,19 @@ public class RaceMode implements GameMode{
 			}
 		}
 		if(focused.getY()<-0.05f||wild.getY()<-0.05f){
-			System.out.println(focused.isBlack()&&focused.getY()<-0.05f?"black lose":"white lose");
+			//System.out.println(focused.isBlack()&&focused.getY()<-0.05f?"black lose":"white lose");
 			loseGame(focused.isBlack());
 		}
+	}
+	@Override
+	public Hero createConnectedHero(boolean control, Game game, boolean bool) {
+		return new ConnectedHumanoidHero(control, game,bool);
+	}
+
+
+	@Override
+	public Hero createHero(Game game, boolean bool) {
+		return new HumanoidHero(game,bool);
 	}
 	@Override
 	public void loseGame(boolean colour){
@@ -302,7 +312,7 @@ public class RaceMode implements GameMode{
 	}
 	private void jump(){
 		if(focusedCanJump){
-			if(focusedJumping){
+			if(focused.isJumping()){
 				focused.setYAcceleration(focused.getYAcceleration()+0.06f);
 				if(focused.getYAcceleration()>0.06f){
 					focused.setYAcceleration(0.06f);					
@@ -310,9 +320,17 @@ public class RaceMode implements GameMode{
 				focusedCanJump=false;
 			}
 			else {
-				focused.setYAcceleration(0.06f);
+				focusedCanJump=false;
+				focused.jump(new Action<Hero>(){
+					@Override
+					public void act(Hero subject) {
+						subject.setYAcceleration(0.06f);
+						subject.setJumping(true);
+						focusedCanJump=true;
+					}
+					
+				});
 			}
-			focusedJumping=true;
 		}
 	}
 	@Override

@@ -2,6 +2,7 @@ package game.environment;
 
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicView;
 import main.Hub;
 import storage.Storage;
 
@@ -10,13 +11,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import game.Hero;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
 import game.environment.program.ProgrammableSquare;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
+import game.hero.Hero;
+import game.menu.GetFileMenu;
 public class Square extends GraphicEntity implements Colourable, Saveable{
 
 	public static final byte green = 0;
@@ -39,11 +41,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		this.displayFor(Hero.BOTH_INT);
 		this.shapeType = shapeType;
 		this.setShape(shapeType);
-		setX(Hub.map.getRealX(ints.next()));
-		setY(Hub.map.getRealY(ints.next()));
-		float w = Hub.map.getRealX(ints.next());		
-		float h = Hub.map.getRealY(ints.next());
-		adjust(w,h);
+		reposition(Hub.map.getRealX(ints.next()),Hub.map.getRealY(ints.next()));
+		resize(Hub.map.getRealX(ints.next()),Hub.map.getRealY(ints.next()));
 		this.actionType = actionType;
 		loadActions(ints,floats);
 	}
@@ -57,7 +56,7 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 	}
 	public Square(int blackColour, int whiteColour, float width, float height) {
 		super("squares");
-		adjust(width,height);
+		resize(width,height);
 		this.blackColour = blackColour;
 		this.whiteColour = whiteColour;
 		displayFor(Hero.BOTH_INT);
@@ -133,26 +132,20 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		else return blackColour;
 	}
 	@Override
-	public void adjust(float x, float y){
-		this.getGraphicElement().adjust(x, y);
+	public void resize(float x, float y){
+		this.getGraphicElement().resize(x, y);
 	}
 
 	private float xOffset = 0f;
 	private float yOffset = 0f;
-	public void move(float x, float y){
-		setX(getX()+x);
-		setY(getY()+y);
+	public void move(Float x, Float y){
+		reposition(getX()+x,getY()+y);
 	}
 	@Override
-	public void setX(float x){
-
+	public void reposition(float x, float y){
 		xOffset = x-getX();
-		super.setX(x);
-	}
-	@Override
-	public void setY(float y){
 		yOffset = y-getY();
-		super.setY(y);
+		super.reposition(x,y);
 	}
 	@Override
 	public float offsetX(int index){
@@ -226,7 +219,7 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		}
 		return square;
 	}
-	public static Iterator<Integer> makeInts(
+	public static Iterator<Integer> makeInts(GraphicView editor,
 			int squareAction1, int squareAction2, List<Integer> updateAction, boolean onCreateAction, boolean programAction,
 			int shapeType, int colour, int colour2,int x, int y, int w, int h) {		
 		List<Integer> ints = new ArrayList<Integer>();
@@ -252,7 +245,7 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
-					addMapNameToInts(ints,squareAction1);
+					addMapNameToInts(editor,ints,squareAction1);
 				}
 				else {
 					ints.add(2);
@@ -264,9 +257,9 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
-					addMapNameToInts(ints,squareAction1);
+					addMapNameToInts(editor,ints,squareAction1);
 					ints.add(squareAction2);
-					addMapNameToInts(ints,squareAction2);
+					addMapNameToInts(editor,ints,squareAction2);
 				}
 			}
 			else if(updateAction.size()>0){
@@ -290,13 +283,13 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 				}				
 				else if(squareAction1==squareAction2){
 					ints.add(squareAction1);
-					addMapNameToInts(ints,squareAction1);
+					addMapNameToInts(editor,ints,squareAction1);
 				}
 				else {
 					ints.add(squareAction1);
-					addMapNameToInts(ints,squareAction1);
+					addMapNameToInts(editor,ints,squareAction1);
 					ints.add(squareAction2);
-					addMapNameToInts(ints,squareAction2);
+					addMapNameToInts(editor,ints,squareAction2);
 				}
 				if(updateAction.size()==1){
 					ints.add(updateAction.get(0));
@@ -352,12 +345,12 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		return ints.iterator();
 	}
 
-	private static void addMapNameToInts(List<Integer> ints, int squareAction) {
+	private static void addMapNameToInts(GraphicView editor, List<Integer> ints, int squareAction) {
 		if(OnStepAction.getAction(squareAction)==null)return;
 		if(OnStepAction.getAction(squareAction).targetType()==2){
-			File file = Gui.userSave("maps");
+			File file = GetFileMenu.getFile(editor,"maps");
 			while(file==null){
-				file = Gui.userSave("maps");
+				file = GetFileMenu.getFile(editor,"maps");
 			}
 
 			String relPath = file.getAbsolutePath().replace(new File("").getAbsolutePath()+File.separatorChar,"");

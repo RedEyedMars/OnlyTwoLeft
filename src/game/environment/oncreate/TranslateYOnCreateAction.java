@@ -15,7 +15,7 @@ public class TranslateYOnCreateAction extends OnCreateAction {
 	@Override
 	public void act(OnCreateSquare square) {
 		GraphicEntity toTranslate = (GraphicEntity) square.getLast();
-		toTranslate.setY(toTranslate.getY()+dy);
+		toTranslate.reposition(toTranslate.getX(),toTranslate.getY()+dy);
 	}
 	@Override
 	protected void saveArgs(List<Object> saveTo){

@@ -10,6 +10,7 @@ import duo.messages.MoveHeroMessage;
 import duo.messages.SaveGameMessage;
 import game.environment.onstep.OnStepSquare;
 import game.environment.update.UpdatableSquare;
+import game.hero.Hero;
 import game.menu.MainMenu;
 import game.menu.PauseMenu;
 import game.menu.TransitionMenu;
@@ -46,55 +47,40 @@ public class Game extends GraphicView{
 		this.colourToControl = colourToControl;
 		Hero black = null;
 		Hero white = null;
+		gameMode = Hub.map.getGameMode();
+		if(gameMode==null) return;		
+
 		if(Client.isConnected()){
 			if(colourToControl){
-				black = new Hero(this,Hero.BLACK_BOOL){
-					@Override
-					public void move(float x, float y){
-						super.move(x,y);
-						MoveHeroMessage.send(x,y);
-					}
-				};
-				white = new Hero(this,Hero.WHITE_BOOL){
-					@Override
-					public void move(float x, float y){
-					}
-				};
+				black = gameMode.createConnectedHero(true,this,Hero.BLACK_BOOL);
+				white = gameMode.createConnectedHero(false,this,Hero.WHITE_BOOL);
 			}
 			else {
-				black = new Hero(this,Hero.BLACK_BOOL){
-					@Override
-					public void move(float x, float y){
-					}
-				};
-				white = new Hero(this,Hero.WHITE_BOOL){
-					@Override
-					public void move(float x, float y){
-						super.move(x,y);
-						MoveHeroMessage.send(x,y);
-					}
-				};
+				white = gameMode.createConnectedHero(true,this,Hero.WHITE_BOOL);
+				black = gameMode.createConnectedHero(false,this,Hero.BLACK_BOOL);				
 			}
 		}
 		else {
-			black = new Hero(this,Hero.BLACK_BOOL);
-			white = new Hero(this,Hero.WHITE_BOOL);
+			black = gameMode.createHero(this,Hero.BLACK_BOOL);
+			white = gameMode.createHero(this,Hero.WHITE_BOOL);
 		}
 		black.setPartner(white);
 		white.setPartner(black);
-
+		Hub.setHeroes(black,white);
 		addChild(Hub.map);
 
 		if(Hub.map.getSquares().size()>0){
 			OnStepSquare wildWall = new OnStepSquare(-1,0.5f,((OnStepSquare)Hub.map.getSquares().get(0)).getBlackAction());
-
 			Hub.map.getFunctionalSquares().add(0,wildWall);
+			gameMode.setup(this,colourToControl, wildWall);
+			for(GraphicEntity e:gameMode.getAuxillaryChildren()){
+				addChild(e);
+			}
 			Hub.map.onCreate();
 			for(UpdatableSquare square:Hub.map.getUpdateSquares()){
 				square.run();
 			}
-			Hub.map.getSquares().get(0).setX(0f);
-			Hub.map.getSquares().get(0).setY(0f);
+			Hub.map.getSquares().get(0).reposition(0f,0f);
 			Hub.map.moveToStart(black);
 			Hub.map.moveToStart(white);
 			addChild(black);
@@ -102,15 +88,9 @@ public class Game extends GraphicView{
 			Hub.setHeroes(black, white);
 
 			Hub.map.setVisibleSquares(colourToControl==Hero.BLACK_BOOL?Hero.BLACK_INT:
-									  colourToControl==Hero.WHITE_BOOL?Hero.WHITE_INT:0);
+				colourToControl==Hero.WHITE_BOOL?Hero.WHITE_INT:0);
 
-			gameMode = Hub.map.getGameMode();
-			if(gameMode!=null){
-				gameMode.setup(this,colourToControl, wildWall);
-				for(GraphicEntity e:gameMode.getAuxillaryChildren()){
-					addChild(e);
-				}
-			}
+
 
 
 		}
@@ -181,7 +161,6 @@ public class Game extends GraphicView{
 		if(pauseMenu==null){
 			pauseMenu = new PauseMenu(this);
 			addChild(pauseMenu);
-			pauseMenu.onAddToDrawable();
 		}
 		pauseMenu.pause();
 		Gui.giveOnClick(pauseMenu);
@@ -199,8 +178,7 @@ public class Game extends GraphicView{
 			@Override
 			public void act(Object subject) {
 				Gui.setView(new Game(colourToControl,seed));
-				Hub.getHero(!colourToControl).setX(theirX);
-				Hub.getHero(!colourToControl).setY(theirY);
+				Hub.getHero(!colourToControl).reposition(theirX,theirY);
 				waiting=false;
 			}
 		});

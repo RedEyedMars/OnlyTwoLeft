@@ -6,11 +6,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import game.Hero;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepSquare;
 import game.environment.onstep.WinStageOnStepAction;
 import game.environment.update.UpdatableSquare;
+import game.hero.Hero;
 import game.modes.GameMode;
 import game.modes.OverheadMode;
 import game.modes.PlatformMode;
@@ -104,7 +107,6 @@ public class Map extends GraphicEntity {
 	}
 
 	public void setVisibleSquares(int colour){
-		System.out.println(colour);
 		for(Square square:displaySquares){
 			square.displayFor(colour);
 		}
@@ -118,14 +120,10 @@ public class Map extends GraphicEntity {
 	private float yOffset = 0f;
 	private boolean lightDependency = true;
 	@Override
-	public void setX(float x){
+	public void reposition(float x, float y){
 		xOffset = x-getX();
-		super.setX(x);
-	}
-	@Override
-	public void setY(float y){
 		yOffset = y-getY();
-		super.setY(y);
+		super.reposition(x,y);
 	}
 	@Override
 	public float offsetX(int index){
@@ -296,12 +294,10 @@ public class Map extends GraphicEntity {
 
 	public void moveToStart(Hero hero){
 		if(hero.isBlack()){
-			hero.setX(startingXPosition[0]);
-			hero.setY(startingYPosition[0]);
+			hero.reposition(startingXPosition[0],startingYPosition[0]);
 		}
 		else if(hero.isWhite()){
-			hero.setX(startingXPosition[1]);
-			hero.setY(startingYPosition[1]);
+			hero.reposition(startingXPosition[1],startingYPosition[1]);
 		}
 	}
 
@@ -452,14 +448,24 @@ public class Map extends GraphicEntity {
 	}
 
 	public static void main(String[] args){
-		File file = Gui.userSave("maps");
+		File file = userSave("maps");
 		while(file!=null){
 			Storage.loadMap(file.getAbsolutePath());
 			game.environment.Map map = game.environment.Map.createMap(Hub.map.getMapId());
 			Hub.map.copyTo(map);
 			Storage.saveMap(file.getAbsolutePath(), map);
-			file = Gui.userSave("maps");
+			file = userSave("maps");
 		}
+	}
+
+	public static File userSave(String sub){
+		JFileChooser  fc = new JFileChooser("data"+File.separator+sub);
+		int returnVal = fc.showOpenDialog(new JPanel());
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        } else {
+            return null;
+        }
 	}
 
 	public void copyTo(Map map) {

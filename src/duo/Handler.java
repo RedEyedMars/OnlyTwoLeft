@@ -12,7 +12,7 @@ import duo.client.Client;
 import duo.messages.Message;
 import duo.messages.PassMessage;
 import duo.messages.PingMessage;
-import game.Hero;
+import game.hero.Hero;
 import game.menu.IDuoMenu;
 
 /**
@@ -301,7 +301,7 @@ public class Handler {
 	}
 	/**
 	 * Gets the hero controlled by this Handler.
-	 * @return This Handler's {@link game.Hero}.
+	 * @return This Handler's {@link game.hero.Hero}.
 	 */
 	public Hero getHero(){
 		//return this handler's Hero.
@@ -309,7 +309,7 @@ public class Handler {
 	}
 	/**
 	 * Allows the {@link game.Game} to set this handler's hero.
-	 * @param hero - {@link game.Hero} to be controlled by this handler.
+	 * @param hero - {@link game.hero.Hero} to be controlled by this handler.
 	 */
 	public void setHero(Hero hero) {
 		//Set the hero.

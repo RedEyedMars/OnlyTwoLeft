@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import game.Hero;
 import game.environment.Creatable;
 import game.environment.Square;
 import game.environment.SquareAction;
@@ -14,6 +13,7 @@ import game.environment.onstep.OnStepAction;
 import game.environment.update.NullUpdateAction;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
+import game.hero.Hero;
 import gui.graphics.GraphicView;
 import main.Hub;
 

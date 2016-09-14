@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import game.Action;
-import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
+import game.hero.Hero;
 import main.Hub;
 import main.Main;
 

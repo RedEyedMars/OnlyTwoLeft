@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import game.environment.Square;
+import game.environment.oncreate.OnCreateSquare;
 import game.environment.update.UpdatableSquare;
+import game.menu.EditorMenu;
+import game.menu.GetFileMenu;
 import game.menu.MainMenu;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -29,7 +32,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private GraphicEntity lightDependencyShower = new GraphicEntity("editor_light_dependency",1);
 	public MapEditor(){
 		super();
-		saveTo = Gui.userSave("maps");
+		saveTo = GetFileMenu.getFile(this,"maps");
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				Storage.loadMap(saveTo.getAbsolutePath());
@@ -45,8 +48,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 					addChild(square);
 				}
 				if(squares.size()>0){
-					squares.get(0).setX(0f);
-					squares.get(0).setY(0f);
+					squares.get(0).reposition(0f,0f);
 				}
 			}
 			else {
@@ -84,14 +86,22 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				y-=y%5;
 				float dx = Hub.map.getRealX(x)-button.getX();
 				float dy = Hub.map.getRealY(y)-button.getY();
-				button.setX(button.getX()+dx);
-				button.setY(button.getY()+dy);
+				button.reposition(button.getX()+dx,
+						      button.getY()+dy);
 				myLoadedMap.setStartPosition(colour,button.getX()-screenX,button.getY()-screenY);
 				return true;
 			}
 
 			@Override
 			public void onMouseScroll(int distance) {				
+			}
+
+			@Override
+			public void onListenToMouse() {				
+			}
+
+			@Override
+			public void onMuteMouse() {				
 			}
 		};
 		button.setAction(new ButtonAction(){
@@ -102,9 +112,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 		});
 
-		button.setX(myLoadedMap.getStartingXPosition(colour)+screenX);
-		button.setY(myLoadedMap.getStartingYPosition(colour)+screenY);
-		button.adjust(0.05f, 0.05f);
+		button.reposition(myLoadedMap.getStartingXPosition(colour)+screenX,
+				      myLoadedMap.getStartingYPosition(colour)+screenY);
+		button.resize(0.05f, 0.05f);
 		heroButtons .add(button);
 		buttons.add(button);
 		addChild(button);
@@ -113,15 +123,15 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	@Override
 	public void setupButtons(){
 		super.setupButtons();
-		gravityShower.adjust(0.04f, 0.04f);
-		gravityShower.setX(0.9f);
-		gravityShower.setY(0.96f);
+		gravityShower.resize(0.04f, 0.04f);
+		gravityShower.reposition(0.9f,
+				           0.96f);
 		addChild(gravityShower);
 		gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
 		
-		this.lightDependencyShower.adjust(0.04f, 0.04f);
-		lightDependencyShower.setX(0.905f);
-		lightDependencyShower.setY(0.91f);
+		this.lightDependencyShower.resize(0.04f, 0.04f);
+		lightDependencyShower.reposition(0.905f,
+				                     0.91f);
 		addChild(lightDependencyShower);
 		lightDependencyShower.setFrame(myLoadedMap.isLightDependent()?0:1);
 	}
@@ -142,7 +152,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			public boolean onHover(MotionEvent event) {
 				int x = Hub.map.getIntX(event.getX());
 				int y = Hub.map.getIntY(event.getY());
-				if(granityShower.textureIndex()==0){
+				if(granityShower.getFrame()==0){
 					x = (int) (x+2.5f);
 					y = (int) (y+2.5f);
 					x-=x%5;
@@ -150,25 +160,31 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				}
 				float dx = Hub.map.getRealX(x)-copy.getX();
 				float dy = Hub.map.getRealY(y)-copy.getY();
-				copy.setX(copy.getX()+dx);
-				copy.setY(copy.getY()+dy);
+				copy.reposition(copy.getX()+dx,
+						  copy.getY()+dy);
 				return true;
 			}
 
 			@Override
 			public void onMouseScroll(int distance) {				
 			}
+
+			@Override
+			public void onListenToMouse() {
+				
+			}
+
+			@Override
+			public void onMuteMouse() {			
+			}
 		};
-		addIconsToSquare(copy);
-		squares.add(copy);
-		addChild(copy);
-		copy.onAddToDrawable();
+		addSquare(copy);
 		Gui.giveOnClick(mouseListener);
 	}
 
 	public void update(double seconds){
 		if(saveTo==null){
-			Gui.setView(new MainMenu());
+			Gui.setView(new EditorMenu());
 		}
 		//super.update(seconds);
 	}
@@ -192,10 +208,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 			else if(44==keycode&&!squares.isEmpty()){
 				if(mostRecentlyRemovedSquare!=null){
-					addIconsToSquare(mostRecentlyRemovedSquare);
-					addChild(mostRecentlyRemovedSquare);
-					mostRecentlyRemovedSquare.onAddToDrawable();
-					squares.add(mostRecentlyRemovedSquare);
+					addSquare(mostRecentlyRemovedSquare);
 					mostRecentlyRemovedSquare = null;
 				}
 				else {
@@ -236,7 +249,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
 			}
 			else if(keycode==33){//toggle granity
-				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
+				granityShower.setFrame(granityShower.getFrame()==0?1:0);
 			}
 		}
 
@@ -247,17 +260,17 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	}
 	private void saveMap(){
 		for(Square square:squares){
-			square.setX(square.getX()-screenX);
-			square.setY(square.getY()-screenY);
+			square.reposition(square.getX()-screenX,
+					          square.getY()-screenY);
 		}
 
 		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
 		myLoadedMap.copyTo(map);
 		for(Square square:squares){
-			square.setView(this);
+			square.setRoot(this);
 		}
 		for(Square square:Hub.map.getTemplateSquares()){
-			square.setView(this);
+			square.setRoot(this);
 		}
 		Storage.saveMap(saveTo.getAbsolutePath(), map);
 	}
@@ -265,19 +278,19 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		this.screenX+=x;
 		this.screenY+=y;
 		for(int i=1;i<squares.size();++i){
-			squares.get(i).setX(squares.get(i).getX()+x);
-			squares.get(i).setY(squares.get(i).getY()+y);
+			squares.get(i).reposition(squares.get(i).getX()+x,
+					             squares.get(i).getY()+y);
 		}
 		for(GraphicEntity button:heroButtons){
-			button.setX(button.getX()+x);
-			button.setY(button.getY()+y);
+			button.reposition(button.getX()+x,
+					      button.getY()+y);
 		}
 	}
 
 	@Override
 	public boolean continuousKeyboard() {
 		return true;
-	}
+	}/* leaving this code here in case we've broken something with the refactored way that graphicView/Gui.setView works
 	public void restartWith(Square square) {
 		if(square!=null){
 			squares.add(square);
@@ -311,6 +324,6 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 		}
 		reset = true;
-	}
+	}*/
 
 }

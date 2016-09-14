@@ -21,30 +21,26 @@ public class StateSquare extends Button{
 		super("squares",2,new ButtonAction(){public void act(Object subject) {}});
 		this.editor=editor;
 		this.state = state;
-		adjust(0.125f,0.075f);
+		resize(0.125f,0.075f);
 		for(String subEvent:ProgramState.eventNames){
 			if(state.getSubStates(subEvent)!=null){
 				for(ProgramState subState:state.getSubStates(subEvent)){
 					StateSquare ss = new StateSquare(editor,subState,subEvent);
 					addChild(ss);
-					ss.onAddToDrawable();
 					subStates.add(ss);						
 				}
 			}
 		}
-		setX(0.05f);
-		setY(0.5f);
+		reposition(0.05f,0.5f);
 		for(ProgramAction action:state.getActions()){
 			ActionEditor ae = editor.createActionEditor(action);
-			ae.setX(getX()+0.01f);
-			ae.setY(getY()+0.01f);
+			ae.reposition(getX()+0.01f,getY()+0.01f);
 			addActionEditor(ae);
 		}
 		condition = new ConditionArrow(state.getCondition(),event);
 		addChild(condition);
-		adjust(getWidth(),getHeight());
-		setX(getX());
-		setY(getY());
+		resize(getWidth(),getHeight());
+		reposition(getX(),getY());
 		editor.addButton(this);
 	}
 	public ProgramState solidify() {
@@ -64,14 +60,12 @@ public class StateSquare extends Button{
 		ProgramState subState = state.addSubState("update");
 		StateSquare ss = new StateSquare(editor,subState,"update");
 		addChild(ss);
-		ss.onAddToDrawable();
 		subStates.add(ss);
-		setX(getX());
-		setY(getY());
+		reposition(getX(),getY());
 	}
 	public void moveView(float x, float y) {
-		setX(getX()+x);
-		setY(getY()+y);
+		reposition(getX()+x,
+			   getY()+y);
 		for(StateSquare state:subStates){
 			state.moveView(x, y);
 		}
@@ -101,11 +95,11 @@ public class StateSquare extends Button{
 				return dy;
 			}
 			else {
-				subStates.get(ssi).setY(getY()+dy);
+				subStates.get(ssi).reposition(getX(),getY()+dy);
 				float dy2 = (subStates.get(ssi).getY()+subStates.get(ssi).getHeight()-
 						subStates.get(0).getY())/2f;   
 				for(int i=0;i<ssi;++i){
-					subStates.get(i).setY(subStates.get(i).getY()-dy2);
+					subStates.get(i).reposition(subStates.get(i).getX(),subStates.get(i).getY()-dy2);
 				}
 				return dy2;
 			}
@@ -120,25 +114,24 @@ public class StateSquare extends Button{
 		else return 0f;
 	}
 	@Override
-	public void adjust(float x, float y){
-		super.adjust(x, y);
+	public void resize(float x, float y){
+		super.resize(x, y);
 		if(condition!=null){
-			condition.adjust(0.05f, 0.025f);
+			condition.resize(0.05f, 0.025f);
 		}
 		for(ActionEditor action:actions){
-			action.adjust(0.025f,0.025f);
+			action.resize(0.025f,0.025f);
 		}
 	}
 	public StateSquare addActionEditor(ActionEditor actionEditor) {
 		if(isWithin(actionEditor.getX(), actionEditor.getY())){	
 			ActionEditor action = editor.createActionEditor(actionEditor.action);
 			addChild(action);
-			action.onAddToDrawable();
 			actions.add(action);
 			editor.addButton(action);
-			adjust(0.125f,getHeight()+0.026f);
-			setX(getX());
-			setY(getY()-0.026f);
+			resize(0.125f,getHeight()+0.026f);
+			reposition(getX(),
+				   getY()-0.026f);
 			return this;
 		}
 		for(StateSquare state:subStates){

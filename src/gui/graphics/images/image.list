@@ -10,9 +10,9 @@
 	speech_bubble.png
 	speech_bubble_inverted.png
 4:
-	editor_button.png
 	circles.png
 8:
+	editor_button.png
 	vision_bubbles.png
 	editor_icons.png
 	editor_shape_icons.png
@@ -21,3 +21,5 @@
 	heroes.png
 8x8:
 	squares.png
+4x16:
+	human_heroes.png

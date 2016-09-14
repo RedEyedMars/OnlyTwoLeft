@@ -3,9 +3,9 @@ package game.environment.update;
 import java.util.List;
 
 import game.Game;
-import game.Hero;
 import game.environment.Square;
 import game.environment.onstep.OnStepSquare;
+import game.hero.Hero;
 import gui.graphics.GraphicEntity;
 import main.Hub;
 
@@ -56,25 +56,21 @@ public class LightSourceUpdateAction extends UpdateAction{
 				Hub.map.displaySquare(whiteLight);
 				self.addChild(blackLight);
 				self.addChild(whiteLight);
-				blackLight.onAddToDrawable();
-				whiteLight.onAddToDrawable();
 			}
 			else {
-				blackLight.adjust(blackDis,self.getHeight());
-				whiteLight.adjust(whiteDis,self.getHeight());
+				blackLight.resize(blackDis,self.getHeight());
+				whiteLight.resize(whiteDis,self.getHeight());
 				blackLight.setVisible(true);
 				whiteLight.setVisible(true);
 			}				
 			if(x>0){
-				blackLight.setX(self.getX()+self.getWidth());
-				whiteLight.setX(self.getX()+self.getWidth());
+				blackLight.reposition(self.getX()+self.getWidth(),self.getY());
+				whiteLight.reposition(self.getX()+self.getWidth(),self.getY());
 			}
 			else {
-				blackLight.setX(self.getX()-blackDis);
-				whiteLight.setX(self.getX()-whiteDis);
+				blackLight.reposition(self.getX()-blackDis,self.getY());
+				whiteLight.reposition(self.getX()-whiteDis,self.getY());
 			}
-			blackLight.setY(self.getY());
-			whiteLight.setY(self.getY());
 		}
 		else {
 			if(blackLight==null){
@@ -84,25 +80,21 @@ public class LightSourceUpdateAction extends UpdateAction{
 				Hub.map.displaySquare(whiteLight);
 				self.addChild(blackLight);
 				self.addChild(whiteLight);
-				blackLight.onAddToDrawable();
-				whiteLight.onAddToDrawable();
 			}
 			else {
-				blackLight.adjust(self.getWidth(),blackDis);
-				whiteLight.adjust(self.getWidth(),whiteDis);
+				blackLight.resize(self.getWidth(),blackDis);
+				whiteLight.resize(self.getWidth(),whiteDis);
 				blackLight.setVisible(true);
 				whiteLight.setVisible(true);
 			}
 			if(y>0){
-				blackLight.setY(self.getY()+self.getHeight());
-				whiteLight.setY(self.getY()+self.getHeight());
+				blackLight.reposition(self.getX(),self.getY()+self.getHeight());
+				whiteLight.reposition(self.getX(),self.getY()+self.getHeight());
 			}
 			else {
-				blackLight.setY(self.getY()-blackDis);
-				whiteLight.setY(self.getY()-whiteDis);
+				blackLight.reposition(self.getX(),self.getY()-blackDis);
+				whiteLight.reposition(self.getX(),self.getY()-whiteDis);
 			}
-			blackLight.setX(self.getX());
-			whiteLight.setX(self.getX());
 		}
 		blackReflector = makeReflector(closestBlack,blackReflector,Hero.BLACK_INT,seconds);
 		whiteReflector = makeReflector(closestWhite,whiteReflector,Hero.WHITE_INT,seconds);
@@ -165,12 +157,12 @@ public class LightSourceUpdateAction extends UpdateAction{
 
 			if(show){
 				if(reflector==null){
-					if(colour==0){
+					if(colour==Hero.BLACK_INT){
 						reflector=new UpdatableSquare(reflectorShape,
 								self.getColour(colour),-1,
 								closest.getWidth(),closest.getHeight(),getIndex(),reflectorX,reflectorY,-1,-1);
 					}
-					else if(colour==1){
+					else if(colour==Hero.WHITE_INT){
 						reflector=new UpdatableSquare(reflectorShape,
 								-1,self.getColour(colour),
 								closest.getWidth(),closest.getHeight(),getIndex(),reflectorX,reflectorY,-1,-1);
@@ -178,16 +170,14 @@ public class LightSourceUpdateAction extends UpdateAction{
 					}
 					Hub.map.displaySquare(reflector);
 					self.addChild(reflector);
-					reflector.onAddToDrawable();
 				}
 				else {
 					reflector.setFrame(self.getColour(colour));
 					reflector.setShape(reflectorShape);
-					reflector.adjust(closest.getWidth(),closest.getHeight());
+					reflector.resize(closest.getWidth(),closest.getHeight());
 					reflector.getAction().setFloats(reflectorX, reflectorY);
 				}
-				reflector.setX(closest.getX());
-				reflector.setY(closest.getY());
+				reflector.reposition(closest.getX(),closest.getY());
 				reflector.setVisible(true);
 				reflector.getAction().act(seconds);
 			}

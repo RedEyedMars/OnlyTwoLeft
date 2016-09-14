@@ -1,68 +1,72 @@
 package gui.graphics;
 
+import gui.inputs.MotionEvent;
 import main.Hub;
 
 public class GraphicEntity extends GraphicView {
 	protected GraphicElement entity;
+	protected GraphicView root = null;
+	protected Animation<GraphicEntity> animation = null;
 	public GraphicEntity(String textureName, int layer) {
-		super(false);
+		super();
 		this.entity = new GraphicElement(textureName,this);
 		this.entity.setLayer(layer);
 	}
 	public GraphicEntity(String textureName) {
 		this(textureName,0);
 	}
-	@Override
+	public float getX(){
+		return entity.getX();
+	}
+	public float getY(){
+		return entity.getY();
+	}
 	public float getWidth(){
 		return entity.getWidth();
 	}
-	@Override
 	public float getHeight(){
 		return entity.getHeight();
 	}
 	@Override
-	public void adjust(float x, float y){
-		entity.adjust(x, y);
-		super.adjust(x, y);
+	public void resize(float x, float y){
+		entity.resize(x, y);
+		super.resize(x, y);
 	}
 	@Override
-	public void adjust(float x, float y, float dx, float dy){
-		entity.adjust(x, y);
-		super.adjust(x, y,dx,dy);
+	public void resize(float x, float y, float dx, float dy){
+		entity.resize(x, y);
+		super.resize(x, y,dx,dy);
 	}
 
 	@Override
-	public void setX(float x){
+	public void reposition(float x, float y){
 		entity.setX(x);
-		super.setX(x);
-	}
-
-	@Override
-	public void setY(float y){
 		entity.setY(y);
-		super.setY(y);
+		super.reposition(x,y);
 	}
 
 	@Override
 	public void onAddToDrawable(){
-		if(Hub.currentView==parent){
-			Hub.addLayer.add(entity);
-		}
+		Hub.addLayer.add(entity);
 		super.onAddToDrawable();
 	}
 
 	@Override
 	public void onRemoveFromDrawable(){
-		if(Hub.currentView==parent){
-			Hub.removeLayer.add(entity);
-		}
+		Hub.removeLayer.add(entity);
 		super.onRemoveFromDrawable();
 
 	}
-
+	
 	@Override
 	public void animate(){
+		if(animation!=null){
+			animation.onAnimate(this);
+		}
 		super.animate();
+	}
+	public void setAnimation(Animation<GraphicEntity> animation){
+		this.animation = animation;
 	}
 	@Override
 	public void setVisible(boolean vis){
@@ -84,11 +88,12 @@ public class GraphicEntity extends GraphicView {
 		entity.on(true);
 		super.turnOn();
 	}
-	@Override
 	public void setFrame(int i) {
 		entity.setFrame(i);
 	}
-	@Override
+	public int getFrame(){
+		return entity.getFrame();
+	}
 	public void rotate(float r) {
 		entity.rotate((float) (r*360/2f/Math.PI));
 	}
@@ -102,14 +107,41 @@ public class GraphicEntity extends GraphicView {
 	public GraphicElement getGraphicElement() {
 		return entity;
 	}
-	public int textureIndex(){
-		return entity.getFrame();
-	}
-	@Override
 	public boolean isWithin(float dx, float dy) {
 		return entity.isWithin(dx, dy);
 	}
 	public void setShape(int i){
 		entity.setShape(i);
+	}
+	@Override
+	public boolean onClick(MotionEvent event) {
+		if(this.isWithin(event.getX(), event.getY())){
+			super.onClick(event);
+			if(event.getAction()==MotionEvent.ACTION_DOWN){
+				this.performOnClick(event);
+			}
+			else if(event.getAction()==MotionEvent.ACTION_UP){
+				this.performOnRelease(event);
+			}
+			return true;
+		}
+		else return super.onClick(event);
+	}
+
+	@Override
+	public boolean onHover(MotionEvent event) {
+		if(this.isWithin(event.getX(), event.getY())){
+			this.performOnHover(event);
+			return true;
+		}
+		else return super.onHover(event);
+	}
+
+	public void performOnClick(MotionEvent event){		
+	}
+	public void performOnRelease(MotionEvent event){		
+	}
+
+	public void performOnHover(MotionEvent event){		
 	}
 }

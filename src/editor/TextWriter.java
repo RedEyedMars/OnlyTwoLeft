@@ -28,9 +28,7 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
 			if(ctrling){
-				if(ctrlCommands.containsKey(keycode)){
-					ctrlCommands.get(keycode).act(editor);
-				}
+				
 			}
 			else if(keycode==29||keycode==157){
 				ctrling=true;
@@ -67,10 +65,18 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 
 			}
 			else if(keycode==207){//end
-
+				
 			}
 			else if(keycode==211){//delete
-
+				if(getText().length()==0)return;
+				if(index>0){
+					if(index<getText().length()){
+						change(getText().substring(0, index)+getText().substring(index+1));
+					}					
+				}
+				else {
+					change(getText().substring(1));
+				}
 			}
 			else if(keycode==200){//up
 				if(lineIndex>0){
@@ -137,6 +143,11 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 		else if(KeyBoardListener.UP==b){
 			if(keycode==29||keycode==157){
 				ctrling=false;
+			}
+			else if(ctrling){
+				if(ctrlCommands.containsKey(keycode)){
+					ctrlCommands.get(keycode).act(editor);
+				}
 			}
 		}
 

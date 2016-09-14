@@ -20,8 +20,10 @@ public class GraphicText extends GraphicEntity {
 	private int layer;
 	protected GraphicEntity blinker = new GraphicEntity("squares",1){
 		private double since;
-		private int horz = charIndex;
-		private int vert = lineIndex;
+		@Override
+		public void resize(float w, float h){
+			super.resize(0.005f,0.025f);
+		}
 		@Override
 		public void update(double time){
 			since+=time;
@@ -34,26 +36,25 @@ public class GraphicText extends GraphicEntity {
 				since-=0.5f;
 			}
 			if(blinker.isVisible()){
-				if(vert!=lineIndex||horz!=charIndex){
-					setY(self.getY()-lineIndex*0.025f);
-					vert = lineIndex;
-					if(vert<lines.size()&&lines.get(vert).length()>0&&charIndex>0){
-						if(charIndex>=lines.get(vert).length()){
-							setX(self.getX()+
-									lines.get(vert).chars.get(lines.get(vert).length()-1).getX()+
-									lines.get(vert).chars.get(lines.get(vert).length()-1).getWidth()/2f);
+					if(lineIndex<lines.size()&&lines.get(lineIndex).length()>0&&charIndex>0){
+						if(charIndex>=lines.get(lineIndex).length()){
+							reposition(self.getX()+
+									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getX()+
+									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getWidth()*
+									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getWidthValue()*visualW,
+									self.getY()-lineIndex*0.025f);
 						}
 						else {
-							setX(self.getX()+
-									lines.get(vert).chars.get(charIndex-1).getX()+
-									lines.get(vert).chars.get(charIndex-1).getWidth()/2f);
+							reposition(self.getX()+
+									lines.get(lineIndex).chars.get(charIndex-1).getX()+
+									lines.get(lineIndex).chars.get(charIndex-1).getWidth()*
+									lines.get(lineIndex).chars.get(charIndex-1).getWidthValue()*visualW,
+									self.getY()-lineIndex*0.025f);
 						}
 					}
 					else {
-						setX(self.getX());
+						reposition(self.getX(),self.getY()-lineIndex*0.025f);
 					}
-					horz=charIndex;
-				}
 			}
 		}
 	};
@@ -63,20 +64,19 @@ public class GraphicText extends GraphicEntity {
 		this.font = font;
 		this.text = text;
 		this.layer = layer;
+		blinker.setFrame(7);
+		blinker.resize(0.005f,0.025f);
+		blinker.reposition(blinker.getX(),0.975f);
+		blinker.turnOff();
+		addChild(blinker);
 		String[] lines = text.split("\n");
 		for(int i=0;i<lines.length;++i){
 			GraphicLine line = new GraphicLine(lines[i]);
 			this.lines.add(line);
 			addChild(line);
 		}
-		this.adjust(1f, 1f);
-		this.setX(0f);
-		this.setY(0.97f);
-		blinker.setFrame(7);
-		blinker.adjust(0.005f,0.025f);
-		blinker.setY(0.975f);
-		blinker.turnOff();
-		addChild(blinker);
+		this.resize(1f, 1f);
+		this.reposition(0f,0.97f);
 
 	}
 
@@ -85,7 +85,7 @@ public class GraphicText extends GraphicEntity {
 	}
 
 	public void change(String text){
-		this.onRemoveFromDrawable();
+
 		this.text = text;
 		String[] lines = text.split("\n");
 		int size = this.lines.size();
@@ -93,6 +93,7 @@ public class GraphicText extends GraphicEntity {
 			for(int i=size;i<lines.length;++i){
 				GraphicLine line = new GraphicLine(lines[i]);
 				this.lines.add(line);
+				this.addChild(line);
 			}
 		}
 		for(int i=0;i<size;++i){
@@ -103,19 +104,14 @@ public class GraphicText extends GraphicEntity {
 				this.lines.get(i).change("");
 			}
 		}
-		for(GraphicLine line:this.lines){
-			addChild(line);
-		}
 
-		this.adjust(getWidth(), getHeight());
-		this.setX(getX());
-		this.setY(getY());
-		this.onAddToDrawable();
+		this.resize(getWidth(), getHeight());
+		this.reposition(getX(),getY());
 	}
 
 	@Override
 	public float offsetY(int index){
-		return 0.025f*(-index)*visualH;
+		return 0.025f*(-index+1)*visualH;
 	}
 
 	public void setWidthFactor(float w){
@@ -138,7 +134,7 @@ public class GraphicText extends GraphicEntity {
 			for(int i=0;i<chars.length;++i){
 				GraphicChar c = new GraphicChar(chars[i]);
 				this.chars.add(c);
-				addChild(new GraphicChar(chars[i]));
+				addChild(c);
 			}
 		}
 		public void change(String string) {
@@ -148,19 +144,18 @@ public class GraphicText extends GraphicEntity {
 			if(size<string.length()){
 				for(int i=size;i<string.length();++i){
 					GraphicChar c = new GraphicChar(string.charAt(i));
-					this.chars.add(c);					
+					this.chars.add(c);	
+					addChild(c);
 				}
 			}
 			for(int i=0;i<size;++i){
 				if(i<string.length()){
 					this.chars.get(i).change(string.charAt(i));
+					this.chars.get(i).turnOn();
 				}
 				else {
-					this.chars.get(i).change(' ');
+					this.chars.get(i).turnOff();
 				}
-			}
-			for(GraphicChar c:this.chars){
-				addChild(c);
 			}
 		}
 		@Override
@@ -209,8 +204,8 @@ public class GraphicText extends GraphicEntity {
 			}
 		}
 		@Override
-		public void adjust(float x, float y){
-			super.adjust(0.025f*visualW,0.025f*visualH);
+		public void resize(float x, float y){
+			super.resize(0.025f*visualW,0.025f*visualH);
 		}
 	}
 }

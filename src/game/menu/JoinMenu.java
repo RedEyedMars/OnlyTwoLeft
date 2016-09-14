@@ -22,6 +22,7 @@ import game.Game;
 import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Main;
@@ -72,15 +73,14 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				}
 			}
 		};
-		nameButton.adjust(0.8f, 0.15f);
-		nameButton.setX(0.1f);
-		nameButton.setY(0.72f);
+		nameButton.resize(0.8f, 0.15f);
+		nameButton.reposition(0.1f,0.72f);
 
 		name = new TextWriter("impact","Player Two"){
 			{
 				setWidthFactor(1.4f);
 				setHeightFactor(3f);
-				adjust(getWidth(), getHeight());
+				resize(getWidth(), getHeight());
 				charIndex=10;
 				index=10;
 			}
@@ -96,8 +96,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				}
 			}
 		};
-		name.setX(0.325f);
-		name.setY(0.74f);
+		name.reposition(0.325f,0.74f);
 		addChild(nameButton);
 		addChild(name);
 		//Gui.giveOnType(name);
@@ -119,16 +118,15 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				}
 			}
 		};
-		ipButton.adjust(0.8f, 0.15f);
-		ipButton.setX(0.1f);
-		ipButton.setY(0.56f);
+		ipButton.resize(0.8f, 0.15f);
+		ipButton.reposition(0.1f,0.56f);
 
 		final JoinMenu self = this;
 		ip = new TextWriter("impact","52.35.55.220"){
 			{
 				setWidthFactor(1.4f);
 				setHeightFactor(3f);
-				adjust(getWidth(), getHeight());
+				resize(getWidth(), getHeight());
 				charIndex=0;
 				index=0;
 				ctrlCommands = new HashMap<Integer, ButtonAction>();
@@ -181,47 +179,71 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				}
 			}
 		};
-		ip.setX(0.23f);
-		ip.setY(0.58f);
+		ip.reposition(0.23f,0.58f);
 		addChild(ipButton);
 		addChild(ip);
 
 		buttonList = new MenuButton(""){
 			private int botIndex = 1;
+			private GraphicText gameNames = new GraphicText("impact","",1);
+			private GraphicText mapNames = new GraphicText("impact","",1);
+			private GraphicText colours = new GraphicText("impact","",1);
 			GraphicEntity selectorSquare = new GraphicEntity("squares",1);
 			{
 				selectorSquare.setFrame(6);
 				selectorSquare.setVisible(false);
 				children.remove(text);
 				addChild(selectorSquare);
-				addChild(text);
+				children.add(text);
+				addChild(gameNames);
+				addChild(mapNames);
+				addChild(colours);
 				text.setWidthFactor(1f);
 				text.setHeightFactor(1.4f);
+				gameNames.setWidthFactor(1f);
+				gameNames.setHeightFactor(1.4f);
+				mapNames.setWidthFactor(1f);
+				mapNames.setHeightFactor(1.4f);
+				colours.setWidthFactor(1f);
+				colours.setHeightFactor(1.4f);
 
 			}
 			@Override
 			public void performOnRelease(MotionEvent e){
 				if(isVisible()==false)return;
 				gameIndex=(botIndex-1)-(int) ((botIndex-1)*(e.getY()-getY())/(getHeight()-0.06f));
-				setY(getY());
+				reposition(getX(),getY());
 			}
 			@Override
 			public void changeText(String newGame){
 				reset();
 			}
 			public float offsetX(int index){
-				return index==4?0.05f:index==3?0.05f:super.offsetX(index);
+				if(index>=3&&index<=5){
+					return 0.05f;
+				}
+				else if(index==6){
+					return getWidth()/3f;
+				}
+				else if(index==7){
+					return getWidth()-0.15f;
+				}
+				else return super.offsetX(index);
 			}
 			public float offsetY(int index){
-				return index==4?getHeight()-0.065f:
-					index==3?getHeight()-0.06f-(gameIndex)*0.035f:
-						super.offsetY(index);
+				if(index>=4){
+					 return getHeight()-0.065f;
+				}
+				else if(index==3){
+					return getHeight()-0.06f-(gameIndex)*0.035f;
+				}
+				else return super.offsetY(index);
 			}
 			@Override
-			public void adjust(float x, float y){
-				super.adjust(x, y);
+			public void resize(float x, float y){
+				super.resize(x, y);
 				if(selectorSquare!=null){
-					selectorSquare.adjust(0.7f,0.03f);
+					selectorSquare.resize(0.7f,0.03f);
 				}
 			}
 			@Override
@@ -257,12 +279,13 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				reset();
 			}
 			private void reset(){
-				StringBuilder builder = new StringBuilder();
+				StringBuilder gameBuilder = new StringBuilder();
+				StringBuilder mapBuilder = new StringBuilder();
+				StringBuilder colourBuilder = new StringBuilder();
 				botIndex = gamesList.size();
 				if(botIndex>4){
 					botIndex=4;
 				}
-
 				if(joinButton.getText().startsWith("Join")){
 					if(botIndex==0){
 						setVisible(false);
@@ -275,33 +298,29 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				}
 
 				for(int i=gameTopIndex;i<gameTopIndex+4&&i<gamesList.size();++i){
-					builder.append(gamesList.get(i)[0]);
-					for(int j=0;j<40-gamesList.get(i)[0].length();++j){
-						builder.append(" ");
-					}
-					builder.append(gamesList.get(i)[1]);
-					for(int j=0;j<40-gamesList.get(i)[1].length();++j){
-						builder.append(" ");
-					}
-					builder.append(gamesList.get(i)[2]);
-					builder.append("\n");
+					gameBuilder.append(gamesList.get(i)[0]);
+					gameBuilder.append("\n");
+					mapBuilder.append(gamesList.get(i)[1]);
+					mapBuilder.append("\n");
+					colourBuilder.append(gamesList.get(i)[2]);
+					colourBuilder.append("\n");
 				}
-				adjust(0.8f, 0.04f+0.04f*(botIndex));
-				setX(getX());
-				setY(0.35f+0.04f*(4-botIndex));
+
+				gameNames.change(gameBuilder.toString());
+				mapNames.change(mapBuilder.toString());
+				colours.change(colourBuilder.toString());
+				resize(0.8f, 0.04f+0.04f*(botIndex));
+				reposition(getX(),0.35f+0.04f*(4-botIndex));
 				selectorSquare.setVisible(botIndex!=0);
-				super.changeText(builder.toString());
 			}
 		};
-		buttonList.adjust(0.8f, 0.20f);
-		buttonList.setX(0.1f);
-		buttonList.setY(0.35f);
+		buttonList.resize(0.8f, 0.20f);
+		buttonList.reposition(0.1f,0.35f);
 		buttonList.setVisible(false);
 		addChild(buttonList);
 
 		gameButton = new MenuButton("");
-		gameButton.setX(0.2f);
-		gameButton.setY(0.35f);
+		gameButton.reposition(0.2f,0.35f);
 		addChild(gameButton);
 		gameButton.setVisible(false);
 
@@ -311,8 +330,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				progressGame();
 			}
 		};
-		joinButton.setX(0.2f);
-		joinButton.setY(0.19f);
+		joinButton.reposition(0.2f,0.19f);
 		joinButton.setVisible(false);
 		addChild(joinButton);
 
@@ -322,8 +340,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				returnToMain();
 			}
 		};
-		returnButton.setX(0.2f);
-		returnButton.setY(0.03f);
+		returnButton.reposition(0.2f,0.03f);
 		addChild(returnButton);
 		new JoinThread(self).start();
 	}

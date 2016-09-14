@@ -8,11 +8,11 @@ import java.util.List;
 import editor.Button;
 import editor.ButtonAction;
 import editor.Editor;
-import game.Hero;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
+import game.hero.Hero;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
@@ -82,12 +82,12 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
 		saveTo.add(defaultState?1:0);
-		saveTo.add(x);
-		saveTo.add(y);
+		saveTo.add(Math.abs(x)>0.000000001f?x:0f);
+		saveTo.add(Math.abs(y)>0.000000001f?x:0f);
 		saveTo.add(onLimitBrokenAction);
 		if(onLimitBrokenAction!=-1){
 			saveTo.add(limit);
-			saveTo.add(limiterStartPercent);
+			saveTo.add(Math.abs(limiterStartPercent)>0.000000001f?x:0f);
 		}
 	}
 	@Override
@@ -167,14 +167,14 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 				}				
 			}
 			if(hero.getY()>=self.getY()+self.getHeight()){
-				hero.setX(hero.getX()+hero.getDeltaX());
-				hero.setY(hero.getY()+hero.getDeltaY());
+				hero.reposition(hero.getX()+hero.getDeltaX(),
+						  hero.getY()+hero.getDeltaY());
 				if(hero.isWithin(self)){
 					//hero.setXVelocity(hero.getXVelocity()+dx);
 					hero.move(dx,dy);
 				}
-				hero.setX(hero.getX()-hero.getDeltaX());
-				hero.setY(hero.getY()-hero.getDeltaY());
+				hero.reposition(hero.getX()-hero.getDeltaX(),
+						  hero.getY()-hero.getDeltaY());
 			}
 		}
 	}

@@ -126,7 +126,7 @@ public class Gui extends GLApp {
     	mouseListener.peek().onMouseScroll(amount);
     }
 
-    public void mouseMove(int x, int y) {
+    public void mouseMove(int x, int y) {    	
     	mouseListener.peek().onHover(new MotionEvent(x/Hub.width,y/Hub.height,MotionEvent.ACTION_DOWN,MotionEvent.MOUSE_LEFT));
     }
     
@@ -225,7 +225,8 @@ public class Gui extends GLApp {
 		if(Hub.currentView!=null){
 			keyboardListener.clear();
 			mouseListener.clear();
-			Hub.currentView.onRemoveFromDrawable();	
+			Hub.currentView.onRemoveFromDrawable();
+			Hub.currentView.onMuteMouse();
 		}
 		Hub.currentView = view;
 		giveOnClick(view);
@@ -234,6 +235,7 @@ public class Gui extends GLApp {
 			Gui.giveOnType(keyListener);
 		}
 		view.onAddToDrawable();
+		Hub.currentView.onListenToMouse();
 	}
 
 
@@ -243,16 +245,6 @@ public class Gui extends GLApp {
 
 	public static void enableDrag(){
 		Gui.drag = true;
-	}
-
-	public static File userSave(String sub){
-		JFileChooser  fc = new JFileChooser("data"+File.separator+sub);
-		int returnVal = fc.showOpenDialog(new JPanel());
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
-        } else {
-            return null;
-        }
 	}
 
 }

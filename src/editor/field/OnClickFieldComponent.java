@@ -17,7 +17,6 @@ public abstract class OnClickFieldComponent  <TargetType extends Object> extends
 		super(textureName,1);
 		this.first = firstInRange;
 		this.last = lastInRange;
-		this.listenToRelease = true;
 		
 		this.nullShower = new GraphicEntity("editor_button",1);
 		nullShower.setFrame(1);

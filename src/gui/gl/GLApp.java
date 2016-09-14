@@ -205,7 +205,6 @@ public class GLApp {
         	mouseWheel(mouseDW);
         }
         // handle mouse clicks
-        
         while ( Mouse.next() ) {
         	if(Mouse.getEventButton() == 0 && Mouse.getEventButtonState() == true) {
         		mouseLeftDown(cursorX, cursorY);

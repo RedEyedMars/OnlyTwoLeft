@@ -22,23 +22,20 @@ public class StoryScene extends GraphicView{
 
 		GraphicEntity actor = new GraphicEntity("characters");
 		actors.add(actor);
-		actor.adjust(0.4f, 0.4f);
-		actor.setX(0.08f);
-		actor.setY(0.48f);
+		actor.resize(0.4f, 0.4f);
+		actor.reposition(0.08f,0.48f);
 		actor = new GraphicEntity("characters");
 		actors.add(actor);
-		actor.adjust(0.4f, 0.4f);
-		actor.setY(0.28f);
+		actor.resize(0.4f, 0.4f);
+		actor.reposition(actor.getX(),0.28f);
 		actor = new GraphicEntity("characters");
 		actors.add(actor);
-		actor.adjust(0.4f, 0.4f);
-		actor.setX(0.54f);
-		actor.setY(0.49f);
+		actor.resize(0.4f, 0.4f);
+		actor.reposition(0.54f,0.49f);
 		actor = new GraphicEntity("characters");
 		actors.add(actor);
-		actor.adjust(0.4f, 0.4f);
-		actor.setX(0.62f);
-		actor.setY(0.29f);
+		actor.resize(0.4f, 0.4f);
+		actor.reposition(0.62f,0.29f);
 		for(GraphicEntity a:actors){
 			a.setVisible(false);
 			addChild(a);
@@ -46,23 +43,20 @@ public class StoryScene extends GraphicView{
 
 
 		addChild(new GraphicEntity("speech_bubble"){{
-			adjust(0.16f,0.3f);
-			setX(0.03f);
-			setY(0.025f);
+			resize(0.16f,0.3f);
+			reposition(0.03f,0.025f);
 		}
 		});		
 
 		addChild(new GraphicEntity("speech_bubble"){{
-			adjust(0.68f,0.3f);
-			setX(0.16f);
-			setY(0.025f);
+			resize(0.68f,0.3f);
+			reposition(0.16f,0.025f);
 			setFrame(1);
 		}
 		});
 		addChild(new GraphicEntity("speech_bubble"){{
-			adjust(0.16f,0.3f);
-			setX(0.81f);
-			setY(0.025f);
+			resize(0.16f,0.3f);
+			reposition(0.81f,0.025f);
 			setFrame(2);
 		}
 		});

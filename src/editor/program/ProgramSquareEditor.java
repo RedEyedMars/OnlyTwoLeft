@@ -39,10 +39,9 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 	public ProgramSquareEditor(MapEditor parent, ProgrammableSquare programSquare){
 		super();
 		setupButtons();
-		Square guide2 = new Square(15,0,programSquare.getWidth(),programSquare.getHeight());
-		guide2.setX(programSquare.getX());
-		guide2.setY(programSquare.getY());
-		addChild(guide2);
+		Square guide = new Square(15,0,programSquare.getWidth(),programSquare.getHeight());
+		guide.reposition(programSquare.getX(),programSquare.getY());
+		addChild(guide);
 		String text = "";
 		squares = Hub.map.getTemplateSquares();
 		this.square = programSquare;
@@ -64,8 +63,8 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 
 		for(int i=0;i<ProgramAction.actionNames.size();++i){
 			ArrowButton arrow = new ArrowButton(createActionEditor(ProgramAction.getAction(i).create()));
-			arrow.setX(0.03f);
-			arrow.setY(0.93f-i*0.05f);
+			arrow.reposition(0.03f,
+					     0.93f-i*0.05f);
 			addChild(arrow);
 			this.dataRetrievers.add(arrow);
 			buttons.add(arrow);
@@ -73,7 +72,6 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 
 		this.stateRoot = new StateSquare(this,square.getBaseState(),null);
 		addChild(this.stateRoot);
-		this.stateRoot.onAddToDrawable();
 		mode = -1;
 	}
 	@Override
@@ -98,7 +96,6 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 				if(mostRecentlyRemovedSquare!=null){
 					addIconsToSquare(mostRecentlyRemovedSquare);
 					addChild(mostRecentlyRemovedSquare);
-					mostRecentlyRemovedSquare.onAddToDrawable();
 					squares.add(mostRecentlyRemovedSquare);
 					mostRecentlyRemovedSquare = null;
 				}
@@ -124,20 +121,19 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 				moveView(-0.2f,0);
 			}
 			else if(keycode==33){//toggle granity
-				granityShower.setFrame(granityShower.textureIndex()==0?1:0);
+				granityShower.setFrame(granityShower.getFrame()==0?1:0);
 			}
 		}
 
 	}
 	protected void saveAndReturnToEditor() {
 		square.setBaseState(stateRoot.solidify());
-		editor.restartWith(null);
 		Gui.setView(editor);
 	}
 	private void moveView(float x, float y){
 		for(int i=0;i<squares.size();++i){
-			squares.get(i).setX(squares.get(i).getX()+x*2f);
-			squares.get(i).setY(squares.get(i).getY()+y*2f);
+			squares.get(i).reposition(squares.get(i).getX()+x*2f,
+					              squares.get(i).getY()+y*2f);
 		}
 		stateRoot.moveView(x,y);
 	}
@@ -168,7 +164,7 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 				ae = new SquareActionEditor(this,"squares",blackColour,action){
 					@Override
 					public boolean retrieveData(){
-						if(blackColour!=this.getIcon().textureIndex()){
+						if(blackColour!=this.getIcon().getFrame()){
 							this.getIcon().setFrame(blackColour);
 							this.action.setData("subject", blackColour);
 							return true;
@@ -181,7 +177,7 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 				ae = new SquareActionEditor(this,"squares",whiteColour,action){
 					@Override
 					public boolean retrieveData(){
-						if(whiteColour!=this.getIcon().textureIndex()){
+						if(whiteColour!=this.getIcon().getFrame()){
 							this.getIcon().setFrame(whiteColour);
 							this.action.setData("subject", whiteColour);
 							return true;
@@ -196,7 +192,6 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 	}
 	public void addTransitioningActionEditor(ActionEditor editor){
 		addChild(editor);
-		editor.onAddToDrawable();
 	}
 	public void removeTransitioningActionEditor(ActionEditor editor){
 		buttons.remove(editor);
@@ -212,17 +207,17 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 			super("editor_button",3, null);
 			this.actionEditor = actionEditor;
 			subject = new GraphicEntity(actionEditor.getIcon().getTextureName(), 1);
-			subject.setFrame(actionEditor.getIcon().textureIndex());
+			subject.setFrame(actionEditor.getIcon().getFrame());
 			this.addChild(subject);
-			adjust(0.1f,0.05f,0.05f,0.05f);
+			resize(0.1f,0.05f,0.05f,0.05f);
 
 		}
 		@Override
 		public void performOnClick(MotionEvent e){
 			ActionEditor transitioner = createActionEditor(actionEditor.action);					
-			transitioner.setX(e.getX()-getWidth()/2f);
-			transitioner.setY(e.getY()-getHeight()/2f);
-			transitioner.adjust(0.025f,0.025f);
+			transitioner.reposition(e.getX()-getWidth()/2f,
+					            e.getY()-getHeight()/2f);
+			transitioner.resize(0.025f,0.025f);
 			transitioner.retrieveData();
 			addTransitioningActionEditor(transitioner);
 			Gui.giveOnClick(transitioner);
@@ -231,7 +226,7 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 		@Override
 		public boolean retrieveData(){
 			if(actionEditor.retrieveData()){
-				subject.setFrame(actionEditor.getIcon().textureIndex());
+				subject.setFrame(actionEditor.getIcon().getFrame());
 				return true;
 			}
 			else return false;
@@ -244,14 +239,14 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 			else return super.offsetX(index);
 		}
 		@Override
-		public void adjust(float x1, float y1, float x2, float y2){
-			super.adjust(x1,y1);
-			subject.adjust(x2, y2);
+		public void resize(float x1, float y1, float x2, float y2){
+			super.resize(x1,y1);
+			subject.resize(x2, y2);
 		}
 	}
 
 	
-	public StateSquare getRoot() {
+	public StateSquare getStateRoot() {
 		return stateRoot;
 	}
 	public void addButton(Button button) {

@@ -30,8 +30,8 @@ public class DisplayListOnCreateAction extends OnCreateAction {
 		dy=square.getY()-dy;
 		for(Object sqr:list){
 			Square s = Square.copy((Square)sqr);
-			s.setX(s.getX()+dx);
-			s.setY(s.getY()+dy);
+			s.reposition(s.getX()+dx,
+					s.getY()+dy);
 			square.addChild(s);
 			if(Hub.map!=null){
 				Hub.map.displaySquare(s);

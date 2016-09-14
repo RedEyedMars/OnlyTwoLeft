@@ -7,10 +7,11 @@ import duo.client.Client;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
 import game.Game;
-import game.Hero;
 import game.VisionBubble;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
+import game.hero.ConnectedHero;
+import game.hero.Hero;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import main.Hub;
@@ -57,29 +58,29 @@ public class OverheadMode implements GameMode{
 		}
 	}
 
-	private void handleViewMovement(){
+	private void handleViewMovement(){		
+		float heroMoveX = focused.getX();
+		float heroMoveY = focused.getY();
 		if(focused.getX()>uppderViewBorder){
-			Hub.map.setX(Hub.map.getX()-(focused.getX()-uppderViewBorder));
-			wild.setX(wild.getX()-(focused.getX()-uppderViewBorder));
-			focused.setX(uppderViewBorder);
+			heroMoveX = uppderViewBorder;
 		}
 		else if(focused.getX()<lowerViewBorder){
-			Hub.map.setX(Hub.map.getX()+(lowerViewBorder-focused.getX()));
-			wild.setX(wild.getX()+(lowerViewBorder-focused.getX()));
-			focused.setX(lowerViewBorder);
+			heroMoveX = lowerViewBorder;
 		}
 		if(focused.getY()>uppderViewBorder){
-			Hub.map.setY(Hub.map.getY()-(focused.getY()-uppderViewBorder));
-			wild.setY(wild.getY()-(focused.getY()-uppderViewBorder));
-			focused.setY(uppderViewBorder);
+			heroMoveY = uppderViewBorder;
 		}
 		else if(focused.getY()<lowerViewBorder){
-			Hub.map.setY(Hub.map.getY()+(lowerViewBorder-focused.getY()));
-			wild.setY(wild.getY()+(lowerViewBorder-focused.getY()));
-			focused.setY(lowerViewBorder);
+			heroMoveY = lowerViewBorder;
 		}
-		wildWall.setX(wild.getX()-0.1f);
-		wildWall.setY(wild.getY()-0.1f);
+
+		Hub.map.reposition(Hub.map.getX()+(heroMoveX-focused.getX()),
+				       Hub.map.getY()+(heroMoveY-focused.getY()));
+		wild.reposition(wild.getX()+(heroMoveX-focused.getX()),
+				    wild.getY()+(heroMoveY-focused.getY()));
+		focused.reposition(heroMoveX,heroMoveY);
+		wildWall.reposition(wild.getX()-0.1f,
+				        wild.getY()-0.1f);
 	}
 	@Override
 	public void loseGame(boolean colour){
@@ -115,6 +116,17 @@ public class OverheadMode implements GameMode{
 		handleInterceptions();	
 		MoveHeroMessage.update(seconds, wild);	
 	}
+
+	@Override
+	public Hero createConnectedHero(boolean control, Game game, boolean bool) {
+		return new ConnectedHero(control, game,bool);
+	}
+
+
+	@Override
+	public Hero createHero(Game game, boolean bool) {
+		return new Hero(game,bool);
+	}
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(b==KeyBoardListener.DOWN){
@@ -130,6 +142,9 @@ public class OverheadMode implements GameMode{
 			if('s'==c){
 				controlled.setYAcceleration(-standardAcceleration);
 			}
+			else if(keycode==1||keycode==25||keycode==197){
+				game.pause();
+			}
 			else if(!Client.isConnected()){
 				if(keycode==200){//up
 					controlled.getPartner().setYAcceleration(standardAcceleration);
@@ -143,10 +158,7 @@ public class OverheadMode implements GameMode{
 				else if(keycode==205){//right
 					controlled.getPartner().setXAcceleration(standardAcceleration);
 				}
-			}
-			else if(keycode==1||keycode==25||keycode==197){
-				game.pause();
-			}
+			}			
 		}
 		else if(b==KeyBoardListener.UP){
 			if(32==keycode){
@@ -194,4 +206,5 @@ public class OverheadMode implements GameMode{
 	public boolean continuousKeyboard() {
 		return false;
 	}
+
 }

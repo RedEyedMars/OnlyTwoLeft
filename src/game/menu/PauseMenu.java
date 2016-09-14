@@ -16,36 +16,26 @@ public class PauseMenu extends GraphicEntity implements KeyBoardListener {
 	public PauseMenu(final Game game) {
 		super("blank",0);
 
-		listenToRelease = true;
 		MenuButton resumeButton = new MenuButton("Resume"){
-			{
-				listenToRelease = true;
-			}
 			@Override
 			public void performOnRelease(gui.inputs.MotionEvent e){
 				unpause();
 			}
 		};
-		resumeButton.setY(0.51f);
+		resumeButton.reposition(0.2f,0.51f);
 		addChild(resumeButton);
 
 		MenuButton restartButton = new MenuButton("Restart"){
-			{
-				listenToRelease = true;
-			}
 			@Override
 			public void performOnRelease(gui.inputs.MotionEvent e){
 				unpause();
 				game.restart();
 			}
 		};
-		restartButton.setY(0.35f);
+		restartButton.reposition(0.2f,0.35f);
 		addChild(restartButton);
 
 		MenuButton returnToMain = new MenuButton("Return to Main Menu"){
-			{
-				listenToRelease = true;
-			}
 			@Override
 			public void performOnRelease(gui.inputs.MotionEvent e){
 				unpause();
@@ -53,10 +43,9 @@ public class PauseMenu extends GraphicEntity implements KeyBoardListener {
 				Gui.setView(new MainMenu());
 			}
 		};
-		returnToMain.setY(0.19f);
+		returnToMain.reposition(0.2f,0.19f);
 		addChild(returnToMain);
 
-		setX(0.2f);
 	}
 
 	public boolean isPaused() {
