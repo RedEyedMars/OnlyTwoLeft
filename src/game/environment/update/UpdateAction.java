@@ -83,7 +83,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		saveTo.add(getIndex());
 		saveTo.add(defaultState?1:0);
 		saveTo.add(Math.abs(x)>0.000000001f?x:0f);
-		saveTo.add(Math.abs(y)>0.000000001f?x:0f);
+		saveTo.add(Math.abs(y)>0.000000001f?y:0f);
 		saveTo.add(onLimitBrokenAction);
 		if(onLimitBrokenAction!=-1){
 			saveTo.add(limit);

@@ -1,6 +1,8 @@
 package editor;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,16 +12,20 @@ import editor.field.FloatFieldComponent;
 import editor.field.OnClickFieldComponent;
 import editor.field.TextFieldComponent;
 import editor.program.ProgramSquareEditor;
+import game.Action;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.oncreate.OnCreateAction;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepAction;
+import game.environment.program.ProgramState;
 import game.environment.program.ProgrammableSquare;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
 import game.hero.Hero;
+import game.menu.GetFileMenu;
 import gui.Gui;
+import gui.gl.GLApp;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
@@ -62,11 +68,103 @@ public class Editor extends GraphicView {
 	protected Square mostRecentlyRemovedSquare;
 
 	protected GraphicEntity granityShower = new GraphicEntity("editor_magnifier",1);
+	protected java.util.Map<Integer,Action<MotionEvent>> modeOnClick = new HashMap<Integer,Action<MotionEvent>>();
+	protected java.util.Map<Integer,Action<MotionEvent>> modeOnRelease = new HashMap<Integer,Action<MotionEvent>>();
+	
 	public Editor(){
 		super();
 		mode = MODE_NEUTRAL;
+		setupModes();
 	}
 
+	protected void setupModes(){
+		modeOnClick.put(MODE_WAIT_FOR_RELEASE,new Action<MotionEvent>(){
+			@Override
+			public void act(MotionEvent e) {
+			}});
+		modeOnClick.put(MODE_NEUTRAL,new Action<MotionEvent>(){
+			@Override
+			public void act(MotionEvent e) {
+				if(shape>0){
+					int x = Hub.map.getIntX(e.getX());
+					int y = Hub.map.getIntY(e.getY());
+					if(granityShower.getFrame()==0){
+						x = (int) (x+2.5f);
+						y = (int) (y+2.5f);
+						x-=x%5;
+						y-=y%5;
+					}
+					List<Integer> updateAction = new ArrayList<Integer>();
+					for(int i=0;i<updateActionMenu.size();++i){
+						if(updateActionMenu.get(i).isSelected()){
+							updateAction.add(i);
+						}
+					}
+					builder1 = createSquare(x,y,shape-1,blackColour,whiteColour,blackAction,whiteAction,updateAction,specialActionMenu.get(0).isSelected(),specialActionMenu.get(1).isSelected());				
+					builder1.resize(0.05f, 0.05f);
+					addChild(builder1);
+					squares.add(builder1);
+				}
+				else {//paint
+					for(int i=squares.size()-1;i>=0;--i){
+						if(squares.get(i).isWithin(e.getX(), e.getY())){
+							squares.get(i).changeColour(blackColour,whiteColour);
+							squares.get(i).displayFor(visibleTo);
+							return;
+						}
+						else if(squares.get(i) instanceof UpdatableSquare){
+							List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
+							for(int j=depends.size()-1;j>=0;--j){
+								if(depends.get(j).isWithin(e.getX(), e.getY())){
+									squares.get(i).changeColour(blackColour,whiteColour);
+									squares.get(i).displayFor(visibleTo);
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+		});
+		modeOnClick.put(MODE_MAKE_SQUARE,new Action<MotionEvent>(){
+			public void act(MotionEvent e){
+			int x = Hub.map.getIntX(e.getX());
+			int y = Hub.map.getIntY(e.getY());
+			if(granityShower.getFrame()==0){
+				x = (int) (x+2.5f);
+				y = (int) (y+2.5f);
+				x-=x%5;
+				y-=y%5;
+			}
+			if(Hub.map.getRealX(x)-builder1.getX()!=0f&&Hub.map.getRealY(y)-builder1.getY()!=0f){
+
+				builder1.resize(Hub.map.getRealX(x)-builder1.getX(), Hub.map.getRealY(y)-builder1.getY());
+			}
+		}});
+		modeOnRelease.put(MODE_NEUTRAL,new Action<MotionEvent>(){
+			public void act(MotionEvent e){
+			}
+		});
+		modeOnRelease.put(MODE_WAIT_FOR_RELEASE,new Action<MotionEvent>(){
+			public void act(MotionEvent e){
+				mode=MODE_NEUTRAL;
+			}
+		});
+		final Editor editor = this;
+		modeOnRelease.put(MODE_MAKE_SQUARE,new Action<MotionEvent>(){
+			public void act(MotionEvent e){
+				mode=MODE_NEUTRAL;
+
+				if(squares.get(0)==builder1&&editor instanceof MapEditor){
+					squares.get(0).reposition(0f,0f);
+					squares.get(0).resize(1f,1f);
+				}
+				addIconsToSquare(builder1);
+			}
+		});
+	}
+	
 	protected void setupButtons(){
 		shapeMenu.clear();
 		colourMenu.clear();
@@ -296,8 +394,9 @@ public class Editor extends GraphicView {
 			}
 
 			@Override
-			public void updateWith(UpdateAction subject) {
+			public UpdateAction updateWith(UpdateAction subject) {
 				changeTextOnLine(""+subject.getFloat(0), 0);
+				return subject;
 			}
 		};
 		;
@@ -308,8 +407,9 @@ public class Editor extends GraphicView {
 			}
 
 			@Override
-			public void updateWith(UpdateAction subject) {
+			public UpdateAction updateWith(UpdateAction subject) {
 				changeTextOnLine(""+subject.getFloat(1), 0);
+				return subject;
 			}
 		};;
 
@@ -320,8 +420,9 @@ public class Editor extends GraphicView {
 			}
 
 			@Override
-			public void updateWith(UpdateAction subject) {				
+			public UpdateAction updateWith(UpdateAction subject) {				
 				changeTextOnLine(""+subject.getFloat(2), 0);
+				return subject;
 			}
 		};
 		FloatFieldComponent<UpdateAction> updatableSquareLimiterPercentField = new FloatFieldComponent<UpdateAction>("impact"){
@@ -330,11 +431,11 @@ public class Editor extends GraphicView {
 				target.setLimiterStartPercent(subject);
 			}
 			@Override
-			public void updateWith(UpdateAction subject) {
+			public UpdateAction updateWith(UpdateAction subject) {
 				changeTextOnLine(""+subject.getFloat(3), 0);
+				return subject;
 			}
 		};
-		;
 		BooleanOnClickFieldComponent<UpdateAction> updatableSquareDefaultStateIndicator = new BooleanOnClickFieldComponent<UpdateAction>("editor_icons",true,3){
 			@Override
 			public void act(Boolean subject) {
@@ -381,7 +482,12 @@ public class Editor extends GraphicView {
 	protected boolean handleButtons(MotionEvent e){
 		for(GraphicEntity button:buttons){
 			if(button.isVisible()&&button.isWithin(e.getX(), e.getY())){
-				button.performOnClick(e);
+				if(e.getAction()==MotionEvent.ACTION_DOWN){
+					button.performOnClick(e);
+				}
+				else if(e.getAction()==MotionEvent.ACTION_UP){
+					button.performOnRelease(e);
+				}
 				return true;
 			}
 		}
@@ -390,89 +496,16 @@ public class Editor extends GraphicView {
 
 
 	@Override
-	public boolean onClick(MotionEvent e){
+	protected boolean threadlessOnClick(MotionEvent e){		
 		if(e.getButton()==MotionEvent.MOUSE_LEFT){
-			if(e.getAction()==MotionEvent.ACTION_DOWN){
-				if(mode==MODE_NEUTRAL){
-					if(handleButtons(e))return true;
-					if(shape>0){
-						int x = Hub.map.getIntX(e.getX());
-						int y = Hub.map.getIntY(e.getY());
-						if(granityShower.getFrame()==0){
-							x = (int) (x+2.5f);
-							y = (int) (y+2.5f);
-							x-=x%5;
-							y-=y%5;
-						}
-						List<Integer> updateAction = new ArrayList<Integer>();
-						for(int i=0;i<updateActionMenu.size();++i){
-							if(updateActionMenu.get(i).isSelected()){
-								updateAction.add(i);
-							}
-						}
-						builder1 = createSquare(x,y,shape-1,blackColour,whiteColour,blackAction,whiteAction,updateAction,specialActionMenu.get(0).isSelected(),specialActionMenu.get(1).isSelected());				
-						builder1.resize(0.05f, 0.05f);
-						addChild(builder1);
-						squares.add(builder1);
-					}
-					else {//paint
-						for(int i=squares.size()-1;i>=0;--i){
-							if(squares.get(i).isWithin(e.getX(), e.getY())){
-								squares.get(i).changeColour(blackColour,whiteColour);
-								squares.get(i).displayFor(visibleTo);
-								return true;
-							}
-							else if(squares.get(i) instanceof UpdatableSquare){
-								List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
-								for(int j=depends.size()-1;j>=0;--j){
-									if(depends.get(j).isWithin(e.getX(), e.getY())){
-										squares.get(i).changeColour(blackColour,whiteColour);
-										squares.get(i).displayFor(visibleTo);
-										return true;
-									}
-								}
-							}
-						}
-					}
-				}
-				else if(mode==MODE_MAKE_SQUARE){
-
-					int x = Hub.map.getIntX(e.getX());
-					int y = Hub.map.getIntY(e.getY());
-					if(granityShower.getFrame()==0){
-						x = (int) (x+2.5f);
-						y = (int) (y+2.5f);
-						x-=x%5;
-						y-=y%5;
-					}
-					if(Hub.map.getRealX(x)-builder1.getX()!=0f&&Hub.map.getRealY(y)-builder1.getY()!=0f){
-
-						builder1.resize(Hub.map.getRealX(x)-builder1.getX(), Hub.map.getRealY(y)-builder1.getY());
-
-
-					}
-				}
+			if(mode==MODE_NEUTRAL){
+				if(handleButtons(e))return true;
+			}
+			if(e.getAction()==MotionEvent.ACTION_DOWN&&modeOnClick.get(mode)!=null){
+				modeOnClick.get(mode).act(e);
 			}
 			else if(e.getAction()==MotionEvent.ACTION_UP){
-				if(mode==MODE_WAIT_FOR_RELEASE){
-					mode=MODE_NEUTRAL;
-				}
-				else if(mode==MODE_MAKE_SQUARE){
-					mode=MODE_NEUTRAL;
-
-					if(squares.get(0)==builder1&&this instanceof MapEditor){
-						squares.get(0).reposition(0f,0f);
-						squares.get(0).resize(1f,1f);
-					}
-					addIconsToSquare(builder1);
-				}
-				else {
-					for(GraphicEntity child:buttons){
-						if(child.isVisible()&&child.isWithin(e.getX(), e.getY())){
-							child.performOnRelease(e);
-						}
-					}
-				}
+				modeOnRelease.get(mode).act(e);
 			}
 		}
 		else if(e.getButton()==MotionEvent.MOUSE_RIGHT){
@@ -517,7 +550,8 @@ public class Editor extends GraphicView {
 				if(hoverOnSquare((Square)square.getChild(j),e))return true;
 			}
 		}	
-		if(square.isWithin(e.getX(), e.getY())){			
+		if(square.isWithin(e.getX(), e.getY())){
+			
 			if(hoveringOnSquare!=null){
 				for(int j=0;j<hoveringOnSquare.size();++j){
 					if(!(hoveringOnSquare.getChild(j) instanceof Button)&&
@@ -707,7 +741,7 @@ public class Editor extends GraphicView {
 		GraphicEntity e = null;
 		List<SquareAction> actions = fsq.getActions();
 		for(SquareAction<?, ?> action:actions){
-			if(action == null){
+			if(action == null||action.getIndex()==-1){
 				e = new GraphicEntity("editor_button");
 				e.setFrame(1);
 			}
@@ -728,6 +762,10 @@ public class Editor extends GraphicView {
 				e = new GraphicEntity("editor_special_icons");
 				e.setFrame(0);
 			}
+			else if(action instanceof ProgramState){
+				e = new GraphicEntity("editor_special_icons");
+				e.setFrame(1);
+			}
 			e.reposition(x,y);
 			e.resize(size, size);
 			x-=size;
@@ -744,8 +782,12 @@ public class Editor extends GraphicView {
 				for(UpdateAction innerAction:action){
 					final UpdateAction myAction = innerAction;
 					Button button = new Button("editor_update_icons",innerAction.getIndex(),new ButtonAction(){
+
 						@Override
-						public void act(Object subject) {
+						public void act(Object subject) {							
+						}}){
+						@Override
+						public void performOnRelease(MotionEvent subject) {
 							updatableSquareDataField.reposition(usq.getX()+0.015f,
 									usq.getY()+0.015f);
 							updatableSquareDataField.updateWith(myAction);
@@ -753,7 +795,7 @@ public class Editor extends GraphicView {
 							Gui.giveOnClick(updatableSquareDataField);						
 							Gui.giveOnType(updatableSquareDataField.getDefaultKeyBoardListener());
 						}
-					});
+					};
 					button.reposition(usq.getX()+0.015f+0.025f*(xOffset++),
 							usq.getY()+0.015f);
 					button.resize(0.025f, 0.025f);
@@ -796,16 +838,23 @@ public class Editor extends GraphicView {
 		final MapEditor editor = (MapEditor)this;
 		final Button button = new Button("editor_special_icons",0,new ButtonAction(){
 			@Override
-			public void act(Object subject) {
+			public void act(Object subject) {				
+			}}){
+			@Override
+			public void performOnRelease(MotionEvent subject) {
 				squares.remove(ocs);
 				if(getChildren().contains(ocs)){
 					removeChild(ocs);						
 				}
-				Gui.setView(new OnCreateSquareEditor(
-						editor,
-						ocs.getX(),ocs.getY(),ocs.getWidth(),ocs.getHeight()));
+
+				File saveTo = GetFileMenu.getFile(this,"ocs");
+				Editor e = new OnCreateSquareEditor(
+						editor,saveTo,
+						ocs.getX(),ocs.getY(),ocs.getWidth(),ocs.getHeight());
+				e.setupModes();
+				Gui.setView(e);
 			}
-		});
+		};
 		button.reposition(ocs.getX()+0.015f,
 				ocs.getY()+0.015f);
 		button.resize(0.025f, 0.025f);

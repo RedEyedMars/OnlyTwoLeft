@@ -328,13 +328,14 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 			ints.add(y);
 			ints.add(w);
 			ints.add(h);
-			ints.add(7);
-			ints.add(7);
-			ints.add(3);
-			ints.add(UpdateAction.getAction(3).getDefaultState()?1:0);
+			ints.add(-1);
+			ints.add(-1);
+			ints.add(-1);
+			ints.add(0);
 			ints.add(-1);
 			//
 			ints.add(0);//condition
+			ints.add(-1);//next condition
 			ints.add(0);//actions
 			ints.add(-1);//states
 			//

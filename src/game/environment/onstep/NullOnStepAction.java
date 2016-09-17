@@ -16,7 +16,7 @@ public class NullOnStepAction extends OnStepAction<Object>{
 	}
 	@Override
 	public int getIndex() {
-		return 7;
+		return -1;
 	}
 	@Override
 	public NullOnStepAction create() {

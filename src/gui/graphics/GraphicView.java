@@ -192,7 +192,12 @@ public class GraphicView implements MouseListener{
 					}					
 				}
 				while(running&&!onClickQueue.isEmpty()){
+					try {
 					threadlessOnClick(onClickQueue.removeFirst());
+					}
+					catch (java.util.NoSuchElementException e){
+						e.printStackTrace();
+					}
 				}
 			}
 			} catch (InterruptedException e) {

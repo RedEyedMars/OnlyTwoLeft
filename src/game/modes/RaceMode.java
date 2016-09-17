@@ -230,7 +230,7 @@ public class RaceMode implements GameMode{
 				focused.setYAcceleration((float) (focused.getYAcceleration()-0.2f*secondsSinceLastFrame));
 			}
 		}
-		if(focused.getY()<-0.05f||wild.getY()<-0.05f){
+		if(focused.getY()<-0.05f){
 			//System.out.println(focused.isBlack()&&focused.getY()<-0.05f?"black lose":"white lose");
 			loseGame(focused.isBlack());
 		}

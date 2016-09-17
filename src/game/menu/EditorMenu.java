@@ -1,5 +1,7 @@
 package game.menu;
 
+import java.io.File;
+
 import editor.MapEditor;
 import editor.OnCreateSquareEditor;
 import gui.Gui;
@@ -23,7 +25,9 @@ public class EditorMenu extends Menu {
 		button = new MenuButton("Square"){
 			@Override
 			public void performOnRelease(MotionEvent e){
-					Gui.setView(new OnCreateSquareEditor(self,0f,0f,1f,1f));
+
+				File saveTo = GetFileMenu.getFile(this,"ocs");
+					Gui.setView(new OnCreateSquareEditor(self,saveTo,0f,0f,1f,1f));
 			}
 		};
 		button.reposition(0.2f,0.35f);

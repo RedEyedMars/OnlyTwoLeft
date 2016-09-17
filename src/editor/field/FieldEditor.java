@@ -1,8 +1,10 @@
 package editor.field;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import game.environment.program.condition.ProgramCondition;
 import game.menu.MenuButton;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
@@ -15,35 +17,23 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 	private List<Float> xOffsets = new ArrayList<Float>();
 	private List<Float> yOffsets = new ArrayList<Float>();
 
-	private TextFieldComponent<SubjectType,?>[] onTypes;
-	private OnClickFieldComponent<SubjectType>[] onClicks;
+	private List<TextFieldComponent<SubjectType,?>> onTypes;
+	private List<OnClickFieldComponent<SubjectType>> onClicks;
 	private int currentOnType = 0;
 
 	public FieldEditor(String names,
 			TextFieldComponent<SubjectType,?>[] onTypes,
 			OnClickFieldComponent<SubjectType>[] onClicks) {
 		super(names);
-		this.onTypes = onTypes;
-		this.onClicks = onClicks;
+		this.onTypes = new ArrayList<TextFieldComponent<SubjectType,?>>();
+		this.onClicks = new ArrayList<OnClickFieldComponent<SubjectType>>();
+		this.onTypes.addAll(Arrays.asList(onTypes));
+		this.onClicks.addAll(Arrays.asList(onClicks));
 		for(int i=0;i<onTypes.length-1;++i){			
 			onTypes[i].setNext(onTypes[i+1]);
 		}
-		String[] nameSplit = names.split("\n");
 		text.setWidthFactor(1f);
 		text.setHeightFactor(1f);
-		resize(0.3f,0.13f);
-		for(int i=0;i<nameSplit.length;++i){
-			float dx = 0.065f;
-			for(char c:nameSplit[i].toCharArray()){
-				dx+=0.025f*Hub.renderer.letterWidths.get("impact").get(c)*14f/16f;
-			}
-			xOffsets.add(dx);
-			yOffsets.add(0.025f*(nameSplit.length-1)+0.005f+0.025f*(-i));
-		}
-		for(int i=0;i<onClicks.length;++i){
-			xOffsets.add(0.02f);
-			yOffsets.add(getHeight()-0.04f-0.008f-getHeight()*((float)i)/onClicks.length);
-		}
 		for(TextFieldComponent<SubjectType,?> tfc:onTypes){
 			addChild(tfc);			
 			tfc.setParent(this);
@@ -51,23 +41,50 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		for(OnClickFieldComponent<SubjectType> oc:onClicks){
 			addChild(oc);
 		}
-		reposition(getX(),getY());
+		resize(getWidth(),getHeight());
 	}
 	public void nextType() {
 		++this.currentOnType;
+		if(currentOnType>=onTypes.size()){
+			currentOnType=onTypes.size()-1;
+		}
 	}
 	@Override
 	public void resize(float x, float y){
-		super.resize(x, y);
-		if(onClicks==null)return;
-		for(int i=0;i<onClicks.length;++i){
-			onClicks[i].resize(0.04f, 0.04f);
+		if(onClicks==null||onTypes==null){
+			super.resize(x,y);
+			return;
 		}
-		if(onTypes==null)return;
-		for(int i=0;i<onTypes.length;++i){
+		String[] nameSplit = this.getText().split("\n");
+		xOffsets.clear();
+		yOffsets.clear();
+		int nameIndex=0;
+		int clickIndex=0;
+		for(int i=4;i<size();++i){
+			if(getChild(i) instanceof TextFieldComponent){
+				float dx = 0.065f;
+				for(char c:nameSplit[nameIndex].toCharArray()){
+					dx+=0.025f*Hub.renderer.letterWidths.get("impact").get(c)*14f/16f;
+				}
+				xOffsets.add(dx);
+				yOffsets.add(0.025f*(nameSplit.length-1)+0.005f+0.025f*(-nameIndex));
+				++nameIndex;
+			}
+			else if(getChild(i) instanceof OnClickFieldComponent){
+				xOffsets.add(0.02f);
+				yOffsets.add(getHeight()-0.04f-0.008f-getHeight()*((float)clickIndex)/onClicks.size());
+				++clickIndex;
+			}
+		}
+		super.resize(0.3f,0.025f*(nameSplit.length)+0.03f);
+		for(int i=0;i<onClicks.size();++i){
+			onClicks.get(i).resize(0.04f, 0.04f);
+		}
+		for(int i=0;i<onTypes.size();++i){
 			if(i>=xOffsets.size())return;
-			onTypes[i].resize(getWidth()-xOffsets.get(i)-getChild(2).getWidth()/2f, 0.025f);
+			onTypes.get(i).resize(getWidth()-xOffsets.get(i)-getChild(2).getWidth()/2f, 0.025f);
 		}
+		reposition(getX(),getY());
 	}
 	@Override
 	public float offsetX(int index){
@@ -109,8 +126,8 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 				}
 			}
 			if(!isWithin(e.getX(),e.getY())){
-				onTypes[currentOnType].advance(onTypes[currentOnType].getText());
-				Gui.removeOnType(onTypes[currentOnType]);
+				onTypes.get(currentOnType).advance(onTypes.get(currentOnType).getText());
+				Gui.removeOnType(onTypes.get(currentOnType));
 				Gui.removeOnClick(this);
 				this.setVisible(false);
 			}
@@ -119,17 +136,14 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 	}
 	@Override
 	public KeyBoardListener getDefaultKeyBoardListener(){
-		if(onTypes.length>0){
-			return onTypes[0];
+		if(onTypes.size()>0){
+			return onTypes.get(0);
 		}
 		else return null;
 	}
 	public void updateWith(SubjectType subject){
 		currentOnType=0;
-		for(TextFieldComponent<SubjectType,?> tfc:onTypes){
-			tfc.setTarget(subject);
-			tfc.updateWith(subject);
-		}
+		onTypes.get(0).updateChain(subject);
 		for(OnClickFieldComponent<SubjectType> ocfc:onClicks){
 			ocfc.setTarget(subject);
 			ocfc.updateWith(subject);
@@ -137,12 +151,37 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 	}
 	public void changeOnTypeTo(TextFieldComponent<SubjectType, ?> textField) {
 		int i=0;
-		for(;!onTypes[i].equals(textField);++i);
+		for(;!onTypes.get(i).equals(textField)&&i<onTypes.size();++i);
 		if(currentOnType!=i){
-			onTypes[currentOnType].advance(onTypes[currentOnType].getText());
+			onTypes.get(currentOnType).advance(onTypes.get(currentOnType).getText());
 		}
-		Gui.removeOnType(onTypes[currentOnType]);
-		Gui.giveOnType(onTypes[i]);
+		Gui.removeOnType(onTypes.get(currentOnType));
+		Gui.giveOnType(onTypes.get(i));
 		currentOnType=i;
+		if(currentOnType>=onTypes.size()){
+			currentOnType=onTypes.size()-1;
+		}
+	}
+	public List<TextFieldComponent<SubjectType, ?>> getOnTypes() {
+		return onTypes;
+	}
+	public void addOnType(TextFieldComponent<SubjectType, ?> onType) {
+		onTypes.add(onType);
+		addChild(onType);
+	}
+	public void clearOnTypes() {
+		while(!onTypes.isEmpty()){
+			removeChild(onTypes.remove(0));
+		}
+	}
+
+	public void addOnClick(OnClickFieldComponent<SubjectType> onClick) {
+		onClicks.add(onClick);
+		addChild(onClick);
+	}
+	public void clearOnClicks() {
+		while(!onClicks.isEmpty()){
+			removeChild(onClicks.remove(0));
+		}
 	}
 }

@@ -32,7 +32,7 @@ public class OnCreateSquareEditor extends Editor{
 	private TextWriter writer;
 	private GraphicView parentView;
 
-	public OnCreateSquareEditor(GraphicView parentView,float x, float y, float w, float h){
+	public OnCreateSquareEditor(GraphicView parentView,File saveTo,float x, float y, float w, float h){
 		super();
 
 		setupButtons();
@@ -40,7 +40,7 @@ public class OnCreateSquareEditor extends Editor{
 		guide.reposition(x,y);
 		addChild(guide);
 		String text = "";
-		saveTo = GetFileMenu.getFile(this,"ocs");
+		this.saveTo = saveTo;
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				text = Storage.loadText(saveTo.getAbsolutePath());
@@ -126,7 +126,7 @@ public class OnCreateSquareEditor extends Editor{
 			}});
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
-		mode = Editor.MODE_WAIT_FOR_RELEASE;
+		mode = Editor.MODE_NEUTRAL;
 	}
 	@Override
 	public void addIconsToSquare(Square square1){

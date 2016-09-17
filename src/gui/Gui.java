@@ -142,6 +142,7 @@ public class Gui extends GLApp {
     }
 
     public void mouseLeftUp(int x, int y) {
+    	//System.out.println(mouseListener.peek());
     	mouseListener.peek().onClick(new MotionEvent(x/Hub.width,y/Hub.height,MotionEvent.ACTION_UP,MotionEvent.MOUSE_LEFT));
 
     }
@@ -164,6 +165,7 @@ public class Gui extends GLApp {
     @Override
     public void keyDown(char c, int keycode) {
     	if(!keyboardListener.isEmpty()){
+        	System.out.println(keyboardListener.peek());
     		keyboardListener.peek().keyCommand(KeyBoardListener.DOWN,c,keycode);
     	}
     }

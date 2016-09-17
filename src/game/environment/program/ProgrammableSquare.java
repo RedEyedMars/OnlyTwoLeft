@@ -35,7 +35,12 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 	}
 	
 	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats){
-		super.loadActions(ints, floats);
+		//super.loadActions(ints, floats);
+		ints.next();
+		ints.next();
+		ints.next();
+		ints.next();
+		ints.next();
 		final ProgrammableSquare myself = this;
 		this.blackAction = new NullOnStepAction(){
 			@Override

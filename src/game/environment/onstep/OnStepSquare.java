@@ -1,17 +1,11 @@
 package game.environment.onstep;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import game.Action;
 import game.environment.Square;
 import game.environment.SquareAction;
-import game.environment.update.UpdateAction;
 import game.hero.Hero;
-import gui.graphics.GraphicEntity;
-import main.Hub;
 
 public class OnStepSquare extends Square {	
 

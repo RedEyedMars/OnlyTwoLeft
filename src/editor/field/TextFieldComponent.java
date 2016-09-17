@@ -8,7 +8,7 @@ import gui.inputs.MotionEvent;
 
 public abstract class TextFieldComponent<TargetType extends Object,SubjectType extends Object> extends TextWriter implements Action<SubjectType>{
 
-	protected TextWriter next=null;
+	protected TextFieldComponent<TargetType,?> next=null;
 	protected TargetType target;
 	protected FieldEditor<TargetType> parentField;
 	public TextFieldComponent(String font) {
@@ -17,7 +17,7 @@ public abstract class TextFieldComponent<TargetType extends Object,SubjectType e
 		index=0;
 	}
 
-	public void setNext(TextWriter next) {
+	public void setNext(TextFieldComponent<TargetType,?> next) {
 		this.next = next;
 	}
 	public void setTarget(TargetType target) {
@@ -35,6 +35,7 @@ public abstract class TextFieldComponent<TargetType extends Object,SubjectType e
 			advance(this.getText());
 			Gui.removeOnType(this);
 			if(next!=null){
+				System.out.println("setNext:"+next);
 				Gui.giveOnType(next);
 				this.parentField.nextType();
 			}
@@ -46,7 +47,13 @@ public abstract class TextFieldComponent<TargetType extends Object,SubjectType e
 	}
 	protected abstract boolean legalKey(char c, int keycode);
 	protected abstract void advance(String text);
-
-	public abstract void updateWith(TargetType subject);
+	public abstract TargetType updateWith(TargetType subject);
+	public void updateChain(TargetType subject){
+		setTarget(subject);
+		TargetType forNext = updateWith(subject);
+		if(next!=null){
+			next.updateChain(forNext);
+		}
+	}
 
 }

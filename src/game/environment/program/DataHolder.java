@@ -1,5 +1,7 @@
 package game.environment.program;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +17,17 @@ public abstract class DataHolder implements Statable{
 private LinkedHashMap<String,Object> data = new LinkedHashMap<String,Object>();	
 	public Object getData(String dataName){
 		return data.get(dataName);
+	}
+	public List<Object> getData() {
+		List<Object> d = new ArrayList<Object>();
+		for(String key:data.keySet()){
+			d.add(data.get(key));
+		}
+		return d;
+	}
+
+	public Collection<String> getDataKeys() {
+		return data.keySet();
 	}
 	public void setData(String dataName, Object dataValue){
 		data.put(dataName, dataValue);

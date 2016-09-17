@@ -18,8 +18,8 @@ public class Menu extends GraphicView{
 		super();		
 		addChild(new GraphicEntity("squares"));
 		getChild(0).setFrame(15);
-		for(Square square:squares){
-			addChild(square);
+		for(int i=0;i<squares.size();++i){
+			addChild(squares.get(i));
 		}
 	}
 	@Override

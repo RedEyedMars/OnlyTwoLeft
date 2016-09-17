@@ -150,6 +150,11 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 	}
 
 
+	public static String[] getEventNames() {
+		return eventNames;
+	}
+
+
 
 
 }

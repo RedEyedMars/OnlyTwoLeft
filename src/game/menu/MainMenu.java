@@ -12,6 +12,7 @@ import game.Game;
 import game.environment.Square;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicLine;
 import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;

@@ -37,6 +37,10 @@ public class SaveGameMessage extends Message {
 		}
 	}
 	
+	/**
+	 * Sets the menu to which SaveGameMessages will reference.
+	 * @param menu - which will then call the saveTime method.
+	 */
 	public static void setMenu(TransitionMenu menu){
 		SaveGameMessage.menu = menu;
 	}
