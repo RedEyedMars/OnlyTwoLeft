@@ -8,6 +8,7 @@ import java.util.List;
 import editor.Button;
 import editor.ButtonAction;
 import editor.Editor;
+import editor.program.Settable;
 import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.onstep.OnStepAction;
@@ -21,9 +22,18 @@ import main.Hub;
 import game.Action;
 import game.Game;
 
-public abstract class UpdateAction implements SquareAction<Double,UpdatableSquare>, Iterable<UpdateAction>{
+public abstract class UpdateAction implements SquareAction<Double,UpdatableSquare>, Iterable<UpdateAction>, Settable{
+	public static final int X = 0;
+	public static final int Y = 1;
+	public static final int LIMIT = 2;
+	public static final int START_PERCENT = 3;
+	public  static final int LIMIT_FUNCTION = 4;
+	public  static final int DEFAULT_STATE = 5;
+	
+	
 	public static List<UpdateAction> actions = new ArrayList<UpdateAction>();
-	public static List<Action<UpdateAction>> limiters = new ArrayList<Action<UpdateAction>>();
+	public static List<String> actionNames = new ArrayList<String>();
+	public static List<LimiterFunction> limiters = new ArrayList<LimiterFunction>();
 
 
 	public static final UpdateAction grow = new GrowUpdateAction();
@@ -33,61 +43,195 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 
 	public final static UpdateAction  combine = new CombinedUpdateActions();
 
-	public static final Action<UpdateAction> reverse = new Action<UpdateAction>(){
+	interface LimiterFunction {
+		public float getDelta(double t, double speed, float limit);
+		public double getTimeLimit(float speed, float limit);
+		public boolean isEndless();
+	}
+	
+	public static final LimiterFunction bounce = new LimiterFunction(){
+
 		@Override
-		public void act(UpdateAction action) {
-			action.setFloats(-action.x, -action.y);
+		public float getDelta(double t, double speed, float limit) {
+			if(speed==0)return 0f;
+			if(limit==0)return 0f;
+			float ret = 0f;
+			double speedFactor = Math.signum(speed)*speed/limit;
+			if(((int)(t*speedFactor/2))%2==0){
+				ret = limit*(float) ((1-2.0*Math.sqrt(Math.pow(Math.sin((t*speedFactor-1)*Math.PI/4.0), 2.0))
+						)/Math.sqrt(2)+29289.0/99999.0); 
+			}
+			else {
+				ret = limit*(float) ((1-2.0*Math.sqrt(Math.pow(Math.sin((t*speedFactor+1)*Math.PI/4.0), 2.0))
+						)/Math.sqrt(2)+29289.0/99999.0);
+			}
+			//System.out.println(ret);
+			return (float) (Math.signum(speed)*ret);
+			/* 
+			Double ret = 1-Math.sqrt(1-(Math.pow(Math.sin(t/speed*Math.PI/2.0),26.0/14.0)/
+					             (Math.sin(t/speed*Math.PI/2.0))));
+			if(ret.isNaN()){
+				ret = 1-Math.sqrt(1-(Math.pow(Math.sin((t+speed*2)*speed*Math.PI/2.0),26.0/14.0)/
+						             (Math.sin((t+1/speed*2)*speed*Math.PI/2.0))));
+			}
+			if(ret.isNaN())ret=0.0;
+			System.out.println(ret);
+			return (float)((Math.signum(speed))*ret*limit);/*
+			Double ret = 1-Math.sqrt(1-(Math.pow(Math.sin(t*limit*Math.PI/2.0),26.0/14.0)/
+					             (Math.sin(t*limit*Math.PI/2.0))));
+			if(ret.isNaN()){
+				ret = 1-Math.sqrt(1-(Math.pow(Math.sin((t+1/limit*2)*limit*Math.PI/2.0),26.0/14.0)/
+						             (Math.sin((t+1/limit*2)*speed*Math.PI/2.0))));
+			}
+			if(ret.isNaN())return 0f;
+			System.out.println(ret);
+			return (float)(ret*speed);*/
+		}
+
+		@Override
+		public double getTimeLimit(float speed, float limit) {
+			return -1f;
+		}
+
+		@Override
+		public boolean isEndless() {
+			return true;
+		}
+	};
+	
+
+	public static final LimiterFunction recycle = new LimiterFunction(){
+		@Override
+		public float getDelta(double t, double speed, float limit) {
+			if(speed==0)return 0f;
+			if(limit==0)return 0f;
+			int distanceTraveled = (int) (speed*t*1000);
+			return (distanceTraveled%(limit*1000))/1000f;
+		}
+		@Override
+		public double getTimeLimit(float speed, float limit) {
+			return -1f;
+		}
+		@Override
+		public boolean isEndless() {
+			return true;
 		}
 	};
 
-	public static final Action<UpdateAction> recycle = new Action<UpdateAction>(){
-		@Override
-		public void act(UpdateAction action) {
-			action.undo();
-		}
-	};
+	public static final LimiterFunction stop = new LimiterFunction(){
 
-	public static final Action<UpdateAction> stop = new Action<UpdateAction>(){
 		@Override
-		public void act(UpdateAction action) {
-			action.self.deactivate();
-			action.setFloats(0, 0);
+		public float getDelta(double t, double speed, float limit) {
+			if(speed==0)return 0f;
+			if(limit==0)return 0f;
+			float distanceTraveled = (float) (speed*t);
+			if(distanceTraveled>=limit){				
+				return limit;
+			}
+			else return distanceTraveled;
+		}
+		@Override
+		public double getTimeLimit(float speed, float limit) {
+			return limit/speed;
+		}
+		@Override
+		public boolean isEndless() {
+			return false;
 		}
 	};
+	public static final int DEFAULT_STATE_ACTIVATE = 3;
+	public static final int DEFAULT_STATE_DEACTIVATE = 4;
 
 	protected UpdatableSquare self;
 	protected float x;
 	protected float y;
 	protected boolean defaultState;
 	protected float limit=0f;
-	protected float limiterStartPercent = 0f;
-	protected float limiter = 0f;
-	protected int onLimitBrokenAction=-1;
+	protected float startAtPercent = 0f;
+	//protected float limiter = 0f;
+	protected int onLimitReachedAction=-1;
+
+	protected double timeSinceStart = 0;
 	public void undo() {
 	}
-	public void loadFrom(Iterator<Integer> ints,Iterator<Float> floats){		
-		defaultState=ints.next()==1;
+	public void loadFrom(Iterator<Integer> ints,Iterator<Float> floats){
+		int dstate = ints.next();
+		defaultState=dstate==1||dstate==DEFAULT_STATE_ACTIVATE;
 		x=floats.next();
 		y=floats.next();
-		onLimitBrokenAction=ints.next();
-		if(onLimitBrokenAction>=0){
+		//System.out.println("updateAction.loadFrom "+x+","+y);
+		onLimitReachedAction=ints.next();
+		if(onLimitReachedAction>=0){
 			limit = floats.next();
-			limiterStartPercent = floats.next();
+			startAtPercent = floats.next();
 		}
 	}
-	public float getFloat(int i){
-		return i==0?x:i==1?y:i==2?limit:limiterStartPercent;
+	public float getValue(int index){
+		switch(index){
+		case X:return x;
+		case Y:return y;
+		case LIMIT:return limit;
+		case START_PERCENT:return startAtPercent;
+		}
+		return -5;
+	}
+	public int getInt(int index){
+		switch(index){
+		case LIMIT_FUNCTION:return onLimitReachedAction;
+		case DEFAULT_STATE:return defaultState?DEFAULT_STATE_ACTIVATE:DEFAULT_STATE_DEACTIVATE;
+		}
+		return -5;
 	}
 
+
+	public void setValue(int index, float value) {
+		switch(index){
+		case X:{x = value;break;}
+		case Y:{y = value;break;}
+		case LIMIT:{limit = value;break;}
+		case START_PERCENT:{startAtPercent = value;break;}
+		default: throw new RuntimeException("no such float:"+index);
+		}
+	}
+	public void setValue(int index, int value) {
+		switch(index){
+		case DEFAULT_STATE:{defaultState = value==DEFAULT_STATE_ACTIVATE||value==1;break;}
+		case LIMIT_FUNCTION:{onLimitReachedAction = value;break;}
+		default: throw new RuntimeException("no such integer:"+index);
+		}
+	}
+
+	public Integer[] copiableValueIds() {
+		return new Integer[]{X,Y,LIMIT,START_PERCENT};
+	}
+	public Integer[] copiableIntIds() {
+		return new Integer[]{DEFAULT_STATE,LIMIT_FUNCTION};
+	}
+	public String[] copiableValueNames() {
+		return new String[]{"X","Y","Limit","Start%"};
+	}
+
+	public String[] copiableIntNames() {
+		return new String[]{"Default State","Limit Function"};
+	}
+	public String[] copiableIntTextureNames() {
+		return new String[]{"editor_icons","editor_update_limiter_icons"};
+	}
+	@Override
+	public int[] copiableIntTextureRanges(){
+		return new int[]{DEFAULT_STATE_ACTIVATE,DEFAULT_STATE_DEACTIVATE+1,-1,3};
+	}
 	public void saveTo(List<Object> saveTo){
 		saveTo.add(getIndex());
-		saveTo.add(defaultState?1:0);
+		saveTo.add(defaultState?DEFAULT_STATE_ACTIVATE:DEFAULT_STATE_DEACTIVATE);
 		saveTo.add(Math.abs(x)>0.000000001f?x:0f);
 		saveTo.add(Math.abs(y)>0.000000001f?y:0f);
-		saveTo.add(onLimitBrokenAction);
-		if(onLimitBrokenAction!=-1){
+		saveTo.add(onLimitReachedAction);
+
+		//System.out.println("updateAction.saveTo "+x+","+y+" "+this);
+		if(onLimitReachedAction!=-1){
 			saveTo.add(limit);
-			saveTo.add(Math.abs(limiterStartPercent)>0.000000001f?x:0f);
+			saveTo.add(Math.abs(startAtPercent)>0.000000001f?startAtPercent:0f);
 		}
 	}
 	@Override
@@ -99,49 +243,35 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		this.self = square;
 	}
 
-	public boolean getDefaultState(){
-		return defaultState;
-	}
-	public void setDefaultState(boolean newState) {
-		this.defaultState = newState;
-	}
-
-	public void setFloats(float x, float y) {
-		this.x=x;
-		this.y=y;
-	}
-	public void setX(Float x) {
-		this.x = x;
-	}
-	public void setY(Float y) {
-		this.y = y;
-	}
-	public void setLimit(float limit){
-		this.limit = limit;
-	}
-	public void setLimiterStartPercent(float limiterStartPercent){
-		this.limiterStartPercent = limiterStartPercent;
-	}
-
-	public int getLimiter() {
-		return onLimitBrokenAction;
-	}
-	public void setLimiter(int limiter) {
-		this.onLimitBrokenAction=limiter;
-	}
-
-	public boolean hasCrestedLimit() {
-		return limiter==0f;
+	public boolean hasReachedLimit() {
+		if(onLimitReachedAction==-1)return false;
+		return limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(x*1),limit)==limit ||
+			   limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(y*1),limit)==limit;
 	}
 	public void onActivate(){
-		limiter=limit*limiterStartPercent;
 	}
 	public void onDeactivate(){
-
 	}
-	public void flip() {
 
+	public void flip(){
+		y=-y;
 	}
+
+	public double getTimeSinceStart() {
+		return timeSinceStart;
+	}
+	public double getTimeToLimit() {
+		if(onLimitReachedAction>-1||!limiters.get(onLimitReachedAction).isEndless()){
+			return limiters.get(onLimitReachedAction).getTimeLimit(getSpeed(),limit);
+		}
+		else {
+			return timeSinceStart;
+		}
+	}
+	public float getSpeed() {
+		return (float) Math.sqrt(x*x+y*y);
+	}
+
 	public Iterator<UpdateAction> iterator(){
 		final UpdateAction self = this;
 		return new Iterator<UpdateAction>(){
@@ -189,10 +319,11 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 				if(obj instanceof UpdateAction){
 					//System.out.println(field.getName());
 					actions.add((UpdateAction) obj);
+					actionNames.add(field.getName());
 				}
-				else if(obj instanceof Action){
+				else if(obj instanceof LimiterFunction){
 					//System.out.println(field.getName());
-					limiters.add((Action<UpdateAction>) obj);
+					limiters.add((LimiterFunction) obj);
 				}
 			} 
 		}
@@ -214,5 +345,17 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 			}
 		}
 	}
-
+	public static String getActionName(int i) {
+		if(i==-1||i>=actions.size()){
+			return null;
+		}
+		else {
+			if(i==-2){
+				return "combine";
+			}
+			else {
+				return actionNames.get(i);
+			}
+		}
+	}
 }

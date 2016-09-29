@@ -5,7 +5,7 @@ import gui.graphics.Animation;
 
 public class HumanoidHeroAnimation<SubjectType extends Hero> implements Animation<SubjectType>{
 	private static final int BLACK = 0;
-	private static final int WHITE = 16;
+	private static final int WHITE = 32;
 	private static final int RIGHT = 0;
 	private static final int LEFT = 5;
 	private static final int IDLE = 2;
@@ -56,7 +56,8 @@ public class HumanoidHeroAnimation<SubjectType extends Hero> implements Animatio
 	}
 	
 	public void jump(Hero hero, Action<Hero> action){
-		hero.setFrame(JUMPING+facing*2/5);
+		int colour = hero.isBlack()?BLACK:hero.isWhite()?WHITE:-1;
+		hero.setFrame(JUMPING+facing*2/5+colour);
 		this.jumpAction = action;
 	}
 }

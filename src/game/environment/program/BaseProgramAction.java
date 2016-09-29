@@ -18,5 +18,12 @@ public class BaseProgramAction extends ProgramAction<ProgrammableSquare>{
 	public ProgramAction create() {
 		return new BaseProgramAction();
 	}
-
+	@Override
+	public String[] copiableIntTextureNames() {
+		return new String[]{};
+	}
+	@Override
+	public int[] copiableIntTextureRanges(){
+		return new int[]{};
+	}
 }

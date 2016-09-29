@@ -30,6 +30,8 @@ public class RaceMode implements GameMode{
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
 	private static final float standardAcceleration = 0.02f;
+	private static final float standingHeight = 0.04f;
+	private static final float crouchingHeight = 0.03f;
 	private boolean focusedCanJump = false;
 
 	private Hero wild;
@@ -60,8 +62,8 @@ public class RaceMode implements GameMode{
 		focused = Hub.getHero(colourToControl);
 		wild = Hub.getHero(!colourToControl);
 		
-		focused.resize(0.04f, 0.04f);
-		wild.resize(0.04f, 0.04f);
+		focused.resize(0.02f, standingHeight);
+		wild.resize(0.02f, 0.04f);
 		this.wildWall = wildWall;
 		wild.reposition(focused.getX(),focused.getY());
 		if(Client.isConnected()){
@@ -179,9 +181,7 @@ public class RaceMode implements GameMode{
 	}
 	private void handleInterceptions(){
 		List<OnStepSquare> mapSquares = Hub.map.getFunctionalSquares();
-		for(Hero hero:new Hero[]{focused}){
-			hero.handleWalls(mapSquares);
-		}
+		focused.handleWalls(mapSquares);
 	}
 
 	private void handleViewMovement(){
@@ -343,10 +343,13 @@ public class RaceMode implements GameMode{
 				focused.setXAcceleration(standardAcceleration);
 			}
 			else if('w'==c){
+				focused.resize(focused.getWidth(), standingHeight);
 				jump();
 			}
 			else if('s'==c){
-				//controlled.setYAcceleration(-standardAcceleration);
+				if(!focused.isJumping()){
+					focused.resize(focused.getWidth(), crouchingHeight);
+				}
 			}
 			else if(keycode==1||keycode==25||keycode==197){
 				game.pause();
@@ -360,8 +363,10 @@ public class RaceMode implements GameMode{
 				focused.setXAcceleration(0f);
 			}
 			else if(17==keycode){
+				focused.resize(focused.getWidth(), standingHeight);
 			}
 			else if(31==keycode){
+				focused.resize(focused.getWidth(), standingHeight);
 			}
 			else if(57==keycode){//space
 				jump();

@@ -13,47 +13,59 @@ import gui.inputs.MotionEvent;
 public class Button extends GraphicEntity{
 
 	//The action to perform when this Button is clicked.
-	private Action<Object> onClick;
+	private Action<MotionEvent> onClick;
+	private Action<MotionEvent> onRelease;
 	private GraphicEntity icon;
+	private GraphicEntity null_icon;
 
 	protected Integer frame;
 
-	public Button(String textureName, Action<Object> onClick) {
-		this(textureName,null,onClick);
+	private String description;
+
+	public Button(String textureName,String description, Action<MotionEvent> onClick, Action<MotionEvent> onRelease) {
+		this(textureName,-2,description,onClick, onRelease);
 	}
-	public Button(Action<Object> onClick) {
-		this("blank",0,onClick);
+	public Button(String description, Action<MotionEvent> onClick, Action<MotionEvent> onRelease) {
+		this("blank",-2,description,onClick, onRelease);
 	}
-	public Button(String textureName, Integer frame, Action<Object> onClick) {
+	public Button(String textureName, Integer frame, String description, Action<MotionEvent> onClick, Action<MotionEvent> onRelease) {
 		super("editor_button",1);
 		this.onClick = onClick;
+		this.onRelease = onRelease;
+		this.description = description;
 
-		if(frame>=0){
-			icon = new GraphicEntity(textureName,1);
-			icon.setFrame(frame);
-			this.frame = frame;
-			addChild(icon);
-		}
-		else {
-			icon = new GraphicEntity("editor_button",1);
-			icon.setFrame(1);
-			this.frame = frame;
-			addChild(icon);
-		}
+		icon = new GraphicEntity(textureName,1);
+		addChild(icon);
+		
+		null_icon = new GraphicEntity("editor_button",1);
+		null_icon.setFrame(1);
+		addChild(null_icon);
+		setFrame(frame);
 	}
 
 	@Override
-	public void performOnClick(MotionEvent e){		
-		onClick.act(null);
+	public void performOnClick(MotionEvent e){
+		if(onClick!=null){
+			onClick.act(e);
+		}
 	}
-	public void setAction(Action<Object> action) {
+	@Override
+	public void performOnRelease(MotionEvent e){
+		if(onRelease!=null){
+			onRelease.act(e);
+		}
+	}
+	public void setOnClick(Action<MotionEvent> action) {
 		this.onClick = action;
+	}
+	public void setOnRelease(Action<MotionEvent> action) {
+		this.onRelease = action;
 	}
 	public void setSelected(boolean b) {
 		if(b){
-			setFrame(2);
+			super.setFrame(2);
 		}
-		else setFrame(0);
+		else super.setFrame(0);
 	}
 
 	public boolean isSelected() {
@@ -61,6 +73,31 @@ public class Button extends GraphicEntity{
 	}
 	public GraphicEntity getIcon() {
 		return icon;
+	}
+	@Override
+	public void setFrame(int frame){
+
+		this.frame = frame;
+		if(frame==-2){
+			null_icon.turnOff();
+			icon.turnOff();
+		}		
+		else if(frame==-1){
+			null_icon.setVisible(true);
+			icon.setVisible(false);
+		}
+		else {
+			null_icon.setVisible(false);
+			icon.setVisible(true);
+			icon.setFrame(frame);
+		}
+	}
+	@Override
+	public void setVisible(boolean vis){
+		super.setVisible(vis);
+		if(vis){
+			setFrame(frame);
+		}
 	}
 	@Override
 	public void resize(float width, float height, float dWidth, float dHeight){
@@ -83,5 +120,10 @@ public class Button extends GraphicEntity{
 	 */
 	@Override
 	public void turnOff(){		
+	}
+	
+
+	public String getDescription() {
+		return description;
 	}
 }

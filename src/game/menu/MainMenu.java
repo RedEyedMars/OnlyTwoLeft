@@ -61,7 +61,7 @@ public class MainMenu extends Menu{
 	}
 
 	public void solo(){
-		File file = GetFileMenu.getFile(this,"maps");
+		File file = GetFileMenu.getFile(this,"maps",false);
 		if(file!=null){
 			Storage.loadMap(file.getAbsolutePath());
 			Gui.setView(new Game(true,Main.getNewRandomSeed()));

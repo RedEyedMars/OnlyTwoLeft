@@ -19,7 +19,8 @@ public class AdjustLimiterStartPercentOnCreateAction extends OnCreateAction {
 		if(square.getLast() instanceof UpdatableSquare){
 			UpdatableSquare toAdjust = (UpdatableSquare) square.getLast();
 			for(UpdateAction updateAction:toAdjust.getAction()){
-				updateAction.setLimiterStartPercent(updateAction.getFloat(3)+dlsp);
+				updateAction.setValue(UpdateAction.START_PERCENT,
+									updateAction.getValue(UpdateAction.START_PERCENT)+dlsp);
 			}
 		}
 	}

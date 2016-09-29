@@ -165,7 +165,6 @@ public class Gui extends GLApp {
     @Override
     public void keyDown(char c, int keycode) {
     	if(!keyboardListener.isEmpty()){
-        	System.out.println(keyboardListener.peek());
     		keyboardListener.peek().keyCommand(KeyBoardListener.DOWN,c,keycode);
     	}
     }

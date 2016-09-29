@@ -72,7 +72,9 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 		return target;
 	}
 	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
-		condition = ProgramCondition.getCondition(ints.next()).create();
+		int conditionIndex = ints.next();
+	//	System.out.println("programstate.loadFrom "+conditionIndex);
+		condition = ProgramCondition.getCondition(conditionIndex).create();
 		condition.setState(this);
 		condition.loadFrom(ints, floats);
 		int actionsSize = ints.next();

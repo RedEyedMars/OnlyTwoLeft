@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import game.environment.Map;
 import game.environment.Square;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.update.UpdatableSquare;
@@ -28,11 +29,11 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private boolean reset = false;
 	private List<GraphicEntity> heroButtons = new ArrayList<GraphicEntity>();
 	private game.environment.Map myLoadedMap;
-	private GraphicEntity gravityShower = new GraphicEntity("gravity_icons",1);
-	private GraphicEntity lightDependencyShower = new GraphicEntity("editor_light_dependency",1);
+	private Button gravityButton;
+	private Button lightDependencyButton;
 	public MapEditor(){
 		super();
-		saveTo = GetFileMenu.getFile(this,"maps");
+		saveTo = GetFileMenu.getFile(this,"maps",true);
 		if(saveTo!=null){
 			if(saveTo.exists()){
 				Storage.loadMap(saveTo.getAbsolutePath());
@@ -55,7 +56,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				Hub.map = game.environment.Map.createMap(0);
 				myLoadedMap = Hub.map;
 				squares = Hub.map.getSquares();
-				saveMap();
+				saveCurrent();
 			}
 			setupHeroButton(0);
 			setupHeroButton(1);
@@ -66,7 +67,8 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	
 
 	public void setupHeroButton(final int colour){
-		final Button button = new Button("circles",colour,null);
+		final Button button = new Button("circles",colour,"Drag to move the "
+				+ (colour==0?"Black":colour==1?"White":"OTHER")+" Hero's starting position.",null,null);
 		final MouseListener mouseListener = new MouseListener(){
 			@Override
 			public boolean onClick(MotionEvent event) {
@@ -79,15 +81,8 @@ public class MapEditor extends Editor implements KeyBoardListener{
 
 			@Override
 			public boolean onHover(MotionEvent event) {
-
-				int x = (int) (Hub.map.getIntX(event.getX()-0.025f)+2.5f);
-				int y = (int) (Hub.map.getIntY(event.getY()-0.025f)+2.5f);
-				x-=x%5;
-				y-=y%5;
-				float dx = Hub.map.getRealX(x)-button.getX();
-				float dy = Hub.map.getRealY(y)-button.getY();
-				button.reposition(button.getX()+dx,
-						      button.getY()+dy);
+				button.reposition(snapClickToGrid(event.getX(),Map.X_axis),
+						          snapClickToGrid(event.getY(),Map.Y_axis));
 				myLoadedMap.setStartPosition(colour,button.getX()-screenX,button.getY()-screenY);
 				return true;
 			}
@@ -104,16 +99,16 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			public void onMuteMouse() {				
 			}
 		};
-		button.setAction(new ButtonAction(){
+		button.setOnClick(new ButtonAction(){
 			@Override
-			public void act(Object subject) {
+			public void act(MotionEvent event) {
 				mode = -2;
 				Gui.giveOnClick(mouseListener);
 			}
 		});
 
 		button.reposition(myLoadedMap.getStartingXPosition(colour)+screenX,
-				      myLoadedMap.getStartingYPosition(colour)+screenY);
+						  myLoadedMap.getStartingYPosition(colour)+screenY);
 		button.resize(0.05f, 0.05f);
 		heroButtons .add(button);
 		buttons.add(button);
@@ -123,17 +118,38 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	@Override
 	public void setupButtons(){
 		super.setupButtons();
-		gravityShower.resize(0.04f, 0.04f);
-		gravityShower.reposition(0.9f,
-				           0.96f);
-		addChild(gravityShower);
-		gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
+		gravityButton = new Button("gravity_icons",(myLoadedMap.getMapId()+20)/-20,
+				"G - Cycle through and set this map's game mode:\n"
+				+ "  Puzzle: no gravity, non-competetive, just trying to get both Heroes to the end point. Uses Visual Bubbles.\n"
+				+ "  Platform: the Heroes are effected by gravity in opposite vertical directions, objective is the same as the Puzzle mode.\n"
+				+ "  Race: the objective is to get to the end of the map as fast as possible and if duo'd faster than other hero. Uses graviy uniformly downward on both Heroes.",null,new ButtonAction(){
+
+			@Override
+			public void act(MotionEvent subject) {
+				myLoadedMap.setMapId(myLoadedMap.getMapId()==-60?-20:myLoadedMap.getMapId()-20);
+				gravityButton.getIcon().setFrame((myLoadedMap.getMapId()+20)/-20);
+			}
+			
+		});
+		gravityButton.resize(0.05f, 0.05f);
+		gravityButton.reposition(0.82f,
+				           0.92f);
+		addChild(gravityButton);
+		buttons.add(gravityButton);
 		
-		this.lightDependencyShower.resize(0.04f, 0.04f);
-		lightDependencyShower.reposition(0.905f,
-				                     0.91f);
-		addChild(lightDependencyShower);
-		lightDependencyShower.setFrame(myLoadedMap.isLightDependent()?0:1);
+		this.lightDependencyButton = new Button("editor_light_dependency",myLoadedMap.isLightDependent()?0:1,
+				"L - Toggle whether this map uses the rule that lets Heroes always be able to pass through oppositely coloured squares, and always blocked by samely coloured squares.(Doesn't work on race atm)",null,new ButtonAction(){
+			@Override
+			public void act(MotionEvent subject) {
+				myLoadedMap.setLightDependency(!myLoadedMap.isLightDependent());
+				lightDependencyButton.getIcon().setFrame(myLoadedMap.isLightDependent()?0:1);
+			}			
+		});
+		this.lightDependencyButton.resize(0.05f, 0.05f);	
+		lightDependencyButton.reposition(0.82f,
+				                     0.87f);
+		addChild(lightDependencyButton);
+		buttons.add(lightDependencyButton);
 	}
 
 	private void createCopyOfSquare(Square square){
@@ -149,19 +165,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 
 			@Override
-			public boolean onHover(MotionEvent event) {
-				int x = Hub.map.getIntX(event.getX());
-				int y = Hub.map.getIntY(event.getY());
-				if(granityShower.getFrame()==0){
-					x = (int) (x+2.5f);
-					y = (int) (y+2.5f);
-					x-=x%5;
-					y-=y%5;
-				}
-				float dx = Hub.map.getRealX(x)-copy.getX();
-				float dy = Hub.map.getRealY(y)-copy.getY();
-				copy.reposition(copy.getX()+dx,
-						  copy.getY()+dy);
+			public boolean onHover(MotionEvent e) {
+				copy.reposition(snapClickToGrid(e.getX(),Map.X_axis),
+						snapClickToGrid(e.getY(),Map.Y_axis));
 				return true;
 			}
 
@@ -191,20 +197,8 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
 		if(KeyBoardListener.UP==b){
-			if(57==keycode){//space
-				if(visibleTo==0){
-					visibleTo = 1;
-					visibleToShower.setFrame(0);
-				}
-				else if(visibleTo==1){
-					visibleTo = 2;
-					visibleToShower.setFrame(1);
-				}
-				else if(visibleTo==2){
-					visibleTo = 0;
-					visibleToShower.setFrame(3);
-				}
-				setVisibleSquares(visibleTo);
+			if(57==keycode){//space				
+				toggleVisibleSquares();
 			}
 			else if(44==keycode&&!squares.isEmpty()){
 				if(mostRecentlyRemovedSquare!=null){
@@ -219,7 +213,7 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			}
 			else if(45==keycode){
 				if(!reset){
-					saveAndReturnToMainMenu();
+					saveAndReturn();
 				}
 				else {
 					reset = false;
@@ -229,41 +223,39 @@ public class MapEditor extends Editor implements KeyBoardListener{
 				createCopyOfSquare(squares.get(squares.size()-1));
 			}
 			else if(keycode==17||keycode==200){//up
-				moveView(0,-0.2f);
+				moveView(0,-0.5f);
 			}
 			else if(keycode==30||keycode==203){//left
-				moveView(0.2f,0);
+				moveView(0.5f,0);
 			}
 			else if(keycode==31||keycode==208){//down
-				moveView(0,0.2f);
+				moveView(0,0.5f);
 			}
 			else if(keycode==32||keycode==205){//right
-				moveView(-0.2f,0);
+				moveView(-0.5f,0);
 			}
 			else if(keycode==38){//toggle light
-				myLoadedMap.setLightDependency(!myLoadedMap.isLightDependent());
-				lightDependencyShower.setFrame(myLoadedMap.isLightDependent()?0:1);
+				this.lightDependencyButton.performOnRelease(null);
 			}
 			else if(keycode==34){//toggle gravity
-				myLoadedMap.setMapId(myLoadedMap.getMapId()==-60?-20:myLoadedMap.getMapId()-20);
-				gravityShower.setFrame((myLoadedMap.getMapId()+20)/-20);
+				gravityButton.performOnRelease(null);
 			}
 			else if(keycode==33){//toggle granity
-				granityShower.setFrame(granityShower.getFrame()==0?1:0);
+				granityButton.performOnRelease(null);
 			}
 		}
 
 	}
-	private void saveAndReturnToMainMenu() {
-		saveMap();
+	protected void saveAndReturn() {
+		saveCurrent();
 		Gui.setView(new MainMenu());
 	}
-	private void saveMap(){
+	@Override
+	public void saveCurrent(){
 		for(Square square:squares){
 			square.reposition(square.getX()-screenX,
 					          square.getY()-screenY);
 		}
-
 		game.environment.Map map = game.environment.Map.createMap(myLoadedMap.getMapId());
 		myLoadedMap.copyTo(map);
 		for(Square square:squares){
@@ -273,6 +265,10 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			square.setRoot(this);
 		}
 		Storage.saveMap(saveTo.getAbsolutePath(), map);
+		for(Square square:squares){
+			square.reposition(square.getX()+screenX,
+					          square.getY()+screenY);
+		}
 	}
 	private void moveView(float x, float y){
 		this.screenX+=x;
@@ -325,5 +321,11 @@ public class MapEditor extends Editor implements KeyBoardListener{
 		}
 		reset = true;
 	}*/
+
+
+	@Override
+	protected void openNew() {
+		Gui.setView(new MapEditor());
+	}
 
 }

@@ -250,7 +250,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		}
 	}
 	public void changeMap(){
-		File newMap = GetFileMenu.getFile(this,"maps");
+		File newMap = GetFileMenu.getFile(this,"maps",false);
 		if(newMap!=null){
 			mapFile = newMap;
 			String name = mapFile.getName();

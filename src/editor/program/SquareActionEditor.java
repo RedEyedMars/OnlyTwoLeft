@@ -2,9 +2,9 @@ package editor.program;
 
 import game.environment.program.ProgramAction;
 
-public abstract class SquareActionEditor extends ActionEditor {
-	public SquareActionEditor(ProgramSquareEditor editor,String textureName, Integer frame, ProgramAction action) {
-		super(editor,textureName, frame, action);
+public abstract class SquareActionEditor<TargetType extends Settable> extends ActionEditor<TargetType> {
+	public SquareActionEditor(ProgramSquareEditor editor,String textureName, Integer frame, ProgramAction action, TargetType target) {
+		super(editor, textureName, frame, action, target);
 	}
 	@Override
 	public float offsetX(int i){

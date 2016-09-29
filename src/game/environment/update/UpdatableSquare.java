@@ -16,6 +16,10 @@ public class UpdatableSquare extends OnStepSquare {
 	protected UpdateAction updateAction;
 	private boolean activated = false;
 	private List<Square> dependants = new ArrayList<Square>();
+
+
+	private float origX = 0f;
+	private float origY = 0f;
 	public UpdatableSquare(int actionType,int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(actionType-3,shapeType,blackColour, whiteColour,ints, floats);
 		this.actionType=actionType;
@@ -24,12 +28,15 @@ public class UpdatableSquare extends OnStepSquare {
 		for(int i=0;i<depends;++i){
 			addDependant(Square.create(ints, floats));
 		}
+		this.origX = getX();
+		this.origY = getY();
 	}
 	public UpdatableSquare(int shapeType, int blackColour, int whiteColour,float width, float height,int action, float x, float y,int blackAction,int whiteAction) {
 		super(shapeType,blackColour, whiteColour,width,height,blackAction,whiteAction);
 		this.actionType=3;
 		this.updateAction = UpdateAction.getAction(action).create();		
-		this.updateAction.setFloats(x,y);
+		this.updateAction.setValue(UpdateAction.X,x);
+		this.updateAction.setValue(UpdateAction.Y,y);
 		this.updateAction.setTarget(this);
 	}
 
@@ -97,7 +104,7 @@ public class UpdatableSquare extends OnStepSquare {
 	}
 
 	public void run(){
-		if(this.updateAction.getDefaultState()){
+		if(this.updateAction.getInt(UpdateAction.DEFAULT_STATE)==UpdateAction.DEFAULT_STATE_ACTIVATE){
 			activate();
 		}
 		else {

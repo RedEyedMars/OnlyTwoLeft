@@ -32,10 +32,6 @@ public class Hub {
 	public static GraphicRenderer renderer;
 	public static float width;
 	public static float height;
-	public static List<GraphicElement> addLayer = new ArrayList<GraphicElement>();
-	public static List<GraphicElement> removeLayer = new ArrayList<GraphicElement>();
-	public static List<GraphicElement> drawBotLayer = new ArrayList<GraphicElement>();
-	public static List<GraphicElement> drawTopLayer = new ArrayList<GraphicElement>();
 	public static MouseListener genericMouseListener = new MouseListener(){
 		@Override
 		public boolean onClick(MotionEvent event) {	return false; }

@@ -335,5 +335,31 @@ public class GraphicElement {
 		}
 		return -1;
 	}
+	public static String getShapeName(int i) {
+		switch(i){
+		case 0:{
+			return "Square";
+		}
+		case 1:{
+			return "Regular Triangle";
+		}
+		case 2:{
+			return "Right Triangle(point at the top left)";
+		}
+		case 3:{
+			return "Right Triangle(point at the top right)";
+		}
+		case 4:{
+			return "Right Triangle(point at the bottom left)";
+		}
+		case 5:{
+			return "Right Triangle(point at the bottom right)";
+		}
+		case 6:{
+			return "Hexagon";
+		}
+		}
+		return null;
+	}
 
 }

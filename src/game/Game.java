@@ -98,17 +98,24 @@ public class Game extends GraphicView{
 	public KeyBoardListener getDefaultKeyBoardListener(){
 		return gameMode;
 	}
+	private double delay = 0.0;
+	private boolean hasDelay = false;
 	@Override
 	public void update(double secondsSinceLastFrame){
+		if(hasDelay){
+			delay+=secondsSinceLastFrame;
+			if(delay<0.1)return;
+			delay-=0.1;
+		}
 		if(transition){
 			enactTransition();
 		}
 		if(gameMode==null){
 			Gui.removeOnType(gameMode);
-			Hub.addLayer.clear();
+			Hub.renderer.clearAdditions();
 			Gui.setView(new MainMenu());
 		}
-		if((pauseMenu!=null&&pauseMenu.isPaused()) || waiting ||secondsSinceLastFrame>0.1f)return;
+		if((pauseMenu!=null&&pauseMenu.isPaused()) || waiting /*||secondsSinceLastFrame>0.1f*/)return;
 		timeSpentInGame+=secondsSinceLastFrame*1000;
 		super.update(secondsSinceLastFrame);
 		gameMode.update(secondsSinceLastFrame);
@@ -130,7 +137,7 @@ public class Game extends GraphicView{
 	private void enactTransition(){
 		String previousMapName = Hub.map.getName();
 		Gui.removeOnType(gameMode);
-		Hub.addLayer.clear();
+		Hub.renderer.clearAdditions();
 		String nextMapName = Storage.getMapNameFromFileName(nextMap);
 		TransitionMenu menu = new TransitionMenu(gameMode.isCompetetive(),successful,timeSpentInGame,previousMapName,nextMapName,colourToControl,Hub.map.getFileName()!=null);
 		HeroEndGameMessage.setMenu(menu);
@@ -177,8 +184,10 @@ public class Game extends GraphicView{
 		Hub.restartMap(new Action<Object>(){
 			@Override
 			public void act(Object subject) {
-				Gui.setView(new Game(colourToControl,seed));
+				Game game = new Game(colourToControl,seed);
+				Gui.setView(game);
 				Hub.getHero(!colourToControl).reposition(theirX,theirY);
+				game.update(timeSpentInGame/1000.0);
 				waiting=false;
 			}
 		});

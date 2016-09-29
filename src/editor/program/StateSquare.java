@@ -7,6 +7,7 @@ import editor.Button;
 import editor.ButtonAction;
 import game.environment.program.ProgramAction;
 import game.environment.program.ProgramState;
+import game.environment.program.condition.FreeProgramCondition;
 import gui.inputs.MotionEvent;
 
 public class StateSquare extends Button{
@@ -25,7 +26,7 @@ public class StateSquare extends Button{
 	private static final float EMPTY_HEIGHT = 0.075f;
 
 	public StateSquare(final ProgramSquareEditor editor,ProgramState programState, String event) {
-		super("squares",2,new ButtonAction(){public void act(Object subject) {}});
+		super("squares",2,"",null,null);
 		this.editor=editor;
 		this.state = programState;
 		resize(0f,0f);
@@ -60,12 +61,9 @@ public class StateSquare extends Button{
 		}
 		
 		final StateSquare self = this;
-		this.linkNewStateButton = new Button("editor_shape_icons",1,new ButtonAction(){
+		this.linkNewStateButton = new Button("editor_shape_icons",1,"Create a new State and link it to this state",null,new ButtonAction(){
 			@Override
-			public void act(Object subject) {				
-			}}){
-			@Override
-			public void performOnRelease(MotionEvent e){
+			public void act(MotionEvent event) {
 				ProgramState subState = state.addSubState("update");
 				StateSquare ss = new StateSquare(editor,subState,"update");
 				self.addChild(ss);
@@ -80,7 +78,7 @@ public class StateSquare extends Button{
 				ss.resize(0f, 0f);
 				self.reposition(self.getX(),self.getY());
 			}
-		};
+		});
 		addChild(linkNewStateButton);		
 		editor.addButton(linkNewStateButton);
 		resize(0f,0f);
@@ -88,7 +86,12 @@ public class StateSquare extends Button{
 	}
 	public ProgramState solidify() {
 		ProgramState state = new ProgramState();
-		state.setCondition(condition.getCondition());
+		if(condition!=null){
+			state.setCondition(condition.getCondition());
+		}
+		else {
+			state.setCondition(new FreeProgramCondition());
+		}
 		for(ActionEditor action:actions){
 			state.addAction(action.action);
 		}

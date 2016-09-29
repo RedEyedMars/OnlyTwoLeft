@@ -15,40 +15,39 @@ public class EditorMenu extends Menu {
 		GraphicEntity button = new MenuButton("Map"){
 			@Override
 			public void performOnRelease(MotionEvent e){
-					Gui.setView(new MapEditor());
+				Gui.setView(new MapEditor());
 			}
 		};
 		button.reposition(0.2f,0.51f);
 		addChild(button);
-		
+
 		final EditorMenu self = this;
 		button = new MenuButton("Square"){
 			@Override
 			public void performOnRelease(MotionEvent e){
-
-				File saveTo = GetFileMenu.getFile(this,"ocs");
-					Gui.setView(new OnCreateSquareEditor(self,saveTo,0f,0f,1f,1f));
+				File saveTo = GetFileMenu.getFile(this,"ocs",true);
+				Gui.setView(new OnCreateSquareEditor(self,saveTo,0f,0f,1f,1f));
 			}
 		};
 		button.reposition(0.2f,0.35f);
 		addChild(button);
-		
+
 		button = new MenuButton("Return"){
 			@Override
 			public void performOnRelease(MotionEvent e){
-					returnToMain();
+				returnToMain();
 			}
 		};
 		button.reposition(0.2f,0.19f);
 		addChild(button);
-		
+
 	}
-	
+
 
 	public void returnToMain(){
 		Gui.setView(new MainMenu());
 	}
-	
+
 	@Override
 	public void update(double seconds){
 		Hub.renderer.loadFont("timesnewroman");

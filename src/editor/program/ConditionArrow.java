@@ -42,13 +42,10 @@ public class ConditionArrow extends GraphicLine{
 		this.event = eve;
 		final ConditionArrow self = this;
 
-		this.openFieldsButton = new Button("editor_button",3,
+		this.openFieldsButton = new Button("editor_arrows",0,"Edit this condition",null,
 				new ButtonAction(){
 			@Override
-			public void act(Object subject) {
-			}}){
-			@Override
-			public void performOnRelease(MotionEvent e){
+			public void act(MotionEvent event) {
 				conditionEditor.changeText("");
 				conditionEditor.clearOnTypes();
 				conditionEditor.clearOnClicks();
@@ -60,7 +57,7 @@ public class ConditionArrow extends GraphicLine{
 				Gui.giveOnClick(conditionEditor);
 				Gui.giveOnType(conditionEditor.getDefaultKeyBoardListener());
 			}
-		};
+		});
 		conditionEditor = new FieldEditor<ProgramCondition>("",
 				new TextFieldComponent[]{
 

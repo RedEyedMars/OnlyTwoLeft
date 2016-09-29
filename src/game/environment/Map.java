@@ -118,7 +118,7 @@ public class Map extends GraphicEntity {
 
 	private float xOffset = 0f;
 	private float yOffset = 0f;
-	private boolean lightDependency = true;
+	private boolean lightDependency = false;
 	@Override
 	public void reposition(float x, float y){
 		xOffset = x-getX();
@@ -207,7 +207,7 @@ public class Map extends GraphicEntity {
 
 	public static Map createMap(int id){
 		if(id==0){
-			return createMap(-20);
+			return createMap(-60);
 		}
 
 		Map map = new Map();
@@ -311,21 +311,39 @@ public class Map extends GraphicEntity {
 	public float getStartingYPosition(int colour) {
 		return startingYPosition[colour];
 	}
-	public float getRealX(int x){
-		return ((float)x)/gridSizeX;
-	}
-	public float getRealY(int y){
-		return ((float)y)/gridSizeY;
-	}
-	public int getIntX(float x){
-		if(x<=0){
-			return (int) (x*gridSizeX-0.5f);
+	public static final boolean X_axis = true;
+	public static final boolean Y_axis = false;
+	public float getFloatCoordinate(int value,boolean axis){
+		if(axis==X_axis){
+			return ((float)value)/gridSizeX;
 		}
-		return (int) (x*gridSizeX+0.5f);
+		else if(axis==Y_axis){
+			return ((float)value)/gridSizeY;
+		}
+		else {
+			return 0.5f;
+		}
 	}
-
-	public int getIntY(float y){
-		return (int) (y*gridSizeY+0.5f);
+	public int getIntCoordinate(float value, boolean axis){
+		if(axis==X_axis){
+			if(value<=0){
+				return (int) (value*gridSizeX-0.5f);
+			}
+			else {
+				return (int) (value*gridSizeX+0.5f);
+			}
+		}
+		else if(axis==Y_axis){
+			if(value<=0){
+				return (int) (value*gridSizeY-0.5f);
+			}
+			else {
+				return (int) (value*gridSizeY+0.5f);
+			}
+		}
+		else {
+			return (int) (gridSizeX/2);
+		}
 	}
 
 	public int getMapId(){
@@ -461,11 +479,11 @@ public class Map extends GraphicEntity {
 	public static File userSave(String sub){
 		JFileChooser  fc = new JFileChooser("data"+File.separator+sub);
 		int returnVal = fc.showOpenDialog(new JPanel());
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
-        } else {
-            return null;
-        }
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			return fc.getSelectedFile();
+		} else {
+			return null;
+		}
 	}
 
 	public void copyTo(Map map) {

@@ -31,16 +31,14 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 	
 	public ProgrammableSquare(int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(5,shapeType, blackColour, whiteColour, ints, floats);
-		this.actionType = 7;		
+		this.actionType = 7;
 	}
 	
 	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats){
 		//super.loadActions(ints, floats);
-		ints.next();
-		ints.next();
-		ints.next();
-		ints.next();
-		ints.next();
+		ints.next();//blackActionIndex
+		ints.next();//whiteActionIndex
+		ints.next();//updateActionIndex
 		final ProgrammableSquare myself = this;
 		this.blackAction = new NullOnStepAction(){
 			@Override
@@ -91,14 +89,18 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 			}
 		};
 		this.updateAction = new NullUpdateAction(){
+			private double currentUpdateActionStartTime;
 			@Override
 			public void act(Double seconds){
 				secondsSinceLastFrame = seconds;
+				timeSinceStart+=seconds;
 				if(currentUpdateAction!=null){
-					currentUpdateAction.act(seconds);
-					if(currentUpdateAction.hasCrestedLimit()){
+					if(currentUpdateAction.hasReachedLimit()){
+						secondsSinceLastFrame = timeSinceStart-currentUpdateAction.getTimeToLimit()-currentUpdateActionStartTime;
 						currentState.on("limitReached", myself);						
 					} else {
+						currentUpdateAction.act(seconds);
+						secondsSinceLastFrame = timeSinceStart-currentUpdateAction.getTimeSinceStart()-currentUpdateActionStartTime;
 						currentState.on("update", myself);
 					}
 				}
@@ -106,8 +108,40 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 					currentState.on("update", myself);
 				}
 			}
+			@Override
+			public float getValue(int index){
+				if(currentUpdateAction!=null){
+					return currentUpdateAction.getValue(index);
+				}
+				else {
+					return super.getValue(index);
+				}
+			}
+			@Override
+			public int getInt(int index){
+				if(currentUpdateAction!=null){
+					return currentUpdateAction.getInt(index);
+				}
+				else {
+					return super.getInt(index);
+				}
+			}
+			@Override
+			public void onActivate(){
+				if(currentUpdateAction!=null){
+					currentUpdateAction.onActivate();
+					currentUpdateActionStartTime = timeSinceStart;
+				}
+			}
+			@Override
+			public void onDeactivate(){
+				if(currentUpdateAction!=null){
+					currentUpdateAction.onDeactivate();
+				}
+			}
 		};
 		this.updateAction.setTarget(this);
+		this.updateAction.loadFrom(ints, floats);
 		this.baseState = new ProgramState();
 		this.baseState.setTarget(this);
 		this.baseState.loadFrom(ints, floats);
@@ -159,6 +193,9 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 			}
 			return knownSquares.get(knownIndex);
 		}
+		case 8: return updateAction.getTimeSinceStart();
+		case 9: return (OnStepAction)holder.getData("subject");
+		case 10: return (UpdateAction)holder.getData("subject");
 		}
 		return null;
 	}
@@ -172,6 +209,13 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 	public void setUpdateAction(UpdateAction action){
 		action.setTarget(this);
 		this.currentUpdateAction = action;
+		if(this.isActive()){
+			updateAction.onActivate();
+			update(secondsSinceLastFrame);
+		}
+		else {
+			action.onDeactivate();
+		}
 	}
 	
 	public void setBlackOnStepAction(OnStepAction action){

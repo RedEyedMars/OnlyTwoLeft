@@ -86,6 +86,10 @@ public class Hero extends GraphicEntity implements Colourable{
 		}
 		deltaX=(float) (velocityX*secondsSinceLastFrame);
 		deltaY=(float) (velocityY*secondsSinceLastFrame);
+		if(deltaX>0.02f)deltaX=0.02f;
+		if(deltaY>0.02f)deltaY=0.02f;
+		if(deltaX<-0.02f)deltaX=-0.02f;
+		if(deltaY<-0.02f)deltaY=-0.02f;
 		super.update(secondsSinceLastFrame);
 	}
 
@@ -554,7 +558,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		NEs=(Integer) params[4],
 		SEs=(Integer) params[5],
 		SWs=(Integer) params[6];
-		//System.out.println(NWs+" "+NEs+" "+SWs+" "+SEs);
+		//System.out.println(NWs+" "+NEs+" "+SWs+" "+SEs+(NWs!=null?actions.get(NWs):"null")+" "+(NEs!=null?actions.get(NEs):null)+" "+(SWs!=null?actions.get(SWs):"null")+" "+(SEs!=null?actions.get(SEs):"null"));
 		if(NEs!=null&&actions.get(NEs)!=null){
 			if(actions.get(NEs).targetType()==0){
 				actions.get(NEs).setTarget((Square) entities.get(NEs));
@@ -595,7 +599,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		float y = (float) params[1];
 		subject.move(-x,-y);
 
-		if(!subject.getOnHitAction(getPartner()).isPassible()){
+		if(subject.getOnHitAction(getPartner())!=null&&!subject.getOnHitAction(getPartner()).isPassible()){
 			params = Hero.handleWalls(getPartner(), squaresFound, safeties);
 			x = (float) params[0];
 			y = (float) params[1];
@@ -610,7 +614,8 @@ public class Hero extends GraphicEntity implements Colourable{
 		for(int i=mapSquares.size()-1;i>=0;--i){
 			if(subject==mapSquares.get(i))continue;
 			squaresFound.add(mapSquares.get(i));
-			if(mapSquares.get(i).getOnHitAction(this).isPassible()){
+			if(mapSquares.get(i).getOnHitAction(this)!=null&&
+				mapSquares.get(i).getOnHitAction(this).isPassible()){
 				safeties.add(true);
 			}
 			else {

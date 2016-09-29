@@ -3,6 +3,7 @@ package gui.graphics;
 import gui.Gui;
 import gui.gl.GLApp;
 import gui.gl.GLImage;
+import gui.inputs.MotionEvent;
 import main.Hub;
 import main.Log;
 
@@ -37,6 +38,11 @@ import game.Action;
 public class GraphicRenderer {
 	private float viewX,viewY,viewZ=0f;
 
+	private List<GraphicElement> addLayer = new ArrayList<GraphicElement>();
+	private List<GraphicElement> removeLayer = new ArrayList<GraphicElement>();
+	private List<GraphicElement> drawBotLayer = new ArrayList<GraphicElement>();
+	private List<GraphicElement> drawTopLayer = new ArrayList<GraphicElement>();
+
 	private Map<String,ButtonAction> loadImageFromTextureName = new HashMap<String,ButtonAction>();
 	private Map<String,Integer> texMap = new HashMap<String,Integer>();
 	private Map<String,String> sizMap = new HashMap<String,String>();
@@ -53,29 +59,6 @@ public class GraphicRenderer {
 
 	public GraphicRenderer() {
 	}
-/*
-	public void setupTextureBuffer(int k) {
-		float length = (float)k;
-		FloatBuffer[] textureBuffer = new FloatBuffer[k];
-		float textures[];
-		for(int t=0;t<k;++t){
-			float i = (float)(t%k);
-			textures= new float[]{
-					// Mapping coordinates for the vertices
-					i/length, 1f,		// top left		(V2)
-					i/length, 0,		// bottom left	(V1)
-					(i+1)/length, 1f,		// top right	(V4)
-					(i+1)/length, 0		// bottom right	(V3)
-			};
-
-			ByteBuffer byteBuffer = ByteBuffer.allocateDirect(2 * 4 * 4);
-			byteBuffer.order(ByteOrder.nativeOrder());
-			textureBuffer[t] = byteBuffer.asFloatBuffer();
-			textureBuffer[t].put(textures);
-			textureBuffer[t].position(0);
-		}
-		textureBuffers.put(k+"x1", textureBuffer);
-	}*/
 	public void setupTextureBuffer(int xMax, int yMax) {
 		float length = (float)xMax;
 		float height = (float)yMax;
@@ -101,27 +84,31 @@ public class GraphicRenderer {
 		textureBuffers.put(xMax+"x"+yMax, textureBuffer);
 	}
 	public void display(){
-		
-		while(!Hub.addLayer.isEmpty()){
-			GraphicElement e = Hub.addLayer.remove(0);
-			if(loadImageFromTextureName.containsKey(e.getTextureName())){
-				loadImageFromTextureName.remove(e.getTextureName()).act(null);
+
+		while(!addLayer.isEmpty()){
+			synchronized(addLayer){
+				GraphicElement e = addLayer.remove(0);
+				if(loadImageFromTextureName.containsKey(e.getTextureName())){
+					loadImageFromTextureName.remove(e.getTextureName()).act(null);
+				}
+				if(e.getLayer()==1){
+					drawTopLayer.add(e);
+				}
+				else if(e.getLayer()==0){
+					drawBotLayer.add(e);
+				}
 			}
-			if(e.getLayer()==1){
-				Hub.drawTopLayer.add(e);
-			}
-			else if(e.getLayer()==0){
-				Hub.drawBotLayer.add(e);
-			}			
 		}
-		while(!Hub.removeLayer.isEmpty()){
-			GraphicElement e = Hub.removeLayer.remove(0);
-			if(e==null)continue;
-			if(e.getLayer()==1){
-				Hub.drawTopLayer.remove(e);
-			}
-			else if(e.getLayer()==0){
-				Hub.drawBotLayer.remove(e);
+		while(!removeLayer.isEmpty()){
+			synchronized(removeLayer){
+				GraphicElement e = removeLayer.remove(0);
+				if(e==null)continue;
+				if(e.getLayer()==1){
+					drawTopLayer.remove(e);
+				}
+				else if(e.getLayer()==0){
+					drawBotLayer.remove(e);
+				}
 			}
 		}
 		//GL11.glTranslatef(-0f, -0f, -1f);
@@ -137,11 +124,11 @@ public class GraphicRenderer {
 		GL11.glFrontFace(GL11.GL_CW);
 		int previous = -1;
 		GL11.glPushMatrix();
-		for(int i=0;i<Hub.drawBotLayer.size();++i){
-			drawTexture(Hub.drawBotLayer.get(i));
+		for(int i=0;i<drawBotLayer.size();++i){
+			drawTexture(drawBotLayer.get(i));
 		}
-		for(int i=0;i<Hub.drawTopLayer.size();++i){
-			drawTexture(Hub.drawTopLayer.get(i));
+		for(int i=0;i<drawTopLayer.size();++i){
+			drawTexture(drawTopLayer.get(i));
 		}
 		GL11.glPopMatrix();
 		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
@@ -166,6 +153,20 @@ public class GraphicRenderer {
 		return textureBuffers.containsKey(sizeX+"x"+sizeY);
 	}
 
+	public void addElement(GraphicElement e){
+		synchronized(addLayer){
+			addLayer.add(e);
+		}
+	}
+	public void removeElement(GraphicElement e){
+		synchronized(removeLayer){
+			removeLayer.add(e);
+		}
+	}
+
+	public void clearAdditions(){
+		addLayer.clear();
+	}
 	public void loadImages(){
 		if(!loaded ){
 			InputStream url = R.class.getResourceAsStream("images/image.list");
@@ -181,8 +182,16 @@ public class GraphicRenderer {
 			}
 			int currentSizeX = 1;
 			int currentSizeY = 1;
-			for(final String filename:fileBuilder.toString().split("\n")){
-				if(filename.matches("\\s*"))continue;				
+			for(final String line:fileBuilder.toString().split("\n")){
+				if(line.matches("\\s*"))continue;
+
+				StringBuilder lineBuilder = new StringBuilder();
+				for(char c:line.toCharArray()){
+					if(c>31){
+						lineBuilder.append(c);
+					}
+				}
+				final String filename = lineBuilder.toString();
 				if(filename.matches("\\d+:")){
 					currentSizeX = Integer.parseInt(filename.substring(0,filename.length()-1));
 					currentSizeY = 1;
@@ -191,14 +200,15 @@ public class GraphicRenderer {
 					currentSizeX = Integer.parseInt(filename.substring(0,filename.indexOf('x')));
 					currentSizeY = Integer.parseInt(filename.substring(filename.indexOf('x')+1,filename.length()-1));
 				}
-				else {					
-					final String name = filename.substring(1,filename.lastIndexOf('.'));
+				else {
+					final String name = filename.substring(0,filename.lastIndexOf('.'));
 					final Integer sizeX = currentSizeX;
 					final Integer sizeY = currentSizeY;
 					final String imageFilename = currentSizeY==1?("images/"+sizeX+"/"+name+".png"):("images/"+sizeX+"x"+sizeY+"/"+name+".png");
+
 					loadImageFromTextureName.put(name,new ButtonAction(){
 						@Override
-						public void act(Object subject) {
+						public void act(MotionEvent event) {
 							loadImageFromPath(imageFilename,sizeX,sizeY,name);
 						}				
 					});
@@ -206,7 +216,7 @@ public class GraphicRenderer {
 			}
 			loadImageFromTextureName.put("timesnewroman",new ButtonAction(){
 				@Override
-				public void act(Object subject) {					
+				public void act(MotionEvent event) {					
 					loadText("timesnewroman",new Font("Times New Roman", Font.PLAIN, 16),16,new float[]{0f,0.75f,0.75f,1}, new float[]{0,0,0,0f});
 				}});
 			loadText("impact",new Font("Cooper Black", Font.PLAIN, 32),32,new float[]{0f,0f,0f,1}, new float[]{0,0,0,0f});
@@ -359,7 +369,7 @@ public class GraphicRenderer {
 		int ascent = fm.getAscent();
 		int hborder = 2;
 		int vborder = height-ascent/2-1;
-		
+
 		char[] data = new char[128];
 		for(int i=0;i<128;++i){
 			data[i]=((char)i);

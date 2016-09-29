@@ -48,7 +48,7 @@ public class GraphicView implements MouseListener{
 		for(int i=0;i<children.size();++i){
 			children.get(i).onAddToDrawable();
 		}
-		
+
 	}
 
 	public void onRemoveFromDrawable() {
@@ -173,7 +173,7 @@ public class GraphicView implements MouseListener{
 	}
 	public void exit() {		
 	}
-	
+
 	private class MotionEventHandler extends Thread {
 		private Boolean running = true;
 		private LinkedList<MotionEvent> onClickQueue = new LinkedList<MotionEvent>();
@@ -181,33 +181,34 @@ public class GraphicView implements MouseListener{
 		public MotionEventHandler(){
 			super();
 		}
-		
+
 		@Override
 		public void run(){
 			try {
-			while(running){
-				synchronized(onClickQueue){
-					while(running&&onClickQueue.isEmpty()/*&&onHoverQueue.isEmpty()*/){
-						onClickQueue.wait();						
-					}					
-				}
-				while(running&&!onClickQueue.isEmpty()){
-					try {
-					threadlessOnClick(onClickQueue.removeFirst());
+				while(running){
+					synchronized(onClickQueue){
+						while(running&&onClickQueue.isEmpty()/*&&onHoverQueue.isEmpty()*/){
+							onClickQueue.wait();						
+						}
+						while(running&&!onClickQueue.isEmpty()){
+							try {
+								threadlessOnClick(onClickQueue.removeFirst());
+							}
+							catch (java.util.NoSuchElementException e){
+								System.out.println(onClickQueue.isEmpty());
+								e.printStackTrace();
+							}
+						}
 					}
-					catch (java.util.NoSuchElementException e){
-						e.printStackTrace();
-					}
 				}
-			}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		public void handleClick(MotionEvent event){
-			onClickQueue.add(event);
 			synchronized(onClickQueue){
+				onClickQueue.add(event);
 				onClickQueue.notifyAll();
 			}
 		}
@@ -230,5 +231,6 @@ public class GraphicView implements MouseListener{
 		motionEventHandler.end();
 		motionEventHandler = null;
 	}
+
 
 }

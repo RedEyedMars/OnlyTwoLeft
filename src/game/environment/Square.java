@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import editor.Editor;
 import game.environment.oncreate.OnCreateSquare;
 import game.environment.onstep.OnStepAction;
 import game.environment.onstep.OnStepSquare;
@@ -41,8 +42,10 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		this.displayFor(Hero.BOTH_INT);
 		this.shapeType = shapeType;
 		this.setShape(shapeType);
-		reposition(Hub.map.getRealX(ints.next()),Hub.map.getRealY(ints.next()));
-		resize(Hub.map.getRealX(ints.next()),Hub.map.getRealY(ints.next()));
+		reposition(Hub.map.getFloatCoordinate(ints.next(),Map.X_axis),
+				   Hub.map.getFloatCoordinate(ints.next(),Map.Y_axis));
+		resize(Hub.map.getFloatCoordinate(ints.next(),Map.X_axis),
+				Hub.map.getFloatCoordinate(ints.next(),Map.Y_axis));
 		this.actionType = actionType;
 		loadActions(ints,floats);
 	}
@@ -170,10 +173,10 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		toSave.add(shapeType);
 		toSave.add(blackColour);
 		toSave.add(whiteColour);
-		toSave.add(Hub.map.getIntX(getX()));
-		toSave.add(Hub.map.getIntY(getY()));
-		toSave.add(Hub.map.getIntX(getWidth()));
-		toSave.add(Hub.map.getIntY(getHeight()));
+		toSave.add(Hub.map.getIntCoordinate(getX(),Map.X_axis));
+		toSave.add(Hub.map.getIntCoordinate(getY(),Map.Y_axis));
+		toSave.add(Hub.map.getIntCoordinate(getWidth(),Map.X_axis));
+		toSave.add(Hub.map.getIntCoordinate(getHeight(),Map.Y_axis));
 		for(SquareAction action:getActions()){
 			if(action!=null){
 				action.saveTo(toSave);
@@ -219,9 +222,9 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		}
 		return square;
 	}
-	public static Iterator<Integer> makeInts(GraphicView editor,
+	public static Iterator<Integer> makeInts(Editor editor,
 			int squareAction1, int squareAction2, List<Integer> updateAction, boolean onCreateAction, boolean programAction,
-			int shapeType, int colour, int colour2,int x, int y, int w, int h) {		
+			int shapeType, int colour, int colour2,float x, float y, int w, int h) {		
 		List<Integer> ints = new ArrayList<Integer>();
 		if(!onCreateAction&&!programAction){
 			if(squareAction1==-1&&squareAction2==-1&&updateAction.size()==0){
@@ -229,8 +232,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 				ints.add(shapeType);
 				ints.add(colour);
 				ints.add(colour2);
-				ints.add(x);
-				ints.add(y);
+				ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+				ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 				ints.add(w);
 				ints.add(h);
 			}
@@ -240,8 +243,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
-					ints.add(x);
-					ints.add(y);
+					ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+					ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
@@ -252,8 +255,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 					ints.add(shapeType);
 					ints.add(colour);
 					ints.add(colour2);
-					ints.add(x);
-					ints.add(y);
+					ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+					ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 					ints.add(w);
 					ints.add(h);
 					ints.add(squareAction1);
@@ -275,8 +278,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 				ints.add(shapeType);
 				ints.add(colour);
 				ints.add(colour2);
-				ints.add(x);
-				ints.add(y);
+				ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+				ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 				ints.add(w);
 				ints.add(h);
 				if(squareAction1==-1&&squareAction2==-1){								
@@ -293,7 +296,7 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 				}
 				if(updateAction.size()==1){
 					ints.add(updateAction.get(0));
-					ints.add(UpdateAction.getAction(updateAction.get(0)).getDefaultState()?1:0);
+					ints.add(UpdateAction.getAction(updateAction.get(0)).getInt(UpdateAction.DEFAULT_STATE));
 					ints.add(-1);
 				}
 				else {
@@ -301,7 +304,7 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 					ints.add(updateAction.size());
 					for(Integer ua:updateAction){
 						ints.add(ua);
-						ints.add(UpdateAction.getAction(ua).getDefaultState()?1:0);
+						ints.add(UpdateAction.getAction(ua).getInt(UpdateAction.DEFAULT_STATE));
 						ints.add(-1);
 					}
 				}
@@ -313,8 +316,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 			ints.add(shapeType);
 			ints.add(colour);
 			ints.add(colour);
-			ints.add(x);
-			ints.add(y);
+			ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+			ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 			ints.add(w);
 			ints.add(h);
 			ints.add(0);
@@ -324,8 +327,8 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 			ints.add(shapeType);
 			ints.add(colour);
 			ints.add(colour);
-			ints.add(x);
-			ints.add(y);
+			ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
+			ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 			ints.add(w);
 			ints.add(h);
 			ints.add(-1);
@@ -345,20 +348,12 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 
 		return ints.iterator();
 	}
-
-	private static void addMapNameToInts(GraphicView editor, List<Integer> ints, int squareAction) {
+	private static void addMapNameToInts(Editor editor, List<Integer> ints, int squareAction) {
 		if(OnStepAction.getAction(squareAction)==null)return;
 		if(OnStepAction.getAction(squareAction).targetType()==2){
-			File file = GetFileMenu.getFile(editor,"maps");
-			while(file==null){
-				file = GetFileMenu.getFile(editor,"maps");
-			}
-
-			String relPath = file.getAbsolutePath().replace(new File("").getAbsolutePath()+File.separatorChar,"");
-			ints.add(Hub.map.setNextMap(relPath));
+			ints.add(-2);
 		}
 	}
-
 	public static void addArgsFromSquare(Square square, final List<Integer> ints, final List<Float> floats){
 		List<Object> probe = new ArrayList<Object>(){
 			@Override

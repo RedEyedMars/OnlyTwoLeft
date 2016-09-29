@@ -2,7 +2,7 @@ package game.environment.program.condition;
 
 import game.environment.program.ProgrammableSquare;
 
-public class FreeProgramCondition extends ProgramCondition<ProgrammableSquare>{
+public class AfterProgramCondition extends ProgramCondition<ProgrammableSquare>{
 
 	@Override
 	public boolean satisfies(ProgrammableSquare subject) {
@@ -16,12 +16,12 @@ public class FreeProgramCondition extends ProgramCondition<ProgrammableSquare>{
 
 	@Override
 	protected int getIndex() {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public ProgramCondition create() {
-		return new FreeProgramCondition();
+		return new AfterProgramCondition();
 	}
 
 	@Override

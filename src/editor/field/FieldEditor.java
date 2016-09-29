@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import game.environment.program.condition.ProgramCondition;
 import game.menu.MenuButton;
 import gui.Gui;
-import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Hub;
@@ -139,11 +137,29 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		if(onTypes.size()>0){
 			return onTypes.get(0);
 		}
-		else return null;
+		else {
+			final FieldEditor<SubjectType> self = this;
+			return new KeyBoardListener(){
+			@Override
+			public void keyCommand(boolean b, char c, int keycode) {
+				Gui.removeOnType(this);
+				Gui.removeOnClick(self);
+				self.setVisible(false);
+			}
+
+			@Override
+			public boolean continuousKeyboard() {
+				return false;
+			}
+			
+		};
+		}
 	}
 	public void updateWith(SubjectType subject){
 		currentOnType=0;
-		onTypes.get(0).updateChain(subject);
+		if(!onTypes.isEmpty()){
+			onTypes.get(0).updateChain(subject);
+		}
 		for(OnClickFieldComponent<SubjectType> ocfc:onClicks){
 			ocfc.setTarget(subject);
 			ocfc.updateWith(subject);
@@ -151,7 +167,7 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 	}
 	public void changeOnTypeTo(TextFieldComponent<SubjectType, ?> textField) {
 		int i=0;
-		for(;!onTypes.get(i).equals(textField)&&i<onTypes.size();++i);
+		for(;i<onTypes.size()&&!onTypes.get(i).equals(textField);++i);
 		if(currentOnType!=i){
 			onTypes.get(currentOnType).advance(onTypes.get(currentOnType).getText());
 		}
@@ -166,7 +182,11 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		return onTypes;
 	}
 	public void addOnType(TextFieldComponent<SubjectType, ?> onType) {
+		if(!onTypes.isEmpty()){
+			onTypes.get(onTypes.size()-1).setNext(onType);
+		}
 		onTypes.add(onType);
+		onType.setParent(this);
 		addChild(onType);
 	}
 	public void clearOnTypes() {

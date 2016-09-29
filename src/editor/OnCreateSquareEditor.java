@@ -18,6 +18,7 @@ import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
+import gui.inputs.MotionEvent;
 import main.Hub;
 import storage.Storage;
 
@@ -73,56 +74,44 @@ public class OnCreateSquareEditor extends Editor{
 		Map<Integer,ButtonAction> ctrlCommands = new HashMap<Integer,ButtonAction>();
 		ctrlCommands.put(45, new ButtonAction(){
 			@Override
-			public void act(Object subject) {
-				saveAndReturnToEditor();
+			public void act(MotionEvent event) {
+				saveAndReturn();
 			}});
 		ctrlCommands.put(57, new ButtonAction(){
 			@Override
-			public void act(Object subject) {
-				if(visibleTo==0){
-					visibleTo = 1;
-					visibleToShower.setFrame(0);
-				}
-				else if(visibleTo==1){
-					visibleTo = 2;
-					visibleToShower.setFrame(1);
-				}
-				else if(visibleTo==2){
-					visibleTo = 0;
-					visibleToShower.setFrame(3);
-				}
-				setVisibleSquares(visibleTo);
+			public void act(MotionEvent event) {
+				toggleVisibleSquares();
 			}
 		});
 		ctrlCommands.put(17,  new ButtonAction(){
 			@Override
-			public void act(Object subject){
+			public void act(MotionEvent event){
 				moveView(0,-0.25f);
 			}
 		});
 		ctrlCommands.put(30, new ButtonAction(){
 			@Override
-			public void act(Object subject){
+			public void act(MotionEvent event){
 				moveView(0.25f,0);
 
 			}
 		});
 		ctrlCommands.put(31, new ButtonAction(){
 			@Override
-			public void act(Object subject){
+			public void act(MotionEvent event){
 				moveView(0,0.25f);			
 			}
 		});
 		ctrlCommands.put(32, new ButtonAction(){
 			@Override
-			public void act(Object subject){
+			public void act(MotionEvent event){
 				moveView(-0.25f,0);
 			}
 		});
 		ctrlCommands.put(33, new ButtonAction(){
 			@Override
-			public void act(Object subject) {
-				granityShower.setFrame(granityShower.getFrame()==0?1:0);
+			public void act(MotionEvent event) {
+				granityButton.performOnRelease(null);
 			}});
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
@@ -147,9 +136,13 @@ public class OnCreateSquareEditor extends Editor{
 		}
 		super.update(seconds);
 	}
-	@SuppressWarnings("unchecked")
-	private void saveAndReturnToEditor() {
+	@Override
+	protected void saveCurrent(){
 		Storage.saveText(saveTo.getAbsolutePath(), writer.getText());
+	}
+	@SuppressWarnings("unchecked")
+	protected void saveAndReturn() {
+		saveCurrent();
 		List<OnCreateAction> actions = new ArrayList<OnCreateAction>();
 		List<OnCreateAction> currentSection = actions;
 		Stack<List<OnCreateAction>> stack = new Stack<List<OnCreateAction>>();
@@ -197,10 +190,10 @@ public class OnCreateSquareEditor extends Editor{
 				return false;
 			}
 		};
-		ints.add(Hub.map.getIntX(square_x));
-		ints.add(Hub.map.getIntY(square_y));
-		ints.add(Hub.map.getIntX(square_w));
-		ints.add(Hub.map.getIntX(square_h));
+		ints.add(Hub.map.getIntCoordinate(square_x,game.environment.Map.X_axis));
+		ints.add(Hub.map.getIntCoordinate(square_y,game.environment.Map.Y_axis));
+		ints.add(Hub.map.getIntCoordinate(square_w,game.environment.Map.X_axis));
+		ints.add(Hub.map.getIntCoordinate(square_h,game.environment.Map.Y_axis));
 		ints.add(actions.size());
 		for(OnCreateAction action:actions){
 			action.saveTo(probe);
@@ -265,6 +258,15 @@ public class OnCreateSquareEditor extends Editor{
 			squares.get(i).reposition(squares.get(i).getX()+x,
 					              squares.get(i).getY()+y);
 		}
+	}
+	@Override
+	protected void openNew() {
+		File saveTo = GetFileMenu.getFile(parentView,"ocs",true);
+		Editor e = new OnCreateSquareEditor(
+				parentView,saveTo,
+				square_x,square_y,square_w,square_h);
+		e.setupModes();
+		Gui.setView(e);
 	}
 	
 }

@@ -4,7 +4,6 @@ import editor.TextWriter;
 import game.Action;
 import gui.Gui;
 import gui.inputs.KeyBoardListener;
-import gui.inputs.MotionEvent;
 
 public abstract class TextFieldComponent<TargetType extends Object,SubjectType extends Object> extends TextWriter implements Action<SubjectType>{
 
@@ -35,7 +34,6 @@ public abstract class TextFieldComponent<TargetType extends Object,SubjectType e
 			advance(this.getText());
 			Gui.removeOnType(this);
 			if(next!=null){
-				System.out.println("setNext:"+next);
 				Gui.giveOnType(next);
 				this.parentField.nextType();
 			}

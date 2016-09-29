@@ -132,7 +132,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				ctrlCommands = new HashMap<Integer, ButtonAction>();
 				ctrlCommands.put(47, new ButtonAction(){
 					@Override
-					public void act(Object subject) {
+					public void act(MotionEvent event) {
 						if(!"Connected".equals(ip.getText())){
 							Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
 							try {

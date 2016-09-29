@@ -1,8 +1,5 @@
 package editor.field;
 
-import gui.Gui;
-import gui.inputs.KeyBoardListener;
-
 public abstract class FloatFieldComponent <TargetType extends Object> extends TextFieldComponent<TargetType,Float>{
 
 	public FloatFieldComponent(String font) {

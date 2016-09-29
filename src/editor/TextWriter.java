@@ -146,7 +146,7 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 			}
 			else if(ctrling){
 				if(ctrlCommands.containsKey(keycode)){
-					ctrlCommands.get(keycode).act(editor);
+					ctrlCommands.get(keycode).act(null);
 				}
 			}
 		}

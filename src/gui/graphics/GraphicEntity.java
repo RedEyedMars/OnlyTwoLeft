@@ -47,13 +47,13 @@ public class GraphicEntity extends GraphicView {
 
 	@Override
 	public void onAddToDrawable(){
-		Hub.addLayer.add(entity);
+		Hub.renderer.addElement(entity);
 		super.onAddToDrawable();
 	}
 
 	@Override
 	public void onRemoveFromDrawable(){
-		Hub.removeLayer.add(entity);
+		Hub.renderer.removeElement(entity);
 		super.onRemoveFromDrawable();
 
 	}

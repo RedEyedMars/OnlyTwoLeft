@@ -175,7 +175,8 @@ public class LightSourceUpdateAction extends UpdateAction{
 					reflector.setFrame(self.getColour(colour));
 					reflector.setShape(reflectorShape);
 					reflector.resize(closest.getWidth(),closest.getHeight());
-					reflector.getAction().setFloats(reflectorX, reflectorY);
+					reflector.getAction().setValue(UpdateAction.X,reflectorX);
+					reflector.getAction().setValue(UpdateAction.Y,reflectorY);
 				}
 				reflector.reposition(closest.getX(),closest.getY());
 				reflector.setVisible(true);

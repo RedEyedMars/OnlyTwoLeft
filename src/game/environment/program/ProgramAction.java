@@ -19,7 +19,8 @@ public abstract class ProgramAction <SubjectType extends Object> extends DataHol
 	private static List<ProgramAction> actions = new ArrayList<ProgramAction>();
 	public static List<String> actionNames = new ArrayList<String>();
 	public static final BaseProgramAction base = new BaseProgramAction();
-	public static final ChangeColourProgramAction change_colour = new ChangeColourProgramAction();
+	public static final SetColourProgramAction set_colour = new SetColourProgramAction();
+	public static final SetUpdateActionProgramAction set_update_action = new SetUpdateActionProgramAction();
 	
 	private ProgramState state;
 	

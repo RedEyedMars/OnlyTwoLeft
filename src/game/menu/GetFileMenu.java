@@ -1,12 +1,15 @@
 package game.menu;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 
+import editor.TextWriter;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class GetFileMenu extends Menu{
 
@@ -24,8 +27,11 @@ public class GetFileMenu extends Menu{
 	private MenuButton downButton;
 	private MenuButton upButton;
 	private GraphicEntity scrollBar;
+	private int scrollOffset = 0;
 
-	public GetFileMenu(GraphicView parentView, String startFolder) {
+	private TextWriter createNewNameWriter;
+
+	public GetFileMenu(GraphicView parentView,final String startFolder, boolean canCreateNew) {
 		super();
 		this.parentView = parentView;
 		this.currentFolder = new File("data"+File.separator+startFolder);
@@ -36,12 +42,12 @@ public class GetFileMenu extends Menu{
 				@Override
 				public void performOnRelease(MotionEvent e){
 					if(e!=served&&this.isVisible()){
-						if(innerFiles[fileIndex].isDirectory()){
+						if(innerFiles[fileIndex+scrollOffset].isDirectory()){
 							filePath.push(currentFolder);
-							changeButtons(innerFiles[fileIndex]);
+							changeButtons(innerFiles[fileIndex+scrollOffset]);
 						}
 						else {
-							setFile(innerFiles[fileIndex]);
+							setFile(innerFiles[fileIndex+scrollOffset]);
 						}
 						served = e;
 					}
@@ -52,7 +58,7 @@ public class GetFileMenu extends Menu{
 			buttons[i].reposition(0.2f, 0.67f-0.16f*i);
 			addChild(buttons[i]);
 		}
-		backButton = new IconMenuButton("editor_button",6){
+		backButton = new IconMenuButton("editor_arrows",3){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				if(!filePath.isEmpty()){
@@ -64,14 +70,78 @@ public class GetFileMenu extends Menu{
 		backButton.reposition(0.025f, 0.67f);
 		addChild(backButton);
 		backButton.setVisible(false);
-		
+		if(canCreateNew){
+			final MenuButton createNewNameField = new MenuButton(""){
+				@Override
+				public void performOnRelease(MotionEvent e){
+					if(this.isVisible()){
+						if(createNewNameWriter!=null&&!("."+startFolder.substring(0,3)).equals(createNewNameWriter.getText())){
+							
+							File file = new File(currentFolder.getAbsolutePath()+
+									File.separator+createNewNameWriter.getText());
+							if(!file.exists()){
+								Gui.removeOnType(createNewNameWriter);
+								setFile(file);
+							}
+						
+						}
+					}
+				}
+			};
+			createNewNameWriter = new TextWriter("impact","."+startFolder.substring(0,3)){
+				{
+					this.charIndex = 0;
+					this.index = 0;
+					setWidthFactor(1.4f);
+					setHeightFactor(3f);
+					resize(getWidth(), getHeight());
+					reposition(0f,0f);
+				}
+				@Override
+				public void keyCommand(boolean b, char c, int keycode){
+					if((c>=32&&c<=127)||keycode==14){
+						super.keyCommand(b, c, keycode);
+					}
+					else if(keycode==28){
+						Hub.currentView.onClick(
+								new MotionEvent(
+										createNewNameField.getX()+createNewNameField.getWidth()/2f,
+										createNewNameField.getY()+createNewNameField.getHeight()/2f,
+										MotionEvent.ACTION_UP,MotionEvent.MOUSE_LEFT));
+					}
+				}
+			};
+
+			createNewNameField.resize(0.6f, 0.15f);
+			createNewNameField.reposition(0.2f, 0.83f);
+			addChild(createNewNameField);
+			createNewNameField.setVisible(false);
+
+			createNewNameWriter.resize(0.6f, 0.18f);
+			createNewNameWriter.reposition(0.23f, 0.83f);
+			addChild(createNewNameWriter);
+			createNewNameWriter.setVisible(false);
+			IconMenuButton createNewButton = new IconMenuButton("editor_button",3){
+				@Override
+				public void performOnRelease(MotionEvent e){
+					setVisible(false);
+					createNewNameField.setVisible(true);
+					createNewNameWriter.setVisible(true);
+					Gui.giveOnType(createNewNameWriter);
+				}
+			};
+			createNewButton.resize(0.15f, 0.15f);
+			createNewButton.reposition(0.025f, 0.83f);
+			addChild(createNewButton);
+		}
+
 		scrollBar = new GraphicEntity("squares",1){
 			GraphicEntity ball;
 			{
 				GraphicEntity inner = new GraphicEntity("squares",1);
 				inner.setFrame(6);
 				addChild(inner);
-				ball = new GraphicEntity("editor_button",1){
+				ball = new GraphicEntity("editor_arrows",1){
 					@Override
 					public boolean onClick(MotionEvent e){
 						if(e.getAction()==MotionEvent.ACTION_UP){
@@ -91,7 +161,7 @@ public class GetFileMenu extends Menu{
 						return true;
 					}
 				};
-				ball.setFrame(7);
+				ball.setFrame(4);
 				addChild(ball);
 			}
 			@Override
@@ -131,8 +201,8 @@ public class GetFileMenu extends Menu{
 		scrollBar.reposition(0.895f, 0.33f);
 		scrollBar.setFrame(14);
 		addChild(scrollBar);
-		
-		upButton = new IconMenuButton("editor_button",4){
+
+		upButton = new IconMenuButton("editor_arrows",1){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				scroll(-1);
@@ -141,7 +211,7 @@ public class GetFileMenu extends Menu{
 		upButton.resize(0.15f, 0.15f);
 		upButton.reposition(0.825f, 0.67f);
 		addChild(upButton);
-		downButton = new IconMenuButton("editor_button",5){
+		downButton = new IconMenuButton("editor_arrows",2){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				scroll(1);
@@ -188,6 +258,9 @@ public class GetFileMenu extends Menu{
 					downButton.setVisible(false);
 				}
 				upButton.setVisible(true);
+				if(scrollOffset<innerFiles.length-3){
+					++scrollOffset;
+				}
 			}
 			else if(dy==-1){
 				for(int i=1;i<innerFiles.length-3;++i){
@@ -203,6 +276,9 @@ public class GetFileMenu extends Menu{
 					upButton.setVisible(false);
 				}
 				downButton.setVisible(true);
+				if(scrollOffset>0){
+					--scrollOffset;
+				}
 			}
 		}
 		scrollBar.reposition(scrollBar.getX(), scrollBar.getY());
@@ -229,6 +305,7 @@ public class GetFileMenu extends Menu{
 		else {
 			returnButton.reposition(0.2f, 0.67f-0.16f*innerFiles.length);
 		}
+		scrollOffset=0;
 		checkUpDowns();
 	}
 	private void checkUpDowns(){
@@ -265,8 +342,8 @@ public class GetFileMenu extends Menu{
 	private boolean isFinished() {
 		return finished;
 	}
-	public static File getFile(GraphicView parentView, String startFolder){
-		GetFileMenu menu = new GetFileMenu(parentView,startFolder);
+	public static File getFile(GraphicView parentView, String startFolder, boolean canStartNew){
+		GetFileMenu menu = new GetFileMenu(parentView,startFolder, canStartNew);
 		Gui.setView(menu);
 		try {
 			synchronized(menu){

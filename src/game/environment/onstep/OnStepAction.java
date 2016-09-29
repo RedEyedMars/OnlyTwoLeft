@@ -12,6 +12,7 @@ import game.hero.Hero;
 public abstract class OnStepAction<TargetType extends Object> implements SquareAction<Hero,TargetType> {
 
 	public static List<OnStepAction> actions = new ArrayList<OnStepAction>();
+	public static List<String> actionNames = new ArrayList<String>();
 
 	public static final OnStepAction<Square> safe = new SafeOnStepAction();
 	public static final OnStepAction<Square> wall = new WallOnStepAction();
@@ -25,6 +26,9 @@ public abstract class OnStepAction<TargetType extends Object> implements SquareA
 	protected TargetType target;
 	public void setTarget(TargetType target){
 		this.target = target;
+	}
+	public TargetType getTarget() {
+		return this.target;
 	}
 	public int targetType(){
 		return 0;
@@ -49,6 +53,7 @@ public abstract class OnStepAction<TargetType extends Object> implements SquareA
 				if(obj instanceof OnStepAction){
 					//System.out.println(field.getName());
 					actions.add((OnStepAction) obj);
+					actionNames.add(field.getName());
 				}
 			} 
 		}
@@ -62,6 +67,14 @@ public abstract class OnStepAction<TargetType extends Object> implements SquareA
 		}
 		else {
 			return actions.get(i);
+		}
+	}
+	public static String getActionName(int i) {
+		if(i==-1||i>=actions.size()){
+			return null;
+		}
+		else {
+			return actionNames.get(i);
 		}
 	}
 };
