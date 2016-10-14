@@ -2,12 +2,13 @@ package game.menu;
 
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class IconMenuButton extends MenuButton {
 	private GraphicEntity icon;
 	public IconMenuButton(String textureName, int textureIndex){
 		super("");
-		icon = new GraphicEntity(textureName,1);
+		icon = new GraphicEntity(textureName,Hub.MID_LAYER);
 		icon.setFrame(textureIndex);
 		addChild(icon);
 	}

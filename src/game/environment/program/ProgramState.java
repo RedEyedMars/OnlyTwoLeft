@@ -6,15 +6,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import game.environment.SquareAction;
+import game.environment.program.action.ProgramAction;
 import game.environment.program.condition.Condition;
+import game.environment.program.condition.FreeProgramCondition;
 import game.environment.program.condition.ProgramCondition;
 
-public class ProgramState implements SquareAction<ProgrammableSquare,ProgrammableSquare>, Condition<ProgrammableSquare>{
+public class ProgramState implements SquareAction<ProgrammableSquare,ProgrammableSquare> {
 	private static final long serialVersionUID = 5712159876488441511L;
 	public static final String[] eventNames = new String[]{"stepBlack","stepWhite","update","limitReached"};
-	private ProgramCondition condition;
+
 	private List<ProgramAction> onEnterActions = new ArrayList<ProgramAction>();
+	private LinkedHashMap<String,List<ProgramCondition>> subConditions = new LinkedHashMap<String,List<ProgramCondition>>();
 	private LinkedHashMap<String,List<ProgramState>> subStates = new LinkedHashMap<String,List<ProgramState>>();
+	private List<ProgramState> superStates = new ArrayList<ProgramState>();
 	private ProgrammableSquare target;
 
 	public ProgramState(){
@@ -38,32 +42,108 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 		return 0;
 	}
 
-	public ProgramCondition getCondition() {
-		return condition;
-	}
-
-	public void setCondition(ProgramCondition condition) {
-		this.condition = condition;
-	}
-
-
-
 	public void addAction(ProgramAction action) {
 		onEnterActions.add(action);
 	}
 	public List<ProgramAction> getActions(){
 		return onEnterActions;
 	}
-	
+
+	public void clearEnterActions() {
+		onEnterActions.clear();		
+	}
+
 	public List<ProgramState> getSubStates(String event) {
 		return subStates.get(event);
 	}
-	public void addState(String eventKey, ProgramState state){
+	public List<ProgramCondition> getSubConditions(String event) {
+		return subConditions.get(event);
+	}
+
+	public List<ProgramState> getSubStates() {
+		List<ProgramState> subStates = new ArrayList<ProgramState>();
+		for(String event:eventNames){
+			List<ProgramState> forEvent = getSubStates(event);
+			if(forEvent!=null&&!forEvent.isEmpty()){
+				subStates.addAll(forEvent);
+			}
+		}
+		return subStates;
+	}
+	public List<String> getEvents() {
+		List<String> events = new ArrayList<String>();
+		for(String event:eventNames){
+			List<ProgramState> forEvent = getSubStates(event);
+			if(forEvent!=null&&!forEvent.isEmpty()){
+				for(int i=0;i<forEvent.size();++i){
+					events.add(event);
+				}
+			}
+		}
+		return events;
+	}
+	public boolean purgeSubState(String event, ProgramState toRemove){
+		if(subStates.get(event)==null)return false;
+		for(int i=0;i<subStates.get(event).size();++i){
+			if(subStates.get(event).get(i)==toRemove){
+				subStates.get(event).remove(i);
+				subConditions.get(event).remove(i);
+				return true;
+			}
+		}
+		return false;
+	}
+	public boolean purgeSubState(ProgramState toRemove){
+		for(String event:eventNames){
+			if(purgeSubState(event,toRemove)){
+				return true;
+			}
+		}
+		return false;
+	}
+	public ProgramCondition getSubConditionTo(String event, ProgramState subState) {
+		return subConditions.get(event).get(subStates.get(event).indexOf(subState));
+	}
+
+	public ProgramCondition getSubConditionTo(ProgramState state) {
+		for(String event:subConditions.keySet()){
+			int index = subStates.get(event).indexOf(state);
+			if(index>-1){
+				return subConditions.get(event).get(index);
+			}
+		}
+		return null;
+	}
+	public String getEventTo(ProgramState state) {
+		for(String event:subConditions.keySet()){
+			int index = subStates.get(event).indexOf(state);
+			if(index>-1){
+				return event;
+			}
+		}
+		return null;
+	}
+
+	public void changeSubStateEvent(String currentEvent, ProgramState state, String changeToEvent) {
+		int index = subStates.get(currentEvent).indexOf(state);
+		subStates.get(currentEvent).remove(index);
+		ProgramCondition condition = subConditions.get(currentEvent).remove(index);
+		addState(changeToEvent, state, condition);
+	}
+	public void addState(String eventKey, ProgramState state, ProgramCondition condition){
 		if(!subStates.containsKey(eventKey)){
-			subStates.put(eventKey,new ArrayList<ProgramState>());		
+			subStates.put(eventKey,new ArrayList<ProgramState>());
+			subConditions.put(eventKey,new ArrayList<ProgramCondition>());
 		}
 		subStates.get(eventKey).add(state);
+		subConditions.get(eventKey).add(condition);
+		state.superStates.add(this);
 	}
+
+	public List<ProgramState> getSuperStates() {
+		return superStates;
+	}
+
 	@Override
 	public void setTarget(ProgrammableSquare target) {
 		this.target = target;
@@ -72,11 +152,6 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 		return target;
 	}
 	public void loadFrom(Iterator<Integer> ints, Iterator<Float> floats){
-		int conditionIndex = ints.next();
-	//	System.out.println("programstate.loadFrom "+conditionIndex);
-		condition = ProgramCondition.getCondition(conditionIndex).create();
-		condition.setState(this);
-		condition.loadFrom(ints, floats);
 		int actionsSize = ints.next();
 		for(int i=0;i<actionsSize;++i){
 			ProgramAction action = ProgramAction.getAction(ints.next()).create();
@@ -86,43 +161,79 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 		}
 		for(int eventIndex=ints.next();eventIndex>=0;eventIndex=ints.next()){
 			subStates.put(ProgramState.eventNames[eventIndex], new ArrayList<ProgramState>());
+			subConditions.put(ProgramState.eventNames[eventIndex], new ArrayList<ProgramCondition>());
 			int size = ints.next();
 			for(int i=0;i<size;++i){
-				ProgramState state = new ProgramState();
-				state.setTarget(target);
-				subStates.get(ProgramState.eventNames[eventIndex]).add(state);
-				state.loadFrom(ints, floats);
+				int index = ints.next();
+				//System.out.println(target.getStateIndex(this)+"->"+index);
+				ProgramState state = target.getStateFromIndex(index);				
+				ProgramCondition condition = ProgramCondition.getCondition(ints.next()).create();
+				addState(ProgramState.eventNames[eventIndex],state,condition);
+				condition.setState(state);
+				condition.loadFrom(ints, floats);
 			}
 		}
 	}
 
 	@Override
 	public void saveTo(List<Object> saveTo) {
-		condition.saveTo(saveTo);
 		saveTo.add(onEnterActions.size());
 		for(int i=0;i<onEnterActions.size();++i){
 			onEnterActions.get(i).saveTo(saveTo);
 		}
 		for(int eventIndex=0;eventIndex<ProgramState.eventNames.length;++eventIndex){			
 			if(subStates.get(ProgramState.eventNames[eventIndex])!=null&&
-			   !subStates.get(ProgramState.eventNames[eventIndex]).isEmpty()){
+					!subStates.get(ProgramState.eventNames[eventIndex]).isEmpty()){
 				saveTo.add(eventIndex);
 				saveTo.add(subStates.get(ProgramState.eventNames[eventIndex]).size());
-				for(ProgramState action:subStates.get(ProgramState.eventNames[eventIndex])){
-					action.saveTo(saveTo);
+				for(int i=0;i<subStates.get(ProgramState.eventNames[eventIndex]).size();++i){
+					saveTo.add(target.getStateIndex(subStates.get(ProgramState.eventNames[eventIndex]).get(i)));
+					subConditions.get(ProgramState.eventNames[eventIndex]).get(i).saveTo(saveTo);
+
 				}
 			}
 		}
 		saveTo.add(-1);
 	}
+
+	private boolean stopLoop = false;
+	public void stopLoops(){
+
+		stopLoop = false;
+		for(int eventIndex=0;eventIndex<ProgramState.eventNames.length;++eventIndex){			
+			if(subStates.get(ProgramState.eventNames[eventIndex])!=null&&
+					!subStates.get(ProgramState.eventNames[eventIndex]).isEmpty()){
+				for(int i=0;i<subStates.get(ProgramState.eventNames[eventIndex]).size();++i){
+					if(subStates.get(ProgramState.eventNames[eventIndex]).get(i).stopLoop){
+						subStates.get(ProgramState.eventNames[eventIndex]).get(i).stopLoops();					
+					}
+				}
+			}
+		}
+	}
+	public List<ProgramState> getAllStates(){
+		List<ProgramState> allStates = new ArrayList<ProgramState>();
+		stopLoops();
+		getAllStates(allStates);
+		return allStates;
+	}
+	private void getAllStates(List<ProgramState> builder){
+		if(!stopLoop){
+			stopLoop = true;
+			builder.add(this);
+			for(int eventIndex=0;eventIndex<ProgramState.eventNames.length;++eventIndex){			
+				if(subStates.get(ProgramState.eventNames[eventIndex])!=null&&
+						!subStates.get(ProgramState.eventNames[eventIndex]).isEmpty()){
+					for(int i=0;i<subStates.get(ProgramState.eventNames[eventIndex]).size();++i){
+						subStates.get(ProgramState.eventNames[eventIndex]).get(i).getAllStates(builder);					
+					}
+				}
+			}
+		}
+	}
 	@Override
 	public int saveType() {
 		return 6;
-	}
-
-	@Override
-	public boolean satisfies(ProgrammableSquare subject) {
-		return condition.satisfies(subject.getSubject(condition.targetType(), condition));
 	}
 
 	public int size() {
@@ -131,10 +242,10 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 
 	public void on(String event, ProgrammableSquare advancedSquare) {
 		List<ProgramState> stateList = subStates.get(event);
+		List<ProgramCondition> conditionList = subConditions.get(event);
 		if(stateList==null)return;
 		for(int i=0;i<stateList.size();++i){
-			if(stateList.get(i).satisfies(advancedSquare)){
-				stateList.get(i).act(advancedSquare);
+			if(conditionList.get(i).satisfies(advancedSquare)){
 				advancedSquare.setState(stateList.get(i));
 				break;
 			}
@@ -145,9 +256,9 @@ public class ProgramState implements SquareAction<ProgrammableSquare,Programmabl
 	public ProgramState addSubState(String event) {
 		ProgramState subState = new ProgramState();
 		subState.setTarget(target);
-		subState.condition = ProgramCondition.getCondition(0).create();
-		subState.condition.setState(subState);
-		addState(event,subState);
+		FreeProgramCondition subCondition = new FreeProgramCondition();
+		subCondition.setState(subState);
+		addState(event,subState,subCondition);
 		return subState;
 	}
 

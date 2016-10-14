@@ -170,7 +170,7 @@ public class TransitionMenu extends Menu{
 		returnButton.reposition(0.2f,0.19f);
 		addChild(returnButton);
 		if(isBest){
-			GraphicEntity bestIndicator = new GraphicEntity("menu_best_indicator",1);
+			GraphicEntity bestIndicator = new GraphicEntity("menu_best_indicator",Hub.MID_LAYER);
 			bestIndicator.resize(0.075f, 0.075f);
 			bestIndicator.reposition(0.6f,0.56f);
 			addChild(bestIndicator);

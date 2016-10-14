@@ -18,7 +18,7 @@ public class GraphicText extends GraphicEntity {
 	private GraphicText self = this;
 	private String font;
 	private int layer;
-	protected GraphicEntity blinker = new GraphicEntity("squares",1){
+	protected GraphicEntity blinker = new GraphicEntity("squares",Hub.MID_LAYER){
 		private double since;
 		@Override
 		public void resize(float w, float h){
@@ -109,6 +109,14 @@ public class GraphicText extends GraphicEntity {
 		this.reposition(getX(),getY());
 	}
 
+	protected GraphicLine getLine(int i) {
+		while(i>=lines.size()){
+			GraphicLine line = new GraphicLine("");
+			this.lines.add(line);
+			this.addChild(line);
+		}
+		return lines.get(i);
+	}
 	@Override
 	public float offsetY(int index){
 		return 0.025f*(-index+1)*visualH;
@@ -175,6 +183,24 @@ public class GraphicText extends GraphicEntity {
 		public String getText() {
 			return text;
 		}
+		public String wrap(float max) {
+			float accumulator = 0f;
+			int i=0;
+			for(;i<text.length();++i){
+				accumulator+=getChild(i).getWidth()*chars.get(i).getWidthValue()*visualW;
+				if(accumulator>=max){
+					break;
+				}
+			}
+			if(i>=text.length()-1){
+				return "";
+			}
+			else {
+				String excess = text.substring(i+1);
+				change(text.substring(0, i+1));
+				return excess;
+			}
+		}
 
 	}
 	private class GraphicChar extends GraphicEntity{
@@ -207,5 +233,10 @@ public class GraphicText extends GraphicEntity {
 		public void resize(float x, float y){
 			super.resize(0.025f*visualW,0.025f*visualH);
 		}
+	}
+	@Override
+	public void setLayer(int layer){
+		this.layer = layer;
+		super.setLayer(layer);
 	}
 }

@@ -1,21 +1,30 @@
 package editor.program;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import editor.Button;
 import editor.ButtonAction;
-import game.environment.program.ProgramAction;
 import game.environment.program.ProgramState;
+import game.environment.program.action.ProgramAction;
 import game.environment.program.condition.FreeProgramCondition;
+import game.environment.program.condition.ProgramCondition;
+import gui.Gui;
+import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
+import gui.inputs.MouseListener;
+import main.Hub;
 
-public class StateSquare extends Button{
+public class StateSquare extends GraphicEntity implements Iterable<StateSquare>{
+	private StateSquare parentStateSquare;
+
 	private ProgramState state;
 
-	private ConditionArrow condition;
-	private StateSquare parentSquare = null;
 	private List<StateSquare> subStates = new ArrayList<StateSquare>();
+	private List<StateSquare> superStates = new ArrayList<StateSquare>();
+	private List<ConditionArrow> subConditions = new ArrayList<ConditionArrow>();
 	private List<ActionEditor> actions = new ArrayList<ActionEditor>();
 
 	private ProgramSquareEditor editor;
@@ -25,78 +34,145 @@ public class StateSquare extends Button{
 	private static final float EMPTY_WIDTH = 0.125f;
 	private static final float EMPTY_HEIGHT = 0.075f;
 
-	public StateSquare(final ProgramSquareEditor editor,ProgramState programState, String event) {
-		super("squares",2,"",null,null);
+	private static int sid=0;
+	private int id = sid++;
+
+	public StateSquare(final ProgramSquareEditor editor,ProgramState programState, StateSquare parentSquare) {
+		super("squares",Hub.BOT_LAYER);
+		this.parentStateSquare = parentSquare;
 		this.editor=editor;
 		this.state = programState;
-		resize(0f,0f);
-		reposition(0.05f,0.5f);
-		int i=0;
-		for(String subEvent:ProgramState.eventNames){
-			if(state.getSubStates(subEvent)!=null){
-				for(ProgramState subState:state.getSubStates(subEvent)){
-					StateSquare ss = new StateSquare(editor,subState,subEvent);
-					addChild(ss);
-					subStates.add(ss);
-					ss.parentSquare=this;
-					if(i==0){
-						ss.reposition(getX()+getWidth()+0.15f, getY());
-					}
-					else {
-						ss.reposition(getX()+getWidth()+0.15f, subStates.get(i-1).getY()+subStates.get(i-1).getHeight()+0.05f);
-					}
-					++i;
-				}
-			}
+		this.setFrame(2);
+		
+		if(parentSquare!=null){
+			reposition(parentSquare.getX()+parentSquare.getWidth()+0.15f,parentSquare.getY());
 		}
-		reposition(0.05f,0.5f);
+		else {
+			reposition(0.05f,0.5f);
+		}
 		for(ProgramAction action:state.getActions()){
 			ActionEditor ae = editor.createActionEditor(action);
 			ae.reposition(getX()+0.01f,getY()+0.01f);
 			addActionEditor(ae);
 		}
-		if(event!=null){
-			condition = new ConditionArrow(editor,state.getCondition(),event);
-			addChild(condition);
-		}
-		
+
 		final StateSquare self = this;
-		this.linkNewStateButton = new Button("editor_shape_icons",1,"Create a new State and link it to this state",null,new ButtonAction(){
+		this.linkNewStateButton = new Button("editor_shape_icons",1,"Create a new State and link it to this state",new ButtonAction(){
+
+			private MouseListener newLinkListener = new MouseListener(){
+				@Override
+				public boolean onClick(MotionEvent event) {
+					if(event.getAction()==MotionEvent.ACTION_UP){
+						isListening = false;
+						Gui.removeOnClick(newLinkListener);
+						boolean makeNew = true;
+						StateSquare subState = editor.getStateSquare(event.getX(),event.getY());
+
+						if(subState==null||subState==self){
+							subState = new StateSquare(editor,state.addSubState("update"),self);
+							editor.addChild(subState);
+						}
+						else {
+							makeNew = false;
+							subState.setFrame(2);
+							state.addState("update",subState.state, new FreeProgramCondition());
+						}
+						addSubState(subState);
+
+						if(makeNew){
+							if(subStates.size()>1){
+								subState.reposition(getX()+getWidth()+0.15f, subStates.get(subStates.size()-1-1).getY()+subStates.get(subStates.size()-1-1).getHeight()+0.05f);
+							}
+							else {
+								subState.reposition(getX()+getWidth()+0.15f, getY());
+							}
+						}
+						self.resize(0f, 0f);
+						self.reposition(self.getX(),self.getY());
+					}
+
+					return true;
+				}
+
+				@Override
+				public boolean onHover(MotionEvent event) {
+					return false;
+				}
+
+				@Override
+				public void onMouseScroll(int distance) {					
+				}
+			};
+			private boolean isListening = false;
 			@Override
-			public void act(MotionEvent event) {
-				ProgramState subState = state.addSubState("update");
-				StateSquare ss = new StateSquare(editor,subState,"update");
-				self.addChild(ss);
-				subStates.add(ss);
-				ss.parentSquare = self;
-				if(subStates.size()>1){
-					ss.reposition(self.getX()+self.getWidth()+0.15f, subStates.get(subStates.size()-1-1).getY()+subStates.get(subStates.size()-1-1).getHeight()+0.05f);
+			public void act(MotionEvent subject) {
+				if(!isListening){
+					isListening = true;
+					Gui.giveOnClick(newLinkListener);
 				}
-				else {
-					ss.reposition(self.getX()+self.getWidth()+0.15f, self.getY());
-				}
-				ss.resize(0f, 0f);
-				self.reposition(self.getX(),self.getY());
 			}
-		});
+
+		},null){
+		};
 		addChild(linkNewStateButton);		
 		editor.addButton(linkNewStateButton);
-		resize(0f,0f);
-		reposition(getX(),getY());
 	}
-	public ProgramState solidify() {
+	public void setupSubStates(){
+		List<StateSquare> mySubSquares = new ArrayList<StateSquare>();
+		for(String subEvent:ProgramState.eventNames){
+			if(state.getSubStates(subEvent)!=null){
+				for(int i=0;i<state.getSubStates(subEvent).size();++i){
+					boolean makeNew = true;
+					StateSquare subState = editor.getStateSquare(state.getSubStates(subEvent).get(i));
+					if(subState==null){
+						subState = new StateSquare(editor,state.getSubStates(subEvent).get(i),this);
+						editor.addChild(subState);
+					}
+					else {
+						makeNew = false;
+					}
+					addSubState(subState);
+					if(makeNew){
+						if(subStates.size()>1){
+							subState.reposition(getX()+getWidth()+0.15f, subStates.get(subStates.size()-1-1).getY()+subStates.get(subStates.size()-1-1).getHeight()+0.05f);
+						}
+						else {
+							subState.reposition(getX()+getWidth()+0.15f, getY());
+						}
+						mySubSquares.add(subState);
+					}
+				}
+			}
+		}
+		for(StateSquare newState:mySubSquares){
+			newState.setupSubStates();
+		}
+	}
+	private void addSubState(StateSquare ss){
+
+		subStates.add(ss);
+		ss.superStates.add(this);
+
+		ProgramCondition programCondition = state.getSubConditionTo(ss.state);
+		subConditions.add(new ConditionArrow(editor,programCondition,state.getEventTo(ss.state)));
+		addChild(subConditions.get(subConditions.size()-1));
+	}
+	public ProgramState solidify() {/*
 		ProgramState state = new ProgramState();
-		if(condition!=null){
-			state.setCondition(condition.getCondition());
-		}
-		else {
-			state.setCondition(new FreeProgramCondition());
-		}
+		*/
+		state.clearEnterActions();
 		for(ActionEditor action:actions){
-			state.addAction(action.action);
+			state.addAction(action.getAction());
 		}
-		for(StateSquare subState:subStates){
-			state.addState(subState.condition.getEvent(), subState.solidify());
+		List<ProgramState> currentSubStates = state.getSubStates();
+		List<String> currentEvents = state.getEvents();
+		for(int i=0;i<subStates.size();++i){
+			if(subStates.get(i).state == currentSubStates.get(i)){
+				
+				if(currentEvents.get(i)!=subConditions.get(i).getEvent()){
+					state.changeSubStateEvent(currentEvents.get(i),currentSubStates.get(i),subConditions.get(i).getEvent());
+				}
+			}
 		}
 		return state;
 	}
@@ -104,48 +180,52 @@ public class StateSquare extends Button{
 		reposition(getX()+x,
 				getY()+y);
 		for(StateSquare state:subStates){
-			state.moveView(x, y);
+			if(state.parentStateSquare == this){
+				state.moveView(x, y);
+			}
 		}
 	}
 	@Override
+	public void reposition(float x, float y){
+		resize(0f,0f);
+		super.reposition(x, y);
+	}
+	@Override
 	public float offsetX(int index){
-		if(getChild(index) instanceof StateSquare){
-			return getChild(index).getX()-getX();
-		}
-		else if(getChild(index) instanceof ActionEditor){
+		if(getChild(index) instanceof ActionEditor){
 			return 0.065f;
 		}
-		else if(getChild(index) instanceof ConditionArrow&&parentSquare!=null){
-			return parentSquare.getX()+parentSquare.getWidth()-getX();
+		else if(getChild(index) instanceof ConditionArrow){
+			ConditionArrow arrow = (ConditionArrow)getChild(index);
+			return getWidth();
 		}
 		else if(getChild(index) == linkNewStateButton){
-			return getWidth();
+			return getWidth()-linkNewStateButton.getWidth()/2f;
 		}
 		else return 0f;
 	}
 	@Override
 	public float offsetY(int index){
-		if(getChild(index) instanceof StateSquare){
-			return getChild(index).getY()-getY();
-		}
-		else if(getChild(index) instanceof ActionEditor){
+		if(getChild(index) instanceof ActionEditor){
 			int ai = actions.indexOf(getChild(index));
 			return getHeight()-0.015f-ai*0.026f-getChild(index).getHeight();
 		}
-		else if(getChild(index) instanceof ConditionArrow&&parentSquare!=null){
-			return parentSquare.getY()+parentSquare.getHeight()/2f-getY();
+		else if(getChild(index) instanceof ConditionArrow){
+			ConditionArrow arrow = (ConditionArrow)getChild(index);
+			return getHeight()/2f;
 		}
 		else if(getChild(index) == linkNewStateButton){
-			return getHeight()/2f;
+			return getHeight()/2f-linkNewStateButton.getHeight()/2f;
 		}
 		else return 0f;
 	}
 	@Override
 	public void resize(float x, float y){
 		super.resize(EMPTY_WIDTH, EMPTY_HEIGHT+0.026f*actions.size());
-		if(condition!=null&&parentSquare!=null){
-			condition.resize(getX()-(parentSquare.getX()+parentSquare.getWidth()), 
-					(getY()+getHeight()/2f)-(parentSquare.getY()+parentSquare.getHeight()/2f));
+		for(ConditionArrow condition:subConditions){
+			StateSquare square = subStates.get(subConditions.indexOf(condition));
+			condition.resize(square.getX()-(getX()+getWidth()), 
+					(square.getY()+square.getHeight()/2f)-(getY()+getHeight()/2f)-0.025f*square.state.getSuperStates().indexOf(state));
 		}
 		if(linkNewStateButton!=null){
 			linkNewStateButton.resize(0.025f,0.025f);
@@ -162,13 +242,90 @@ public class StateSquare extends Button{
 			editor.addButton(action);
 			reposition(getX(),
 					getY()-0.026f);
-			resize(0f,0f);
-			reposition(getX(),getY());
 			return this;
 		}
 		for(StateSquare state:subStates){
 			state.addActionEditor(actionEditor);
 		}
 		return null;
+	}
+	@Override
+	public Iterator<StateSquare> iterator() {
+		final StateSquare self = this;
+		return new Iterator<StateSquare>(){
+			private StateSquare currentNode = null;
+			private Iterator<StateSquare> nodeIterator = null;
+			private Iterator<StateSquare> subIterator = subStates.iterator();
+			private boolean sentSelf = false;
+			@Override
+			public boolean hasNext() {
+				return !sentSelf;
+			}
+
+			@Override
+			public StateSquare next() {
+				if(nodeIterator!=null&&nodeIterator.hasNext()){
+					return nodeIterator.next();
+				}/*
+				else if(nodeIterator!=null&&currentNode!=null){
+					StateSquare toReturn = currentNode;
+					currentNode=null;
+					nodeIterator=null;
+					return toReturn;s
+				}*/
+				while(subIterator.hasNext()){
+					currentNode = subIterator.next();
+					if(currentNode.parentStateSquare == self){
+						nodeIterator = currentNode.iterator();
+						return next();
+					}
+				}
+				sentSelf = true;
+				return self;
+			}};
+	}
+	public int getId() {
+		return id;
+	}
+	public ProgramState getState() {
+		return state;
+	}
+	public int numberOfActions() {
+		return actions.size();
+	}
+	public void removeAction(int i){
+		this.removeChild(actions.remove(i));
+	}
+	public ActionEditor getAction(int i){
+		return actions.get(i);
+	}
+	public void removeSelf() {
+		for(StateSquare superState:superStates){
+			superState.removeSubState(this);
+		}
+		for(int i=0;i<subStates.size();++i){
+			subStates.get(i).removeSuperState(this);
+		}
+		
+		editor.removeChild(this);
+	}
+	private void removeSuperState(StateSquare toRemove) {
+		superStates.remove(toRemove);
+		if(parentStateSquare == toRemove){
+			if(superStates.isEmpty()){
+				removeSelf();
+			}
+			else {
+				parentStateSquare = superStates.get(0);
+			}
+		}
+	}
+	private void removeSubState(StateSquare toRemove) {
+		int indexOf = subStates.indexOf(toRemove);
+		if(indexOf!=-1){
+			state.purgeSubState(toRemove.state);
+			subStates.remove(indexOf);
+			removeChild(subConditions.remove(indexOf));
+		}
 	}
 }

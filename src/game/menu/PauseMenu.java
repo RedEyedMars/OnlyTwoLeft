@@ -14,7 +14,7 @@ public class PauseMenu extends GraphicEntity implements KeyBoardListener {
 
 	private boolean paused = false;
 	public PauseMenu(final Game game) {
-		super("blank",0);
+		super("blank",Hub.BOT_LAYER);
 
 		MenuButton resumeButton = new MenuButton("Resume"){
 			@Override

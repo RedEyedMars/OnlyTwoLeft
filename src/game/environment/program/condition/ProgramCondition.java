@@ -8,9 +8,9 @@ import java.util.List;
 
 import game.environment.Saveable;
 import game.environment.program.DataHolder;
-import game.environment.program.ProgramAction;
 import game.environment.program.ProgramState;
 import game.environment.program.Statable;
+import game.environment.program.action.ProgramAction;
 import game.environment.update.UpdateAction;
 
 public abstract class ProgramCondition<SubjectType extends Object> extends DataHolder implements Condition<SubjectType>, Saveable {

@@ -14,31 +14,55 @@ import game.environment.update.NullUpdateAction;
 import game.environment.update.UpdatableSquare;
 import game.environment.update.UpdateAction;
 import game.hero.Hero;
+import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import main.Hub;
 
 public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 
-	private ProgramState baseState;
+	private List<ProgramState> stateList;
+	private DataHolder variables = new DataHolder(){
+		@Override
+		public ProgramState getState() {
+			return currentState;
+		}
+
+		@Override
+		public void setState(ProgramState state) {
+			currentState = state;
+		}
+
+		@Override
+		public String[] copiableIntTextureNames() {
+			return new String[]{};
+		}
+
+		@Override
+		public int[] copiableIntTextureRanges() {
+			return new int[]{};
+		}
+	};
 	private java.util.Map<Integer,Square> knownSquares = new HashMap<Integer,Square>();
-	private List<Object> data = new ArrayList<Object>();;
+	private List<Object> data = new ArrayList<Object>();
 
 	private ProgramState currentState;
 	private OnStepAction currentBlackAction;
 	private OnStepAction currentWhiteAction;
 	private UpdateAction currentUpdateAction;
 	private double secondsSinceLastFrame;
-	
+	private List<GraphicEntity> independantImages = new ArrayList<GraphicEntity>();
+
 	public ProgrammableSquare(int shapeType, int blackColour, int whiteColour, Iterator<Integer> ints, Iterator<Float> floats) {
 		super(5,shapeType, blackColour, whiteColour, ints, floats);
 		this.actionType = 7;
 	}
-	
+
 	protected void loadActions(Iterator<Integer> ints, Iterator<Float> floats){
 		//super.loadActions(ints, floats);
-		ints.next();//blackActionIndex
-		ints.next();//whiteActionIndex
-		ints.next();//updateActionIndex
+		int numberOfStates = ints.next();
+		//ints.next();//blackActionIndex
+		//ints.next();//whiteActionIndex
+		//ints.next();//updateActionIndex
 		final ProgrammableSquare myself = this;
 		this.blackAction = new NullOnStepAction(){
 			@Override
@@ -98,7 +122,8 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 					if(currentUpdateAction.hasReachedLimit()){
 						secondsSinceLastFrame = timeSinceStart-currentUpdateAction.getTimeToLimit()-currentUpdateActionStartTime;
 						currentState.on("limitReached", myself);						
-					} else {
+					}
+					else {
 						currentUpdateAction.act(seconds);
 						secondsSinceLastFrame = timeSinceStart-currentUpdateAction.getTimeSinceStart()-currentUpdateActionStartTime;
 						currentState.on("update", myself);
@@ -141,36 +166,39 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 			}
 		};
 		this.updateAction.setTarget(this);
-		this.updateAction.loadFrom(ints, floats);
-		this.baseState = new ProgramState();
-		this.baseState.setTarget(this);
-		this.baseState.loadFrom(ints, floats);
-		this.currentState = baseState;
+		//this.updateAction.loadFrom(ints, floats);
+		stateList = new ArrayList<ProgramState>();
+		for(int i=0;i<numberOfStates;++i){
+			stateList.add(new ProgramState());
+		}
+		for(ProgramState state:stateList){
+			state.setTarget(this);
+			state.loadFrom(ints, floats);
+		}
+		this.currentState = stateList.get(0);
 	}
 
-	public void setData(Integer dataIndex, Object datum){
-		data.set(dataIndex, datum);
-	}
-	public void addData(Object datum){
-		data.add(datum);
-	}
-	public Object getLastData(){
-		return data.get(data.size()-1);
-	}
-	public Object getData(Integer dataIndex) {
-		return data .get(dataIndex);
-	}
-	
 	@Override
 	public List<SquareAction> getActions(){
-		List<SquareAction> actions = super.getActions();
-		actions.add(baseState);
+		List<SquareAction> actions = new ArrayList<SquareAction>();
+		for(ProgramState state:stateList){
+			actions.add(state);
+		}
 		return actions;
 	}
-	
+
+	@Override
+	protected void saveActions(List<Object> toSave){
+		stateList = stateList.get(0).getAllStates();
+		toSave.add(stateList.size());
+		for(ProgramState state:stateList){
+			state.saveTo(toSave);
+		}
+	}
+
 	@Override
 	public void create(){
-		baseState.act(this);
+		stateList.get(0).act(this);
 	}
 
 	public Object getSubject(int type, DataHolder holder) {
@@ -181,7 +209,6 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 		case 3: return secondsSinceLastFrame;
 		case 4: return (Integer)holder.getData("subject");
 		case 5: return (Float)  holder.getData("subject");
-		case 6: return getData((Integer)holder.getData("dataIndex"));
 		case 7: {
 			//NOTE: This does not display the square by itself, if you want to display this "phantom" square, use DisplaySquareAdvancedAction.
 			//		Which has the subject type of Square aka 7.
@@ -199,13 +226,16 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 		}
 		return null;
 	}
-	
+
+	public Variable getVariable(String variableName){
+		return variables.getVariable(variableName);
+	}
 
 	private static int ksId = 0;
 	public Integer getNewKnownSquaresId(){
 		return ksId++;
 	}
-	
+
 	public void setUpdateAction(UpdateAction action){
 		action.setTarget(this);
 		this.currentUpdateAction = action;
@@ -217,7 +247,7 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 			action.onDeactivate();
 		}
 	}
-	
+
 	public void setBlackOnStepAction(OnStepAction action){
 		this.currentBlackAction = action;
 	}
@@ -226,17 +256,85 @@ public class ProgrammableSquare extends UpdatableSquare implements Creatable{
 	}
 
 	public void setBaseState(ProgramState state) {
-		this.baseState = state;
+		stateList.set(0,state);
 	}
 	public void setState(ProgramState state){
+		state.act(this);
 		this.currentState = state;
+
 	}
 
 	public ProgramState getState() {
 		return currentState;
 	}
 	public ProgramState getBaseState() {
-		return baseState;
+		return stateList.get(0);
+	}
+
+	public int getStateIndex(ProgramState state){
+		return stateList.indexOf(state);
+	}
+
+	public ProgramState getStateFromIndex(Integer index) {
+		return stateList.get(index);
+	}
+
+	public void setVariable(String name, Object value) {
+		this.variables.setData(name,value);
+	}
+
+	public void addIndependantImage(GraphicEntity image) {
+		if(!this.independantImages .contains(image)){
+			this.independantImages.add(image);
+			addChild(image);
+		}
+	}
+	private float xOffset = 0f;
+	private float yOffset = 0f;
+	@Override
+	public void reposition(float x, float y){
+		xOffset = x-getX();
+		yOffset = y-getY();
+		super.reposition(x, y);
+	}
+	@Override
+	public float offsetX(int index){
+		if(this.independantImages.contains(getChild(index))){
+			return getChild(index).getX()+xOffset-getX();
+		}
+		else return super.offsetX(index);
+	}
+	@Override
+	public float offsetY(int index){
+		if(this.independantImages.contains(getChild(index))){
+			return getChild(index).getY()+xOffset-getY();
+		}
+		else return super.offsetY(index);
+	}
+	@Override
+	public void resize(float x, float y){
+		if(independantImages!=null){
+			List<Float> previousWidth = new ArrayList<Float>();
+			List<Float> previousHeight = new ArrayList<Float>();
+			for(GraphicEntity entity:independantImages){
+				previousWidth.add(entity.getWidth());
+				previousHeight.add(entity.getHeight());
+			}
+			super.resize(x, y);
+			for(int i=0;i<independantImages.size();++i){
+				independantImages.get(i).resize(previousWidth.get(i), previousHeight.get(i));
+			}
+		}
+		else {
+
+			super.resize(x, y);
+		}
+	}
+
+	public void addOverlayImage(GraphicEntity image) {
+		image.reposition(getX(), getY());
+		image.resize(getWidth(), getHeight());
+		addChild(image);
 	}
 
 }

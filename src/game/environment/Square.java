@@ -177,6 +177,14 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 		toSave.add(Hub.map.getIntCoordinate(getY(),Map.Y_axis));
 		toSave.add(Hub.map.getIntCoordinate(getWidth(),Map.X_axis));
 		toSave.add(Hub.map.getIntCoordinate(getHeight(),Map.Y_axis));
+		saveActions(toSave);
+		
+		if(Storage.debug)System.out.println();
+	}
+	public List<SquareAction> getActions() {
+		return new ArrayList<SquareAction>();
+	}
+	protected void saveActions(List<Object> toSave){
 		for(SquareAction action:getActions()){
 			if(action!=null){
 				action.saveTo(toSave);
@@ -185,11 +193,6 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 				toSave.add(-1);
 			}
 		}
-		
-		if(Storage.debug)System.out.println();
-	}
-	public List<SquareAction> getActions() {
-		return new ArrayList<SquareAction>();
 	}
 
 	public int getReflectTriangle(int colour) {
@@ -330,13 +333,14 @@ public class Square extends GraphicEntity implements Colourable, Saveable{
 			ints.add(Hub.map.getIntCoordinate(x, Map.X_axis));
 			ints.add(Hub.map.getIntCoordinate(y, Map.Y_axis));
 			ints.add(w);
-			ints.add(h);
+			ints.add(h);/*
 			ints.add(-1);
 			ints.add(-1);
 			ints.add(-1);
 			ints.add(0);
-			ints.add(-1);
+			ints.add(-1);*/
 			//
+			ints.add(1);//number of states
 			ints.add(0);//condition
 			ints.add(-1);//next condition
 			ints.add(0);//actions

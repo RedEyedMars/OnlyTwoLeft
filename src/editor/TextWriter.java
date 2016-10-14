@@ -6,6 +6,7 @@ import java.util.Map;
 
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
+import main.Hub;
 
 public class TextWriter extends GraphicText implements KeyBoardListener {
 
@@ -20,8 +21,15 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 		this.ctrlCommands = ctrlCommands;
 	}
 	public TextWriter(String font,String text) {
-		super(font,text,1);
+		super(font,text,Hub.MID_LAYER);
 		this.editor = null;
+	}
+	
+	public void turnBlinkerOn(){
+		blinker.turnOn();
+	}
+	public void turnBlinkerOff(){
+		blinker.turnOff();
 	}
 
 	@Override
@@ -203,12 +211,48 @@ public class TextWriter extends GraphicText implements KeyBoardListener {
 		return false;
 	}
 	
+	public void clearText(){
+		this.index = 0;
+		this.charIndex = 0;
+		this.lineIndex = 0;
+		this.change("");
+	}
+	
 	public String[] getLines(){
 		List<String> strings = new ArrayList<String>();
 		for(GraphicLine line:lines){
 			strings.add(line.getText());
 		}
 		return strings.toArray(new String[0]);
+	}
+	public String getTextOnLine() {
+		return lines.get(this.lineIndex).getText();
+	}
+	public void wrap(float maxLineLength) {
+		wrap(0, maxLineLength);
+
+		StringBuilder builder = new StringBuilder();
+		String nl = "";
+		for(GraphicLine line:lines){
+			builder.append(nl);
+			builder.append(line.getText());
+			nl = "\n";
+		}
+		change(builder.toString());
+	}
+	private void wrap(int li, float max){
+		if(li>=lines.size())return;
+		String text = lines.get(li).getText();
+		String excess = lines.get(li).wrap(max);
+		if(excess.length()>0){
+			if(lineIndex == li&&charIndex==text.length()){
+				++index;
+				charIndex=1;
+				++lineIndex;
+			}
+			getLine(li+1).change(excess+getLine(li+1).getText());			
+		}
+		wrap(li+1,max);
 	}
 
 }

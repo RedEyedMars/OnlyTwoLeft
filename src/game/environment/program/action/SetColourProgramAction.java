@@ -1,4 +1,4 @@
-package game.environment.program;
+package game.environment.program.action;
 
 import editor.program.Settable;
 import game.hero.Hero;
@@ -8,14 +8,14 @@ public class SetColourProgramAction extends ProgramAction<Integer> {
 	public SetColourProgramAction(){
 		super();
 		setData("subject", 0);
-		setData("heroColourToChange", new Boolean(Hero.BLACK_BOOL));//black or white
+		setData("heroColourToChange", new Integer(Hero.BLACK_INT));//black or white
 	}
 	@Override
 	public void act(Integer newColour) {
-		if((Boolean)getData("heroColourToChange")==Hero.BLACK_BOOL){
+		if((Integer)getData("heroColourToChange")==Hero.BLACK_INT){
 			getState().getTarget().changeColour(newColour, null);
 		}
-		else if((Boolean)getData("heroColourToChange")==Hero.WHITE_BOOL){
+		else if((Integer)getData("heroColourToChange")==Hero.WHITE_INT){
 			getState().getTarget().changeColour(null,newColour);
 		}
 	}

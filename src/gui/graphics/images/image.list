@@ -1,6 +1,7 @@
 1:
 	blank.png
 	menu_best_indicator.png
+	chatbox.png
 2:
 	editor_magnifier.png
 	editor_special_icons.png
@@ -20,7 +21,9 @@
 	editor_update_icons.png
 	editor_update_limiter_icons.png
 	editor_program_events.png
+	editor_program_icons.png
 	editor_arrows.png
+	music_player_icons.png
 	heroes.png
 8x8:
 	squares.png

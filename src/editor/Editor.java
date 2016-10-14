@@ -74,7 +74,6 @@ public abstract class Editor extends GraphicView {
 	protected Button saveButton;
 	protected Button saveAndReturnButton;
 	protected Button saveAndOpenButton;
-	protected Button openButton;
 	protected java.util.Map<Integer,Action<MotionEvent>> modeOnClick = new HashMap<Integer,Action<MotionEvent>>();
 	protected java.util.Map<Integer,Action<MotionEvent>> modeOnRelease = new HashMap<Integer,Action<MotionEvent>>();
 
@@ -383,7 +382,7 @@ public abstract class Editor extends GraphicView {
 		actionMenu.get(blackAction+1).setSelected(true);
 		actionMenu2.get(whiteAction+1).setSelected(true);
 
-		visibleToButton = new Button("editor_circles",3,
+		visibleToButton = new Button("editor_circles",(int) Hero.BOTH_INT,
 				"Space - cycle through the views:\nSquares visible to both heroes, Squares visible to the Black Hero, Square visible to the White Hero.",
 				null,new ButtonAction(){
 			@Override
@@ -550,7 +549,8 @@ public abstract class Editor extends GraphicView {
 	}
 
 	protected boolean handleButtons(MotionEvent e){
-		for(GraphicEntity button:buttons){
+		for(int i=0;i<buttons.size();++i){
+			GraphicEntity button = buttons.get(i);
 			if(button.isVisible()&&button.isWithin(e.getX(), e.getY())){
 				if(e.getAction()==MotionEvent.ACTION_DOWN){
 					button.performOnClick(e);
@@ -580,25 +580,7 @@ public abstract class Editor extends GraphicView {
 		}
 		else if(e.getButton()==MotionEvent.MOUSE_RIGHT){
 			if(e.getAction()==MotionEvent.ACTION_UP){
-				for(int i=squares.size()-1;i>=0;--i){
-					if(squares.get(i).isWithin(e.getX(), e.getY())){
-						mostRecentlyRemovedSquare = squares.remove(i);
-						removeButtonsFromSquare(mostRecentlyRemovedSquare);
-						removeChild(mostRecentlyRemovedSquare);
-						return true;
-					}
-					else if(squares.get(i) instanceof UpdatableSquare){
-						List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
-						for(int j=depends.size()-1;j>=0;--j){
-							if(depends.get(j).isWithin(e.getX(), e.getY())){
-								Square square = depends.remove(j);
-								removeButtonsFromSquare(square);
-								squares.get(i).removeChild(square);
-								return true;
-							}
-						}
-					}
-				}
+				if(releaseRightMouseButton(e))return true;
 			}
 		}
 		return false;
@@ -644,6 +626,28 @@ public abstract class Editor extends GraphicView {
 		return false;
 	}
 
+	protected boolean releaseRightMouseButton(MotionEvent e){
+		for(int i=squares.size()-1;i>=0;--i){
+			if(squares.get(i).isWithin(e.getX(), e.getY())){
+				mostRecentlyRemovedSquare = squares.remove(i);
+				removeButtonsFromSquare(mostRecentlyRemovedSquare);
+				removeChild(mostRecentlyRemovedSquare);
+				return true;
+			}
+			else if(squares.get(i) instanceof UpdatableSquare){
+				List<Square> depends = ((UpdatableSquare)squares.get(i)).getDependants();
+				for(int j=depends.size()-1;j>=0;--j){
+					if(depends.get(j).isWithin(e.getX(), e.getY())){
+						Square square = depends.remove(j);
+						removeButtonsFromSquare(square);
+						squares.get(i).removeChild(square);
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 	protected Square createSquare(float x, float y,int shape, int colour, int colour2, int a1, int a2, List<Integer> ua, boolean oc, boolean pc){
 		mode=2;
 		mostRecentlyRemovedSquare = null;
@@ -653,8 +657,8 @@ public abstract class Editor extends GraphicView {
 			floats.add(0f);
 		}
 		if(pc){			
-			floats.add(0f);
-			floats.add(0f);			
+			//floats.add(0f);
+			//floats.add(0f);			
 		}
 		Iterator<Integer> ints = Square.makeInts(this,a1,a2,ua,oc,pc,shape,colour,colour2,x,y,1,1);
 		Square created = Square.create(ints, floats.iterator());
@@ -701,6 +705,7 @@ public abstract class Editor extends GraphicView {
 			OnStepSquare onstep = (OnStepSquare)square;
 			OnStepAction blackAction = onstep.getBlackAction();
 			OnStepAction whiteAction = onstep.getWhiteAction();
+			//if(blackAction==null||whiteAction==null)return;
 			if(blackAction==whiteAction||blackAction.getIndex()==whiteAction.getIndex()){
 
 				if(blackAction.targetType()==2&&(Integer)blackAction.getTarget()==-2 ){
@@ -753,14 +758,6 @@ public abstract class Editor extends GraphicView {
 			@Override
 			public void onMouseScroll(int distance) {				
 			}
-
-			@Override
-			public void onListenToMouse() {				
-			}
-
-			@Override
-			public void onMuteMouse() {				
-			}
 		};
 		button.setOnClick(new ButtonAction(){
 			@Override
@@ -807,14 +804,6 @@ public abstract class Editor extends GraphicView {
 
 			@Override
 			public void onMouseScroll(int distance) {				
-			}
-
-			@Override
-			public void onListenToMouse() {
-			}
-
-			@Override
-			public void onMuteMouse() {				
 			}
 		};
 		button.setOnClick(new ButtonAction(){
@@ -977,18 +966,16 @@ public abstract class Editor extends GraphicView {
 		addChild(square);
 	}
 	public void toggleVisibleSquares(){
-		if(visibleTo==0){
-			visibleTo = 1;
-			visibleToButton.getIcon().setFrame(0);
+		if(visibleTo==Hero.BOTH_INT){
+			visibleTo = Hero.BLACK_INT;
 		}
-		else if(visibleTo==1){
-			visibleTo = 2;
-			visibleToButton.getIcon().setFrame(1);
+		else if(visibleTo==Hero.BLACK_INT){
+			visibleTo = Hero.WHITE_INT;
 		}
-		else if(visibleTo==2){
-			visibleTo = 0;
-			visibleToButton.getIcon().setFrame(3);
+		else if(visibleTo==Hero.WHITE_INT){
+			visibleTo = Hero.BOTH_INT;
 		}
+		visibleToButton.getIcon().setFrame(visibleTo);
 		for(Square square:squares){
 			square.displayFor(visibleTo);
 		}

@@ -29,8 +29,8 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 	public static final int START_PERCENT = 3;
 	public  static final int LIMIT_FUNCTION = 4;
 	public  static final int DEFAULT_STATE = 5;
-	
-	
+
+
 	public static List<UpdateAction> actions = new ArrayList<UpdateAction>();
 	public static List<String> actionNames = new ArrayList<String>();
 	public static List<LimiterFunction> limiters = new ArrayList<LimiterFunction>();
@@ -48,7 +48,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		public double getTimeLimit(float speed, float limit);
 		public boolean isEndless();
 	}
-	
+
 	public static final LimiterFunction bounce = new LimiterFunction(){
 
 		@Override
@@ -98,7 +98,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 			return true;
 		}
 	};
-	
+
 
 	public static final LimiterFunction recycle = new LimiterFunction(){
 		@Override
@@ -125,14 +125,14 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 			if(speed==0)return 0f;
 			if(limit==0)return 0f;
 			float distanceTraveled = (float) (speed*t);
-			if(distanceTraveled>=limit){				
-				return limit;
+			if(Math.abs(distanceTraveled)>=limit){				
+				return (float) (limit*Math.signum(speed));
 			}
 			else return distanceTraveled;
 		}
 		@Override
 		public double getTimeLimit(float speed, float limit) {
-			return limit/speed;
+			return Math.abs(limit/speed);
 		}
 		@Override
 		public boolean isEndless() {
@@ -183,7 +183,15 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		return -5;
 	}
 
-
+	@Override
+	public String getStringValue(int index){
+		return null;
+	}
+	@Override
+	public void setValue(int index, String value) {
+		throw new RuntimeException("no such string:"+index);
+	}
+	@Override
 	public void setValue(int index, float value) {
 		switch(index){
 		case X:{x = value;break;}
@@ -193,6 +201,7 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		default: throw new RuntimeException("no such float:"+index);
 		}
 	}
+	@Override
 	public void setValue(int index, int value) {
 		switch(index){
 		case DEFAULT_STATE:{defaultState = value==DEFAULT_STATE_ACTIVATE||value==1;break;}
@@ -200,13 +209,19 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 		default: throw new RuntimeException("no such integer:"+index);
 		}
 	}
-
+	@Override
+	public int getValueType(int index){
+		return Settable.FLOAT;
+	}
+	@Override
 	public Integer[] copiableValueIds() {
 		return new Integer[]{X,Y,LIMIT,START_PERCENT};
 	}
+	@Override
 	public Integer[] copiableIntIds() {
 		return new Integer[]{DEFAULT_STATE,LIMIT_FUNCTION};
 	}
+	@Override
 	public String[] copiableValueNames() {
 		return new String[]{"X","Y","Limit","Start%"};
 	}
@@ -245,8 +260,8 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 
 	public boolean hasReachedLimit() {
 		if(onLimitReachedAction==-1)return false;
-		return limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(x*1),limit)==limit ||
-			   limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(y*1),limit)==limit;
+		return (limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(x*1),limit)==(float)(limit*Math.signum(x))&&x!=0) || (y!=0&&
+				limiters.get(onLimitReachedAction).getDelta(timeSinceStart,(y*1),limit)==(float)(limit*Math.signum(y)));
 	}
 	public void onActivate(){
 	}
@@ -296,15 +311,18 @@ public abstract class UpdateAction implements SquareAction<Double,UpdatableSquar
 					continue;
 				}				
 			}
-			if(hero.getY()>=self.getY()+self.getHeight()){
+			if(!action.isPassible()){
 				hero.reposition(hero.getX()+hero.getDeltaX(),
-						  hero.getY()+hero.getDeltaY());
-				if(hero.isWithin(self)){
-					//hero.setXVelocity(hero.getXVelocity()+dx);
-					hero.move(dx,dy);
-				}
+						hero.getY()+hero.getDeltaY());
+			}
+			boolean isWithin = hero.isWithin(self);
+			if(!action.isPassible()){
 				hero.reposition(hero.getX()-hero.getDeltaX(),
-						  hero.getY()-hero.getDeltaY());
+						hero.getY()-hero.getDeltaY());
+			}
+			if(isWithin){
+				hero.setDeltaX(hero.getDeltaX()+dx);
+				hero.setDeltaY(hero.getDeltaY()+dy);
 			}
 		}
 	}

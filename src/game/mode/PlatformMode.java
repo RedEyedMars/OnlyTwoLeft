@@ -1,4 +1,4 @@
-package game.modes;
+package game.mode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +36,11 @@ public class PlatformMode extends OverheadMode{
 	public void setup(Game game, boolean colourToControl, GraphicEntity wildWall){
 		this.game = game;
 		this.colourToControl = colourToControl;
-		focused = Hub.getHero(true);
-		wild = Hub.getHero(false);
+		focused = Hub.getHero(Hero.BLACK_BOOL);
+		wild = Hub.getHero(Hero.WHITE_BOOL);
 		focused.resize(0.04f, 0.04f);
 		wild.resize(0.04f, 0.04f);
-		if(colourToControl==false/*white*/){
+		if(colourToControl==Hero.WHITE_BOOL/*white*/){
 			flipView();
 		}
 		this.wildWall = wildWall;
@@ -77,7 +77,7 @@ public class PlatformMode extends OverheadMode{
 		Hero temp = focused;
 		focused = wild;
 		wild = temp;
-		Hub.map.setVisibleSquares(focused.isBlack()?1:2);
+		Hub.map.setVisibleSquares(focused.isBlack()?Hero.BLACK_INT:Hero.WHITE_INT);
 		for(GraphicEntity child:Hub.map.getChildren()){
 			if(child instanceof UpdatableSquare){
 				UpdatableSquare square = (UpdatableSquare)child;

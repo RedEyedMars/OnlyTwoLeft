@@ -1,4 +1,4 @@
-package game.modes;
+package game.mode;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,12 +20,14 @@ import game.hero.ConnectedHero;
 import game.hero.ConnectedHumanoidHero;
 import game.hero.Hero;
 import game.hero.HumanoidHero;
+import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
+import gui.inputs.MotionEvent;
 import main.Hub;
 
-public class RaceMode implements GameMode{
+public class RaceMode extends GameMouseHandler implements GameMode{
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
@@ -370,6 +372,10 @@ public class RaceMode implements GameMode{
 			}
 			else if(57==keycode){//space
 				jump();
+			}
+			else if(28==keycode){//enter
+				game.getChatBox().blinkerOn();
+				Gui.giveOnType(game.getChatBox().getDefaultKeyBoardListener());
 			}
 		}
 	}

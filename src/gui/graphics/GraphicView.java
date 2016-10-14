@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import gui.Gui;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
@@ -48,13 +49,22 @@ public class GraphicView implements MouseListener{
 		for(int i=0;i<children.size();++i){
 			children.get(i).onAddToDrawable();
 		}
-
 	}
 
 	public void onRemoveFromDrawable() {
 		for(int i=0;i<children.size();++i){
 			children.get(i).onRemoveFromDrawable();
 		}
+	}
+	
+	public void startMouseListening(){
+		motionEventHandler = new MotionEventHandler(this);
+		motionEventHandler.start();
+	}
+	public void endMouseListening(){
+		MotionEventHandler temp = motionEventHandler;
+		motionEventHandler = null;
+		temp.end();
 	}
 
 	public void addChild(GraphicEntity e){
@@ -171,65 +181,78 @@ public class GraphicView implements MouseListener{
 		}
 		else return null;
 	}
-	public void exit() {		
-	}
 
 	private class MotionEventHandler extends Thread {
 		private Boolean running = true;
 		private LinkedList<MotionEvent> onClickQueue = new LinkedList<MotionEvent>();
+		private GraphicView view;
 		//private LinkedList<MotionEvent> onHoverQueue = new LinkedList<MotionEvent>(); 
-		public MotionEventHandler(){
+		public MotionEventHandler(GraphicView view){
 			super();
+			this.view = view;
 		}
 
 		@Override
 		public void run(){
-			try {
+			try{
 				while(running){
-					synchronized(onClickQueue){
-						while(running&&onClickQueue.isEmpty()/*&&onHoverQueue.isEmpty()*/){
-							onClickQueue.wait();						
-						}
-						while(running&&!onClickQueue.isEmpty()){
-							try {
-								threadlessOnClick(onClickQueue.removeFirst());
-							}
-							catch (java.util.NoSuchElementException e){
-								System.out.println(onClickQueue.isEmpty());
-								e.printStackTrace();
-							}
+					synchronized(view){
+						try {
+							view.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
 						}
 					}
+					while(running&&!onClickQueue.isEmpty()){
+						threadlessOnClick(onClickQueue.removeFirst());
+
+					}
+					synchronized(view){
+						view.notifyAll();					
+					}
 				}
-			} catch (InterruptedException e) {
+			}
+			catch(Exception e){
 				e.printStackTrace();
+				synchronized(view){
+					view.notifyAll();					
+				}
+				Gui.finished = true;
 			}
 		}
 
 		public void handleClick(MotionEvent event){
-			synchronized(onClickQueue){
-				onClickQueue.add(event);
-				onClickQueue.notifyAll();
-			}
+			onClickQueue.add(event);
+
 		}
 		public void end() {
 			running = false;
-			synchronized(onClickQueue){
-				onClickQueue.notifyAll();
+			synchronized(view){
+				view.notifyAll();
+			}
+		}
+
+		public void waitForMouse() {
+			if(!onClickQueue.isEmpty()&&running){
+				synchronized(view){
+					view.notifyAll();
+				}
+				synchronized(view){
+					try {
+						Hub.currentView.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 
-	@Override
-	public void onListenToMouse() {
-		motionEventHandler = new MotionEventHandler();
-		motionEventHandler.start();
-	}
+	public void waitForMouse() {
+		if(motionEventHandler!=null){
+			motionEventHandler.waitForMouse();
+		}
 
-	@Override
-	public void onMuteMouse() {
-		motionEventHandler.end();
-		motionEventHandler = null;
 	}
 
 

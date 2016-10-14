@@ -11,19 +11,23 @@ import game.environment.Saveable;
 import game.environment.Square;
 import game.environment.oncreate.OnCreateAction;
 import game.environment.onstep.OnStepAction;
+import game.environment.program.action.ProgramAction;
 import game.environment.program.condition.ProgramCondition;
 import game.environment.update.NullUpdateAction;
 import game.environment.update.UpdateAction;
 
 public abstract class DataHolder implements Statable, Settable{
-	private LinkedHashMap<String,Object> data = new LinkedHashMap<String,Object>();
+	private LinkedHashMap<String,Variable> data = new LinkedHashMap<String,Variable>();
 	private String[] valueNames;
 	private String[] intNames;
 
 	private Integer[] valueIds;
 	private Integer[] intIds;
-	public Object getData(String dataName){
+	public Variable getVariable(String dataName){
 		return data.get(dataName);
+	}
+	public Object getData(String dataName){
+		return data.get(dataName).getValue();
 	}
 	public List<Object> getData() {
 		List<Object> d = new ArrayList<Object>();
@@ -37,28 +41,17 @@ public abstract class DataHolder implements Statable, Settable{
 		return data.keySet();
 	}
 	public void setData(String dataName, Object dataValue){
-		data.put(dataName, dataValue);
+		if(data.containsKey(dataName)){
+			data.get(dataName).setValue(dataValue);
+		}
+		else {
+			data.put(dataName, new Variable(dataName,dataValue));
+		}
 	}
 	public void saveTo(List<Object> saveTo) {
 		for(String key:data.keySet()){
-			Object arg = data.get(key);
-			if(arg instanceof Boolean){
-				saveTo.add(-1);
-				saveTo.add(((Boolean)arg)?1:0);
-			}
-			else if(arg instanceof Integer){
-				saveTo.add(0);
-				saveTo.add(arg);
-			}
-			else if(arg instanceof Float) {
-				saveTo.add(1);
-				saveTo.add(arg);
-			}
-			else if(arg instanceof Saveable){
-				//	System.out.println("save"+arg);
-				saveTo.add(((Saveable) arg).saveType());
-				((Saveable) arg).saveTo(saveTo);
-			}
+			data.get(key).saveTo(saveTo);
+			
 		}
 	}
 
@@ -67,13 +60,21 @@ public abstract class DataHolder implements Statable, Settable{
 		for(String key:data.keySet()){
 			int type = ints.next();
 			Object datum = loadDatum(type,state,ints,floats);
-			data.put(key, datum);
+			setData(key, datum);
 		}
 
 	}
 
 	private Object loadDatum(int type,ProgramState state, Iterator<Integer> ints, Iterator<Float> floats) {
 		switch(type){
+		case -2:{
+			int charSize = ints.next();
+			StringBuilder builder = new StringBuilder();
+			for(int i=0;i<charSize;++i){
+				builder.append((char)(int)ints.next());
+			}
+			return builder.toString();
+		}
 		case -1: return new Boolean(ints.next()==1);
 		case 0: return (Integer)ints.next();
 		case 1: return (Float)floats.next();
@@ -127,7 +128,7 @@ public abstract class DataHolder implements Statable, Settable{
 		if(intNames==null){
 			List<String> names = new ArrayList<String>();
 			for(String key:data.keySet()){
-				if(data.get(key) instanceof Integer||(data.get(key) instanceof Boolean)){
+				if(data.get(key).is(Variable.INTEGER)||(data.get(key).is(Variable.BOOLEAN))){
 					names.add(key);
 				}
 			}
@@ -140,7 +141,10 @@ public abstract class DataHolder implements Statable, Settable{
 		if(valueNames==null){
 			List<String> names = new ArrayList<String>();
 			for(String key:data.keySet()){
-				if(data.get(key) instanceof Float){
+				if(data.get(key).is(Variable.FLOAT)){
+					names.add(key);
+				}
+				else if(data.get(key).is(Variable.STRING)){
 					names.add(key);
 				}
 			}
@@ -155,7 +159,7 @@ public abstract class DataHolder implements Statable, Settable{
 			int i = 0;
 			List<Integer> ids = new ArrayList<Integer>();
 			for(String key:data.keySet()){
-				if((data.get(key) instanceof Integer)||(data.get(key) instanceof Boolean)){
+				if((data.get(key).is(Variable.INTEGER))||(data.get(key).is(Variable.BOOLEAN))){
 					ids.add(i++);
 				}
 			}
@@ -169,13 +173,20 @@ public abstract class DataHolder implements Statable, Settable{
 			int i = 0;
 			List<Integer> ids = new ArrayList<Integer>();
 			for(String key:data.keySet()){
-				if(data.get(key) instanceof Float){
+				if(data.get(key).is(Variable.FLOAT)){
+					ids.add(i++);
+				}
+				else if(data.get(key).is(Variable.STRING)){
 					ids.add(i++);
 				}
 			}
 			valueIds = ids.toArray(new Integer[0]);
 		}
 		return valueIds;
+	}
+	@Override
+	public void setValue(int index, String value){
+		setData(copiableValueNames()[index],value);		
 	}
 	@Override
 	public void setValue(int index, float value) {
@@ -192,6 +203,21 @@ public abstract class DataHolder implements Statable, Settable{
 			return;
 		}
 		throw new RuntimeException(copiableIntNames()[index]+"("+index+") is "+getData(copiableIntNames()[index])+" which is neither an Integer nor a Boolean, it's a "+getData(copiableIntNames()[index]).getClass());
+	}
+	@Override
+	public int getValueType(int index){
+
+		if(getData(copiableValueNames()[index]) instanceof Float){
+			return Settable.FLOAT;
+		}
+		else if(getData(copiableValueNames()[index]) instanceof String){
+			return Settable.STRING;
+		}
+		else return Settable.UNKNOWN;
+	}
+	@Override
+	public String getStringValue(int index){
+		return (String) getData(copiableValueNames()[index]);		
 	}
 	@Override
 	public float getValue(int index) {

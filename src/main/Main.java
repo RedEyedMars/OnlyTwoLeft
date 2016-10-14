@@ -5,6 +5,8 @@ import java.util.Random;
 import duo.client.Client;
 import game.menu.MainMenu;
 import gui.Gui;
+import gui.music.Library;
+import gui.music.MusicPlayer;
 
 public class Main {
 
@@ -19,14 +21,12 @@ public class Main {
 
 	public static void setup(){
 		//load();
+		Hub.music = new MusicPlayer();
 		MainMenu menu = new MainMenu();
 		Gui.setView(menu);
 	}
 
 	public static void cleanup() {
-		if(Hub.map!=null&&Hub.map.isMallible()){
-			//Storage.saveMap("data/mal.map", Hub.map);
-		}
 		Client.endConnectionToTheServer();
 	}
 

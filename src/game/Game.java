@@ -14,7 +14,7 @@ import game.hero.Hero;
 import game.menu.MainMenu;
 import game.menu.PauseMenu;
 import game.menu.TransitionMenu;
-import game.modes.GameMode;
+import game.mode.GameMode;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
@@ -32,6 +32,7 @@ public class Game extends GraphicView{
 	protected int tick = 1;
 
 	private GameMode gameMode;
+	private Chat chat;
 	private boolean colourToControl;
 	private long seed;
 	private boolean transition = false;
@@ -41,6 +42,8 @@ public class Game extends GraphicView{
 	private PauseMenu pauseMenu;
 	private boolean waiting=false;
 	public Game(boolean colourToControl, long seed){
+		
+		addChild(Hub.music);
 		MoveHeroMessage.reset();
 		Main.randomizer = new Random(seed);
 		this.seed = seed;
@@ -72,6 +75,9 @@ public class Game extends GraphicView{
 		if(Hub.map.getSquares().size()>0){
 			OnStepSquare wildWall = new OnStepSquare(-1,0.5f,((OnStepSquare)Hub.map.getSquares().get(0)).getBlackAction());
 			Hub.map.getFunctionalSquares().add(0,wildWall);
+			chat = new Chat(Hub.TOP_LAYER);
+			chat.reposition(0.03f, 0.03f);
+			//addChild(chat);
 			gameMode.setup(this,colourToControl, wildWall);
 			for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 				addChild(e);
@@ -88,10 +94,7 @@ public class Game extends GraphicView{
 			Hub.setHeroes(black, white);
 
 			Hub.map.setVisibleSquares(colourToControl==Hero.BLACK_BOOL?Hero.BLACK_INT:
-				colourToControl==Hero.WHITE_BOOL?Hero.WHITE_INT:0);
-
-
-
+				colourToControl==Hero.WHITE_BOOL?Hero.WHITE_INT:Hero.BOTH_INT);
 
 		}
 	}
@@ -117,15 +120,26 @@ public class Game extends GraphicView{
 		}
 		if((pauseMenu!=null&&pauseMenu.isPaused()) || waiting /*||secondsSinceLastFrame>0.1f*/)return;
 		timeSpentInGame+=secondsSinceLastFrame*1000;
-		super.update(secondsSinceLastFrame);
+		for(Hero hero:Hub.getBothHeroes()){
+			hero.update(secondsSinceLastFrame);
+		}
+		Hub.map.update(secondsSinceLastFrame);
 		gameMode.update(secondsSinceLastFrame);
+		chat.update(secondsSinceLastFrame);
 	}
 
 	@Override
 	public boolean onHover(MotionEvent event){
 		pointerX = event.getX();
 		pointerY = event.getY();
-		return true;
+		return super.onHover(event);
+	}
+	@Override
+	public boolean onClick(MotionEvent e){
+		if(gameMode!=null){
+			return gameMode.onClick(e);
+		}
+		else return super.onClick(e);
 	}
 
 	public void transition(String nextMap, boolean success) {		
@@ -193,4 +207,7 @@ public class Game extends GraphicView{
 		});
 	}
 
+	public Chat getChatBox(){
+		return chat;
+	}
 }

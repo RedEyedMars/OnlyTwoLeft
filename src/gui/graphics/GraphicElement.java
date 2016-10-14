@@ -11,6 +11,12 @@ import org.lwjgl.opengl.GL11;
 
 
 public class GraphicElement {
+	public static final int SQUARE = 0;
+	public static final int ISOSCELES_TRIANGLE = 1;
+	public static final int TOP_LEFT_TRIANGLE = 2;
+	public static final int TOP_RIGHT_TRIANGLE = 3;
+	public static final int BOTTOM_LEFT_TRIANGLE = 4;
+	public static final int BOTTOM_RIGHT_TRIANGLE = 5;
 	protected static FloatBuffer squareBuffer;
 	protected static FloatBuffer triangleBuffer;
 	protected static FloatBuffer trTriangleBuffer;
@@ -341,7 +347,7 @@ public class GraphicElement {
 			return "Square";
 		}
 		case 1:{
-			return "Regular Triangle";
+			return "Isosceles Triangle";
 		}
 		case 2:{
 			return "Right Triangle(point at the top left)";

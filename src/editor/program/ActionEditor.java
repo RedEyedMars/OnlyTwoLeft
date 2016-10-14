@@ -5,15 +5,17 @@ import editor.ButtonAction;
 import editor.field.FieldEditor;
 import editor.field.FloatFieldComponent;
 import editor.field.OnClickFieldComponent;
+import editor.field.StringFieldComponent;
 import editor.field.TextFieldComponent;
-import game.environment.program.ProgramAction;
+import game.environment.program.action.ProgramAction;
 import game.environment.program.condition.ProgramCondition;
 import game.environment.update.UpdateAction;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
-public abstract class ActionEditor <TargetType extends Settable> extends Button implements DataRetriever, Cloneable{
+public abstract class ActionEditor extends Button implements DataRetriever, Cloneable{
 	protected ProgramAction action;
 	private StateSquare state = null;
 
@@ -21,21 +23,21 @@ public abstract class ActionEditor <TargetType extends Settable> extends Button 
 	protected ProgramSquareEditor editor;
 	private ArrowButton parentArrow = null;
 
-	private FieldEditor<TargetType> valueEditor;
-	protected TargetType target;
+	private FieldEditor<Settable> valueEditor;
+	protected Settable target;
 	public ActionEditor(ProgramSquareEditor editor,
 			String textureName, Integer frame, 
-			final ProgramAction action, TargetType initialTarget) {
+			final ProgramAction action, Settable initialTarget) {
 		super(textureName, frame,
 				" - "+ProgramAction.actionNames.get(action.getIndex())+" action", null,null);
 		this.editor = editor;
 		final ActionEditor self = this;
 		this.action = action;
-		this.arrow = new GraphicEntity("editor_arrows",1);
+		this.arrow = new GraphicEntity("editor_arrows",Hub.MID_LAYER);
 		this.arrow.setFrame(0);
 		addChild(arrow);
 		this.target = initialTarget;
-		valueEditor =  new FieldEditor<TargetType>("",
+		valueEditor =  new FieldEditor<Settable>("",
 				new TextFieldComponent[]{},
 				new OnClickFieldComponent[]{});
 		valueEditor.setVisible(false);
@@ -62,21 +64,36 @@ public abstract class ActionEditor <TargetType extends Settable> extends Button 
 						final int valueId = target.copiableValueIds()[i];
 						text.append(target.copiableValueNames()[i]);
 						text.append(":\n");
-						valueEditor.addOnType(new FloatFieldComponent<TargetType>("impact"){
-							@Override
-							public void act(Float subject) {
-								target.setValue(valueId,subject);
-							}
+						if(target.getValueType(valueId) == Settable.FLOAT){
+							valueEditor.addOnType(new FloatFieldComponent<Settable>("impact"){
+								@Override
+								public void act(Float subject) {
+									target.setValue(valueId,subject);
+								}
 
-							@Override
-							public TargetType updateWith(TargetType subject) {
-								changeTextOnLine(""+subject.getValue(valueId), 0);
-								return subject;
-							}});
+								@Override
+								public Settable updateWith(Settable subject) {
+									changeTextOnLine(""+subject.getValue(valueId), 0);
+									return subject;
+								}});
+						}
+						else if(target.getValueType(valueId) == Settable.STRING){
+							valueEditor.addOnType(new StringFieldComponent<Settable>("impact"){
+								@Override
+								public void act(String subject) {
+									target.setValue(valueId,subject);
+								}
+
+								@Override
+								public Settable updateWith(Settable subject) {
+									changeTextOnLine(""+subject.getStringValue(valueId), 0);
+									return subject;
+								}});
+						}
 					}
 					for(int i=0;i<target.copiableIntIds().length;++i){
 						final int intId = target.copiableIntIds()[i];
-						valueEditor.addOnClick(new OnClickFieldComponent<TargetType>(
+						valueEditor.addOnClick(new OnClickFieldComponent<Settable>(
 								target.copiableIntTextureNames()[i],
 								target.copiableIntTextureRanges()[i*2],target.copiableIntTextureRanges()[i*2+1]){
 							@Override
@@ -85,7 +102,7 @@ public abstract class ActionEditor <TargetType extends Settable> extends Button 
 							}
 
 							@Override
-							public void updateWith(TargetType subject) {
+							public void updateWith(Settable subject) {
 								setFrame(subject.getInt(intId));
 							}});
 					}
@@ -143,6 +160,10 @@ public abstract class ActionEditor <TargetType extends Settable> extends Button 
 
 	public void setParentArrowButton(ArrowButton arrow) {
 		this.parentArrow = arrow;
+	}
+
+	public ProgramAction getAction() {
+		return action;
 	}
 
 

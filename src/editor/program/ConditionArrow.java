@@ -41,7 +41,6 @@ public class ConditionArrow extends GraphicLine{
 		this.condition = cond;
 		this.event = eve;
 		final ConditionArrow self = this;
-
 		this.openFieldsButton = new Button("editor_arrows",0,"Edit this condition",null,
 				new ButtonAction(){
 			@Override
@@ -53,17 +52,15 @@ public class ConditionArrow extends GraphicLine{
 				conditionEditor.updateWith(condition);
 				conditionEditor.setVisible(true);
 				conditionEditor.resize(0.3f, 0f);
-				conditionEditor.reposition(self.getX(), self.getY()+self.getHeight()/2f);
+				conditionEditor.reposition(openFieldsButton.getX()+openFieldsButton.getWidth(),
+						openFieldsButton.getY()+openFieldsButton.getHeight());
 				Gui.giveOnClick(conditionEditor);
 				Gui.giveOnType(conditionEditor.getDefaultKeyBoardListener());
 			}
 		});
 		conditionEditor = new FieldEditor<ProgramCondition>("",
-				new TextFieldComponent[]{
-
-		},
-				new OnClickFieldComponent[]{
-		});
+				new TextFieldComponent[]{},
+				new OnClickFieldComponent[]{});
 		setupConditionEditor();
 		conditionEditor.setVisible(false);
 		addChild(conditionEditor);
@@ -72,7 +69,7 @@ public class ConditionArrow extends GraphicLine{
 	}
 
 	public void setupConditionEditor(){
-		StringFieldComponent<ProgramCondition> baseCondition = new StringFieldComponent<ProgramCondition>("impact"){
+		StringFieldComponent<ProgramCondition> baseCondition = new StringFieldComponent<ProgramCondition>("impact") {
 			private List<TextFieldComponent<ProgramCondition,?>> args = new ArrayList<TextFieldComponent<ProgramCondition,?>>();
 			private ProgramCondition myCondition;
 			@Override
@@ -179,12 +176,18 @@ public class ConditionArrow extends GraphicLine{
 		if(getChild(index)==openFieldsButton){
 			return getWidth()-0.0125f;
 		}
+		else if(getChild(index)==conditionEditor){
+			return openFieldsButton.getX()+openFieldsButton.getWidth()-getX();
+		}
 		return super.offsetX(index);
 	}
 	@Override
 	public  float offsetY(int index){
 		if(getChild(index)==openFieldsButton){
 			return getHeight()-0.0125f;
+		}
+		else if(getChild(index)==conditionEditor){
+			return openFieldsButton.getY()+openFieldsButton.getHeight()-getY();
 		}
 		return super.offsetY(index);
 	}

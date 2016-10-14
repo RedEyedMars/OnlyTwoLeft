@@ -12,9 +12,8 @@ import gui.inputs.MotionEvent;
 import main.Hub;
 
 public class GetFileMenu extends Menu{
-
-
-	private GraphicView parentView;
+	
+	private String extension = "";
 	private File foundFile;
 	private Stack<File> filePath = new Stack<File>();
 	private boolean finished=false;
@@ -33,12 +32,12 @@ public class GetFileMenu extends Menu{
 
 	public GetFileMenu(GraphicView parentView,final String startFolder, boolean canCreateNew) {
 		super();
-		this.parentView = parentView;
 		this.currentFolder = new File("data"+File.separator+startFolder);
+		this.extension = startFolder.substring(0,3);
 		innerFiles = currentFolder.listFiles();
 		for(int i=0;i<4;++i){
 			final int fileIndex = i;
-			buttons[i] = new MenuButton(innerFiles[i].getName()){
+			buttons[i] = new MenuButton(trimExtension(innerFiles[i].getName())){
 				@Override
 				public void performOnRelease(MotionEvent e){
 					if(e!=served&&this.isVisible()){
@@ -131,17 +130,17 @@ public class GetFileMenu extends Menu{
 				}
 			};
 			createNewButton.resize(0.15f, 0.15f);
-			createNewButton.reposition(0.025f, 0.83f);
+			createNewButton.reposition(0.82f, 0.82f);
 			addChild(createNewButton);
 		}
 
-		scrollBar = new GraphicEntity("squares",1){
+		scrollBar = new GraphicEntity("squares",Hub.MID_LAYER){
 			GraphicEntity ball;
 			{
-				GraphicEntity inner = new GraphicEntity("squares",1);
+				GraphicEntity inner = new GraphicEntity("squares",Hub.MID_LAYER);
 				inner.setFrame(6);
 				addChild(inner);
-				ball = new GraphicEntity("editor_arrows",1){
+				ball = new GraphicEntity("editor_arrows",Hub.MID_LAYER){
 					@Override
 					public boolean onClick(MotionEvent e){
 						if(e.getAction()==MotionEvent.ACTION_UP){
@@ -190,7 +189,7 @@ public class GetFileMenu extends Menu{
 				if(innerFiles.length<=4)return getHeight()/2f;
 				int i=0;
 				for(;i<innerFiles.length-3;++i){
-					if(buttons[0].getText().equals(innerFiles[i].getName())){
+					if(buttons[0].getText().equals(trimExtension(innerFiles[i].getName()))){
 						break;
 					}
 				}
@@ -235,6 +234,13 @@ public class GetFileMenu extends Menu{
 		addChild(returnButton);
 		checkUpDowns();
 	}
+	private String trimExtension(String name) {
+		if(name.endsWith("."+extension)){
+			int indexOfDot = name.lastIndexOf('.');
+			return name.substring(0, indexOfDot);
+		}
+		return name;
+	}
 	@Override
 	public void onMouseScroll(int distance){
 		scroll(-distance/120);
@@ -246,15 +252,15 @@ public class GetFileMenu extends Menu{
 		else {
 			if(dy==1){
 				for(int i=3;i<innerFiles.length-1;++i){
-					if(buttons[3].getText().equals(innerFiles[i].getName())){
+					if(buttons[3].getText().equals(trimExtension(innerFiles[i].getName()))){
 						for(int j=3;j>=0;--j){
-							buttons[j].changeText(innerFiles[i+1].getName());
+							buttons[j].changeText(trimExtension(innerFiles[i+1].getName()));
 							--i;
 						}
 						break;
 					}
 				}
-				if(buttons[3].getText().equals(innerFiles[innerFiles.length-1].getName())){
+				if(buttons[3].getText().equals(trimExtension(innerFiles[innerFiles.length-1].getName()))){
 					downButton.setVisible(false);
 				}
 				upButton.setVisible(true);
@@ -264,15 +270,15 @@ public class GetFileMenu extends Menu{
 			}
 			else if(dy==-1){
 				for(int i=1;i<innerFiles.length-3;++i){
-					if(buttons[0].getText().equals(innerFiles[i].getName())){
+					if(buttons[0].getText().equals(trimExtension(innerFiles[i].getName()))){
 						for(int j=0;j<4;++j){
-							buttons[j].changeText(innerFiles[i-1].getName());
+							buttons[j].changeText(trimExtension(innerFiles[i-1].getName()));
 							++i;
 						}
 						break;
 					}
 				}
-				if(buttons[0].getText().equals(innerFiles[0].getName())){
+				if(buttons[0].getText().equals(trimExtension(innerFiles[0].getName()))){
 					upButton.setVisible(false);
 				}
 				downButton.setVisible(true);
@@ -287,7 +293,7 @@ public class GetFileMenu extends Menu{
 		this.currentFolder = folder;
 		this.innerFiles = folder.listFiles();
 		for(int i=0;i<innerFiles.length&&i<4;++i){
-			buttons[i].changeText(innerFiles[i].getName());
+			buttons[i].changeText(trimExtension(innerFiles[i].getName()));
 			buttons[i].setVisible(true);
 		}
 		for(int i=innerFiles.length;i<4;++i){
@@ -312,10 +318,10 @@ public class GetFileMenu extends Menu{
 		scrollBar.setVisible(true);
 		downButton.setVisible(true);
 		upButton.setVisible(true);
-		if(buttons[3].getText().equals(innerFiles[innerFiles.length-1].getName())||innerFiles.length<=4){
+		if(buttons[3].getText().equals(trimExtension(innerFiles[innerFiles.length-1].getName()))||innerFiles.length<=4){
 			downButton.setVisible(false);
 		}
-		if(buttons[0].getText().equals(innerFiles[0].getName())||innerFiles.length<=4){
+		if(buttons[0].getText().equals(trimExtension(innerFiles[0].getName()))||innerFiles.length<=4){
 			upButton.setVisible(false);
 		}
 		if(innerFiles.length<=4){
@@ -345,6 +351,9 @@ public class GetFileMenu extends Menu{
 	public static File getFile(GraphicView parentView, String startFolder, boolean canStartNew){
 		GetFileMenu menu = new GetFileMenu(parentView,startFolder, canStartNew);
 		Gui.setView(menu);
+		synchronized(parentView){
+			parentView.notifyAll();					
+		}
 		try {
 			synchronized(menu){
 				while(menu.getFile()==null&&!menu.isFinished()){

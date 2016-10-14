@@ -14,6 +14,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.input.*;
 import org.lwjgl.util.glu.*;
 
+import main.Hub;
 import main.Log;
 
 
@@ -225,6 +226,8 @@ public class GLApp {
     	if(Mouse.isButtonDown(1)) {
     		dragRightDown(cursorX, cursorY);
     	}
+
+		Hub.currentView.waitForMouse();
         // Handle key hits
         if(Keyboard.next()) do {
         	// check for exit key

@@ -26,6 +26,7 @@ import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
+import main.Hub;
 import main.Main;
 
 public class HostMenu extends Menu implements IDuoMenu{
@@ -198,7 +199,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		gameButton.reposition(0.2f,0.19f);
 		addChild(gameButton);
 
-		kickButton = new GraphicEntity("editor_button",1){
+		kickButton = new GraphicEntity("editor_button",Hub.MID_LAYER){
 			@Override
 			public void performOnRelease(MotionEvent e){
 				if(isVisible()){

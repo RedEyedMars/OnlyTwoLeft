@@ -12,5 +12,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lwjgl-2.9.0/jar/lwjgl.jar"/>
 	<classpathentry kind="lib" path="lwjgl-2.9.0/jar/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Geoffrey/workspace/OnlyTwoLeft/OnlyTwoLeft/volumeAdjustEnabled_JLayer.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

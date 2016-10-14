@@ -31,10 +31,13 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	private game.environment.Map myLoadedMap;
 	private Button gravityButton;
 	private Button lightDependencyButton;
+	
+	private boolean musicPaused;
 	public MapEditor(){
 		super();
 		saveTo = GetFileMenu.getFile(this,"maps",true);
 		if(saveTo!=null){
+			musicPaused = Hub.music.pause();
 			if(saveTo.exists()){
 				Storage.loadMap(saveTo.getAbsolutePath());
 				myLoadedMap = Hub.map;
@@ -91,13 +94,6 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			public void onMouseScroll(int distance) {				
 			}
 
-			@Override
-			public void onListenToMouse() {				
-			}
-
-			@Override
-			public void onMuteMouse() {				
-			}
 		};
 		button.setOnClick(new ButtonAction(){
 			@Override
@@ -174,15 +170,6 @@ public class MapEditor extends Editor implements KeyBoardListener{
 			@Override
 			public void onMouseScroll(int distance) {				
 			}
-
-			@Override
-			public void onListenToMouse() {
-				
-			}
-
-			@Override
-			public void onMuteMouse() {			
-			}
 		};
 		addSquare(copy);
 		Gui.giveOnClick(mouseListener);
@@ -191,6 +178,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	public void update(double seconds){
 		if(saveTo==null){
 			Gui.setView(new EditorMenu());
+			if(musicPaused){
+				Hub.music.unpause();
+			}
 		}
 		//super.update(seconds);
 	}
@@ -249,6 +239,9 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	protected void saveAndReturn() {
 		saveCurrent();
 		Gui.setView(new MainMenu());
+		if(musicPaused){
+			Hub.music.unpause();
+		}
 	}
 	@Override
 	public void saveCurrent(){
@@ -286,46 +279,14 @@ public class MapEditor extends Editor implements KeyBoardListener{
 	@Override
 	public boolean continuousKeyboard() {
 		return true;
-	}/* leaving this code here in case we've broken something with the refactored way that graphicView/Gui.setView works
-	public void restartWith(Square square) {
-		if(square!=null){
-			squares.add(square);
-		}
-		int restartWithSpecial = -1;
-		for(int i=0;i<specialActionMenu.size();++i){
-			if(specialActionMenu.get(i).isSelected()){
-				restartWithSpecial = i;
-				break;
-			}
-		}
-		buttons.clear();
-		setupHeroButton(0);
-		setupHeroButton(1);
-		setupButtons();
-		if(restartWithSpecial>=0){
-			for(int i=0;i<actionMenu.size();++i){
-				actionMenu.get(i).setSelected(false);
-				actionMenu2.get(i).setSelected(false);
-			}
-			specialActionMenu.get(restartWithSpecial).setSelected(true);
-		}
-		for(Square sqr:squares){
-			addChild(sqr);
-			addIconsToSquare(sqr);
-			if(sqr instanceof UpdatableSquare){
-				for(Square dependant:((UpdatableSquare)sqr).getDependants()){
-					sqr.addChild(dependant);
-					addIconsToSquare(dependant);
-				}
-			}
-		}
-		reset = true;
-	}*/
+	}
 
 
 	@Override
 	protected void openNew() {
-		Gui.setView(new MapEditor());
+		MapEditor openMap = new MapEditor();
+		Gui.setView(openMap);
+		openMap.musicPaused = this.musicPaused;
 	}
 
 }

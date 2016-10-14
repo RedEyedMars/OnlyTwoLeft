@@ -116,6 +116,10 @@ public class OnCreateSquareEditor extends Editor{
 		writer = new TextWriter(this,text,ctrlCommands);
 		addChild(writer);
 		mode = Editor.MODE_NEUTRAL;
+
+		saveAndReturnButton.reposition(0.82f, 0.87f);
+		saveButton.reposition(0.87f, 0.87f);
+		saveAndOpenButton.reposition(0.92f, 0.87f);
 	}
 	@Override
 	public void addIconsToSquare(Square square1){

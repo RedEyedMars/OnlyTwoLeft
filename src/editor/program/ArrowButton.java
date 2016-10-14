@@ -5,6 +5,7 @@ import editor.ButtonAction;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class ArrowButton extends Button implements DataRetriever{
 
@@ -20,7 +21,7 @@ public class ArrowButton extends Button implements DataRetriever{
 			public void act(MotionEvent event){
 				if(!transitioning){
 					transitioning = true;
-					ActionEditor transitioner = editor.createActionEditor(actionEditor.action);
+					ActionEditor transitioner = editor.createActionEditor(actionEditor.action.create());
 					transitioner.setParentArrowButton(self);
 					transitioner.reposition(event.getX()-0.05f,
 							event.getY()-0.05f);
@@ -31,7 +32,7 @@ public class ArrowButton extends Button implements DataRetriever{
 				}
 			}
 		});
-		subject = new GraphicEntity(actionEditor.getIcon().getTextureName(), 1);
+		subject = new GraphicEntity(actionEditor.getIcon().getTextureName(), Hub.MID_LAYER);
 		subject.setFrame(actionEditor.getIcon().getFrame());
 		this.addChild(subject);
 		resize(0.1f,0.05f,0.05f,0.05f);

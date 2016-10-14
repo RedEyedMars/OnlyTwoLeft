@@ -7,6 +7,4 @@ public interface MouseListener {
 	public boolean onHover(MotionEvent event);
 	public void onMouseScroll(int distance);
 	
-	public void onListenToMouse();
-	public void onMuteMouse();
 }

@@ -1,4 +1,4 @@
-package game.environment.program;
+package game.environment.program.action;
 
 import game.environment.update.NullUpdateAction;
 import game.environment.update.UpdateAction;

@@ -14,6 +14,6 @@ public abstract class StringFieldComponent <TargetType extends Object> extends T
 		}
 	}
 	protected boolean legalKey(char c, int keycode){
-		return c>=65&&c<=90||c>=97&&c<=122||c==46||keycode==14||keycode==57;
+		return (c>=32&&c<=127)||keycode==14||keycode==57;
 	}
 }

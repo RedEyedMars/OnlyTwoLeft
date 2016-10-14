@@ -15,15 +15,19 @@ import game.Action;
 import game.environment.Square;
 import game.environment.oncreate.OnCreateAction;
 import game.environment.oncreate.OnCreateSquare;
-import game.environment.program.BaseProgramAction;
-import game.environment.program.SetColourProgramAction;
-import game.environment.program.SetUpdateActionProgramAction;
-import game.environment.program.ProgramAction;
+import game.environment.program.action.BaseProgramAction;
+import game.environment.program.action.DefineVariableProgramAction;
+import game.environment.program.action.DisplayImageProgramAction;
+import game.environment.program.action.IncrementVariableProgramAction;
+import game.environment.program.action.ProgramAction;
+import game.environment.program.action.SetColourProgramAction;
+import game.environment.program.action.SetUpdateActionProgramAction;
 import game.environment.program.ProgramState;
 import game.environment.program.ProgrammableSquare;
 import game.environment.program.condition.ProgramCondition;
 import game.environment.update.NullUpdateAction;
 import game.environment.update.UpdateAction;
+import game.hero.Hero;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
@@ -69,15 +73,37 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 					this,
 					createActionEditor(ProgramAction.getAction(i).create()));
 			arrow.reposition(0.82f,
-					     0.87f-i*0.05f);
+					0.87f-i*0.05f);
 			addChild(arrow);
 			this.dataRetrievers.add(arrow);
 			buttons.add(arrow);
 		}
 
 		this.stateRoot = new StateSquare(this,square.getBaseState(),null);
+		stateRoot.setupSubStates();
 		addChild(this.stateRoot);
 		mode = -1;
+	}
+	@Override
+	protected boolean releaseRightMouseButton(MotionEvent e){
+		StateSquare removeState = null;
+		for(StateSquare state:stateRoot){
+			for(int i=0;i<state.numberOfActions();++i){
+				if(state.getAction(i).isWithin(e.getX(),e.getY())){
+					state.removeAction(i);
+					return true;
+				}
+			}
+			if(state.isWithin(e.getX(), e.getY())){
+				removeState = state;
+				break;
+			}
+		}
+		if(removeState!=null){
+			removeState.removeSelf();
+			return true;
+		}
+		return super.releaseRightMouseButton(e);
 	}
 	@Override
 	public void keyCommand(boolean b, char c, int keycode) {
@@ -120,7 +146,15 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 
 	}
 	protected void saveCurrent(){
-		square.setBaseState(stateRoot.solidify());
+		for(StateSquare state:stateRoot){
+
+			if(state==stateRoot){
+				square.setBaseState(state.solidify());
+			}
+			else {
+				state.solidify();
+			}
+		}
 		editor.saveCurrent();
 	}
 	protected void saveAndReturn() {
@@ -130,7 +164,7 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 	private void moveView(float x, float y){
 		for(int i=0;i<squares.size();++i){
 			squares.get(i).reposition(squares.get(i).getX()+x*2f,
-					              squares.get(i).getY()+y*2f);
+					squares.get(i).getY()+y*2f);
 		}
 		stateRoot.moveView(x,y);
 	}
@@ -157,33 +191,32 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 				}};
 		}
 		else if(action instanceof SetColourProgramAction){
-				ae = new SquareActionEditor(this,"squares",blackColour,action, (SetColourProgramAction)action){
-					@Override
-					public boolean retrieveData(){
+			ae = new SquareActionEditor(this,"squares",blackColour,action, (SetColourProgramAction)action){
+				@Override
+				public boolean retrieveData(){
 
-						if((Boolean)action.getData("heroColourToChange")&&blackColour!=frame){
-							setFrame(blackColour);
-							this.action.setData("subject", blackColour);
-							return true;
-						}
-						else if(!(Boolean)action.getData("heroColourToChange")&&whiteColour!=frame){
-							setFrame(whiteColour);
-							this.action.setData("subject", whiteColour);
-							return true;
-						}
-						else return false;
+					if((Integer)action.getData("heroColourToChange")==Hero.BLACK_INT&&blackColour!=frame){
+						setFrame(blackColour);
+						this.action.setData("subject", blackColour);
+						return true;
 					}
-				};				
-			
-			ae.setFrame((Integer) action.getData("subject"));		}
-
+					else if((Integer)action.getData("heroColourToChange")==Hero.WHITE_INT&&whiteColour!=frame){
+						setFrame(whiteColour);
+						this.action.setData("subject", whiteColour);
+						return true;
+					}
+					else return false;
+				}
+			};				
+			ae.setFrame((Integer) action.getData("subject"));
+		}
 		else if(action instanceof SetUpdateActionProgramAction){
 			int updateAction = ((UpdateAction) action.getData("subject")).getIndex();
-			ae = new ActionEditor<UpdateAction>(this,"editor_update_icons",updateAction,action,(UpdateAction)action.getData("subject")){
+			ae = new ActionEditor(this,"editor_update_icons",updateAction,action,(UpdateAction)action.getData("subject")){
 				@Override
 				public boolean retrieveData(){
 					int updateAction = getFirstUpdateAction();
-					if(target.getIndex()!=updateAction){
+					if(((UpdateAction)target).getIndex()!=updateAction){
 						UpdateAction newAction = UpdateAction.getAction(updateAction);
 						if(newAction==null){
 							newAction = new NullUpdateAction();
@@ -204,7 +237,34 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 					}
 					else return false;
 				}
-				
+
+			};
+		}
+		else if(action instanceof DefineVariableProgramAction){
+			ae = new ActionEditor(this,"editor_program_icons",0,action,(DefineVariableProgramAction)action){
+				@Override
+				public boolean retrieveData(){
+					return true;
+				}
+
+			};
+		}
+		else if(action instanceof IncrementVariableProgramAction){
+			ae = new ActionEditor(this,"editor_program_icons",1,action,(IncrementVariableProgramAction)action){
+				@Override
+				public boolean retrieveData(){
+					return true;
+				}
+
+			};
+		}
+		else if(action instanceof DisplayImageProgramAction){
+			ae = new ActionEditor(this,"editor_program_icons",2,action,(DisplayImageProgramAction)action){
+				@Override
+				public boolean retrieveData(){
+					return true;
+				}
+
 			};
 		}
 		return ae;
@@ -226,9 +286,9 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 	}
 
 
-	
 
-	
+
+
 	public StateSquare getStateRoot() {
 		return stateRoot;
 	}
@@ -240,6 +300,46 @@ public class ProgramSquareEditor extends Editor implements KeyBoardListener{
 	}
 	@Override
 	protected void openNew() {
-		
+
+	}
+	@Override
+	public void update(double secondsSinceLastFrame){
+		super.update(secondsSinceLastFrame);
+		for(StateSquare square1:stateRoot){
+			for(StateSquare square2:stateRoot){
+				if(square1==square2)continue;
+				if(square2.getY()==square1.getY()){
+					square2.reposition(square2.getX(), square2.getY()-0.001f);
+				}
+				else if(square2.getX()<=square1.getX()+square1.getWidth()/2f&&
+						square2.getX()+square2.getWidth()>=square1.getX()+square1.getWidth()/2f&&
+						square2.getY()<=square1.getY()+square1.getHeight()+0.05f&&
+						square2.getY()+square2.getHeight()>=square1.getY()+square1.getHeight()){
+					square2.reposition(square2.getX(), square2.getY()+0.0005f);
+					square1.reposition(square1.getX(), square1.getY()-0.0005f);
+				}/*
+				else if(square2.isWithin(square1.getX()+square1.getWidth()/2f,square1.getY())){
+					square2.reposition(square2.getX(), square2.getY()-0.0005f);
+					square1.reposition(square1.getX(), square1.getY()+0.0005f);
+				}*/
+			}
+			square1.reposition(square1.getX(), square1.getY());
+		}
+	}
+	public StateSquare getStateSquare(ProgramState subState) {
+		for(StateSquare square:stateRoot){
+			if(square.getState()==subState){
+				return square;
+			}
+		}
+		return null;
+	}
+	public StateSquare getStateSquare(float x, float y) {
+		for(StateSquare square:stateRoot){
+			if(square.isWithin(x, y)){
+				return square;
+			}
+		}
+		return null;
 	}
 }

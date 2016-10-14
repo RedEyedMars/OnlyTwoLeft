@@ -24,12 +24,17 @@ import gui.graphics.GraphicView;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
+import gui.music.MusicPlayer;
 import storage.Storage;
 public class Hub {
 	public static final String RESTART_STRING = "\n";
+	public static final int TOP_LAYER = 2;
+	public static final int MID_LAYER = 1;
+	public static final int BOT_LAYER = 0;
 
 	public static GraphicView currentView;
 	public static GraphicRenderer renderer;
+	public static MusicPlayer music;
 	public static float width;
 	public static float height;
 	public static MouseListener genericMouseListener = new MouseListener(){
@@ -39,10 +44,6 @@ public class Hub {
 		public boolean onHover(MotionEvent event) { return false; }
 		@Override
 		public void onMouseScroll(int distance) {}
-		@Override
-		public void onListenToMouse() {}
-		@Override
-		public void onMuteMouse() {}
 	};
 	public static KeyBoardListener genericKeyBoardListener = new KeyBoardListener(){
 		@Override

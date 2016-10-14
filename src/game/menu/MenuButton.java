@@ -3,6 +3,7 @@ package game.menu;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class MenuButton extends GraphicEntity {
 	private MenuButton self = this;
@@ -11,8 +12,8 @@ public class MenuButton extends GraphicEntity {
 	protected GraphicEntity mid;
 	protected GraphicEntity right;
 	public MenuButton(String name) {
-		super("blank",0);
-		left = new GraphicEntity("speech_bubble",1){
+		super("blank",Hub.BOT_LAYER);
+		left = new GraphicEntity("speech_bubble",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);
@@ -22,7 +23,7 @@ public class MenuButton extends GraphicEntity {
 		left.reposition(0.2f,0f);
 		left.setFrame(0);
 		addChild(left);
-		mid = new GraphicEntity("speech_bubble",1){
+		mid = new GraphicEntity("speech_bubble",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);
@@ -32,7 +33,7 @@ public class MenuButton extends GraphicEntity {
 		mid.reposition(0.3f,0f);
 		mid.setFrame(1);
 		addChild(mid);
-		right = new GraphicEntity("speech_bubble",1){
+		right = new GraphicEntity("speech_bubble",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);
@@ -43,7 +44,12 @@ public class MenuButton extends GraphicEntity {
 		right.setFrame(2);
 		addChild(right);
 		resize(0.6f,0.15f);
-		text = new GraphicText("impact",name,1);
+		text = new GraphicText("impact",name,Hub.MID_LAYER){
+			@Override
+			public void reposition(float x, float y){
+				super.reposition(x, y);
+			}
+		};
 		text.setWidthFactor(1.4f);
 		text.setHeightFactor(3f);
 		text.resize(text.getWidth(), text.getHeight());
@@ -51,8 +57,8 @@ public class MenuButton extends GraphicEntity {
 		addChild(text);
 	}
 	public MenuButton(String name,boolean inverted) {
-		super("blank",0);
-		left = new GraphicEntity("speech_bubble_inverted",1){
+		super("blank",Hub.BOT_LAYER);
+		left = new GraphicEntity("speech_bubble_inverted",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);
@@ -62,7 +68,7 @@ public class MenuButton extends GraphicEntity {
 		left.reposition(0.2f,0f);
 		left.setFrame(0);
 		addChild(left);
-		mid = new GraphicEntity("speech_bubble_inverted",1){
+		mid = new GraphicEntity("speech_bubble_inverted",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);
@@ -72,7 +78,7 @@ public class MenuButton extends GraphicEntity {
 		mid.reposition(0.3f,0f);
 		mid.setFrame(1);
 		addChild(mid);
-		right = new GraphicEntity("speech_bubble_inverted",1){
+		right = new GraphicEntity("speech_bubble_inverted",Hub.MID_LAYER){
 			@Override
 			public void performOnClick(MotionEvent e){
 				self.performOnClick(e);

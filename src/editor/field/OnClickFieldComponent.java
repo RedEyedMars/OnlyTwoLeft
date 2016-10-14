@@ -3,6 +3,7 @@ package editor.field;
 import game.Action;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public abstract class OnClickFieldComponent  <TargetType extends Object> extends GraphicEntity implements Action<Integer> {
 
@@ -14,11 +15,11 @@ public abstract class OnClickFieldComponent  <TargetType extends Object> extends
 	private int frame = -1;
 
 	public OnClickFieldComponent(String textureName, int firstInRange, int lastInRange) {
-		super(textureName,1);
+		super(textureName,Hub.MID_LAYER);
 		this.first = firstInRange;
 		this.last = lastInRange;
 		
-		this.nullShower = new GraphicEntity("editor_button",1);
+		this.nullShower = new GraphicEntity("editor_button",Hub.MID_LAYER);
 		nullShower.setFrame(1);
 		addChild(this.nullShower);
 	}

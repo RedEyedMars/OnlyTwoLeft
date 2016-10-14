@@ -24,6 +24,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,11 +37,13 @@ import game.Action;
 
 
 public class GraphicRenderer {
+
 	private float viewX,viewY,viewZ=0f;
 
-	private List<GraphicElement> addLayer = new ArrayList<GraphicElement>();
-	private List<GraphicElement> removeLayer = new ArrayList<GraphicElement>();
+	private LinkedList<GraphicElement> addLayer = new LinkedList<GraphicElement>();
+	private LinkedList<GraphicElement> removeLayer = new LinkedList<GraphicElement>();
 	private List<GraphicElement> drawBotLayer = new ArrayList<GraphicElement>();
+	private List<GraphicElement> drawMidLayer = new ArrayList<GraphicElement>();
 	private List<GraphicElement> drawTopLayer = new ArrayList<GraphicElement>();
 
 	private Map<String,ButtonAction> loadImageFromTextureName = new HashMap<String,ButtonAction>();
@@ -85,28 +88,36 @@ public class GraphicRenderer {
 	}
 	public void display(){
 
+		boolean skipFrame = false;
 		while(!addLayer.isEmpty()){
 			synchronized(addLayer){
-				GraphicElement e = addLayer.remove(0);
-				if(loadImageFromTextureName.containsKey(e.getTextureName())){
-					loadImageFromTextureName.remove(e.getTextureName()).act(null);
-				}
-				if(e.getLayer()==1){
+				GraphicElement e = addLayer.removeFirst();
+				if(e.getLayer()==Hub.TOP_LAYER){
 					drawTopLayer.add(e);
 				}
-				else if(e.getLayer()==0){
+				else if(e.getLayer()==Hub.MID_LAYER){
+					drawMidLayer.add(e);
+				}
+				else if(e.getLayer()==Hub.BOT_LAYER){
 					drawBotLayer.add(e);
+				}
+				if(loadImageFromTextureName.containsKey(e.getTextureName())){
+					loadImageFromTextureName.remove(e.getTextureName()).act(null);
+					skipFrame=true;
 				}
 			}
 		}
 		while(!removeLayer.isEmpty()){
 			synchronized(removeLayer){
-				GraphicElement e = removeLayer.remove(0);
+				GraphicElement e = removeLayer.removeFirst();
 				if(e==null)continue;
-				if(e.getLayer()==1){
+				if(e.getLayer()==Hub.TOP_LAYER){
 					drawTopLayer.remove(e);
 				}
-				else if(e.getLayer()==0){
+				else if(e.getLayer()==Hub.MID_LAYER){
+					drawMidLayer.remove(e);
+				}
+				else if(e.getLayer()==Hub.BOT_LAYER){
 					drawBotLayer.remove(e);
 				}
 			}
@@ -126,6 +137,9 @@ public class GraphicRenderer {
 		GL11.glPushMatrix();
 		for(int i=0;i<drawBotLayer.size();++i){
 			drawTexture(drawBotLayer.get(i));
+		}
+		for(int i=0;i<drawMidLayer.size();++i){
+			drawTexture(drawMidLayer.get(i));
 		}
 		for(int i=0;i<drawTopLayer.size();++i){
 			drawTexture(drawTopLayer.get(i));
@@ -227,6 +241,22 @@ public class GraphicRenderer {
 		}
 	}
 
+	public void prepareCustomLoader(final String imageName, String dimension) {
+
+		if(!contains(imageName)&&!loadImageFromTextureName.containsKey(imageName)){
+			final int sizeX = Integer.parseInt(dimension.substring(0,dimension.indexOf('x')));
+			final int sizeY = Integer.parseInt(dimension.substring(dimension.indexOf('x')+1,dimension.length()));
+
+			final String imageFilename = "res/images/"+imageName+".png";
+
+			loadImageFromTextureName.put(imageName,new ButtonAction(){
+				@Override
+				public void act(MotionEvent event) {
+					loadImageFromExternalPath(imageFilename,sizeX,sizeY,imageName);
+				}
+			});
+		}
+	}
 	public boolean contains(String key) {
 		return texMap.containsKey(key);
 	}
@@ -385,5 +415,8 @@ public class GraphicRenderer {
 
 		g.dispose();
 		return image;
+	}
+	public int getFrameLimit(String textureName) {
+		return sizMap.get(textureName).length();
 	}
 }

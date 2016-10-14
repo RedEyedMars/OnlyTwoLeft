@@ -25,6 +25,7 @@ import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
+import main.Hub;
 import main.Main;
 
 public class JoinMenu extends Menu implements IDuoMenu{
@@ -188,7 +189,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			private GraphicText gameNames = new GraphicText("impact","",1);
 			private GraphicText mapNames = new GraphicText("impact","",1);
 			private GraphicText colours = new GraphicText("impact","",1);
-			GraphicEntity selectorSquare = new GraphicEntity("squares",1);
+			GraphicEntity selectorSquare = new GraphicEntity("squares",Hub.MID_LAYER);
 			{
 				selectorSquare.setFrame(6);
 				selectorSquare.setVisible(false);

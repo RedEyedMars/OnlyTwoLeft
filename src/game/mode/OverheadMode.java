@@ -1,4 +1,4 @@
-package game.modes;
+package game.mode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,10 @@ import game.hero.ConnectedHero;
 import game.hero.Hero;
 import gui.graphics.GraphicEntity;
 import gui.inputs.KeyBoardListener;
+import gui.inputs.MotionEvent;
 import main.Hub;
 
-public class OverheadMode implements GameMode{
+public class OverheadMode extends GameMouseHandler implements GameMode{
 
 	private static final float uppderViewBorder = 0.6f;
 	private static final float lowerViewBorder = 0.4f;
@@ -114,7 +115,8 @@ public class OverheadMode implements GameMode{
 	public void update(double seconds) {
 		handleViewMovement();
 		handleInterceptions();	
-		MoveHeroMessage.update(seconds, wild);	
+		MoveHeroMessage.update(seconds, wild);
+		visionBubble.update(seconds);
 	}
 
 	@Override
@@ -177,7 +179,7 @@ public class OverheadMode implements GameMode{
 				Hero temp = focused;
 				focused = wild;
 				wild = temp;
-				Hub.map.setVisibleSquares(focused.isBlack()?Hero.BLACK_INT:focused.isWhite()?Hero.WHITE_INT:0);
+				Hub.map.setVisibleSquares(focused.isBlack()?Hero.BLACK_INT:focused.isWhite()?Hero.WHITE_INT:Hero.BOTH_INT);
 				if(!Client.isConnected()){
 					visionBubble.setHeroes(focused,wild);
 				}
@@ -206,5 +208,4 @@ public class OverheadMode implements GameMode{
 	public boolean continuousKeyboard() {
 		return false;
 	}
-
 }

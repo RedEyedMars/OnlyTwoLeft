@@ -3,22 +3,23 @@ package game;
 import game.hero.Hero;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
+import main.Hub;
 
 public class VisionBubble extends GraphicEntity{
 
-	private GraphicEntity mBack = new GraphicEntity("vision_bubbles",1);
-	private GraphicEntity mDown = new GraphicEntity("vision_bubbles",1);
-	private GraphicEntity mUp = new GraphicEntity("vision_bubbles",1);
+	private GraphicEntity mBack = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
+	private GraphicEntity mDown = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
+	private GraphicEntity mUp = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
 	
 
-	private GraphicEntity yBack = new GraphicEntity("vision_bubbles",1);
-	private GraphicEntity yDown = new GraphicEntity("vision_bubbles",1);
-	private GraphicEntity yUp = new GraphicEntity("vision_bubbles",1);
+	private GraphicEntity yBack = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
+	private GraphicEntity yDown = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
+	private GraphicEntity yUp = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
 	
-	private GraphicEntity middle = new GraphicEntity("vision_bubbles",1);
+	private GraphicEntity middle = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
 	
-	private GraphicEntity mine = new GraphicEntity("vision_bubbles",1);
-	private GraphicEntity other = new GraphicEntity("vision_bubbles",1);
+	private GraphicEntity mine = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
+	private GraphicEntity other = new GraphicEntity("vision_bubbles",Hub.MID_LAYER);
 	private GraphicEntity you;
 	private GraphicEntity me;
 	public VisionBubble(Hero me, Hero you) {

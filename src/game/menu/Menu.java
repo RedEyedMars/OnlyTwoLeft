@@ -7,6 +7,7 @@ import game.environment.Square;
 import gui.graphics.GraphicEntity;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 public class Menu extends GraphicView{
 	private static List<Square> squares=new ArrayList<Square>();
@@ -15,9 +16,10 @@ public class Menu extends GraphicView{
 	private float mouseY = 0;
 	
 	public Menu(){
-		super();		
+		super();
+		addChild(Hub.music);		
 		addChild(new GraphicEntity("squares"));
-		getChild(0).setFrame(15);
+		getChild(1).setFrame(15);
 		for(int i=0;i<squares.size();++i){
 			addChild(squares.get(i));
 		}
@@ -26,7 +28,7 @@ public class Menu extends GraphicView{
 	public boolean onHover(MotionEvent e){
 		mouseX = e.getX();
 		mouseY = e.getY();
-		return true;
+		return super.onHover(e);
 	}
 	@Override
 	public void update(double seconds){

@@ -3,6 +3,7 @@ package editor;
 import game.Action;
 import gui.graphics.GraphicEntity;
 import gui.inputs.MotionEvent;
+import main.Hub;
 
 /**
  * This class wraps the a {@link gui.graphics.GraphicEntity} object with an {@link game.Action} which is used by an {@link editor.Editor}.
@@ -29,15 +30,15 @@ public class Button extends GraphicEntity{
 		this("blank",-2,description,onClick, onRelease);
 	}
 	public Button(String textureName, Integer frame, String description, Action<MotionEvent> onClick, Action<MotionEvent> onRelease) {
-		super("editor_button",1);
+		super("editor_button",Hub.MID_LAYER);
 		this.onClick = onClick;
 		this.onRelease = onRelease;
 		this.description = description;
 
-		icon = new GraphicEntity(textureName,1);
+		icon = new GraphicEntity(textureName,Hub.MID_LAYER);
 		addChild(icon);
 		
-		null_icon = new GraphicEntity("editor_button",1);
+		null_icon = new GraphicEntity("editor_button",Hub.MID_LAYER);
 		null_icon.setFrame(1);
 		addChild(null_icon);
 		setFrame(frame);

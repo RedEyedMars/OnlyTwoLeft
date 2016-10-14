@@ -1,4 +1,6 @@
-package game.environment.program;
+package game.environment.program.action;
+
+import game.environment.program.ProgrammableSquare;
 
 public class BaseProgramAction extends ProgramAction<ProgrammableSquare>{
 

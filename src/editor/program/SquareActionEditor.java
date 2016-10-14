@@ -1,9 +1,9 @@
 package editor.program;
 
-import game.environment.program.ProgramAction;
+import game.environment.program.action.ProgramAction;
 
-public abstract class SquareActionEditor<TargetType extends Settable> extends ActionEditor<TargetType> {
-	public SquareActionEditor(ProgramSquareEditor editor,String textureName, Integer frame, ProgramAction action, TargetType target) {
+public abstract class SquareActionEditor extends ActionEditor {
+	public SquareActionEditor(ProgramSquareEditor editor,String textureName, Integer frame, ProgramAction action, Settable target) {
 		super(editor, textureName, frame, action, target);
 	}
 	@Override

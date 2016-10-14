@@ -13,7 +13,7 @@ public class GraphicEntity extends GraphicView {
 		this.entity.setLayer(layer);
 	}
 	public GraphicEntity(String textureName) {
-		this(textureName,0);
+		this(textureName,Hub.BOT_LAYER);
 	}
 	public float getX(){
 		return entity.getX();
@@ -143,5 +143,11 @@ public class GraphicEntity extends GraphicView {
 	}
 
 	public void performOnHover(MotionEvent event){		
+	}
+	public void setLayer(int layer) {
+		this.entity.setLayer(layer);
+		for(GraphicEntity entity:children){
+			entity.setLayer(layer);
+		}
 	}
 }

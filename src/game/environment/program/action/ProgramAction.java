@@ -1,4 +1,4 @@
-package game.environment.program;
+package game.environment.program.action;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -11,6 +11,8 @@ import game.environment.Square;
 import game.environment.SquareAction;
 import game.environment.oncreate.OnCreateAction;
 import game.environment.onstep.OnStepAction;
+import game.environment.program.DataHolder;
+import game.environment.program.ProgramState;
 import game.environment.program.condition.ProgramCondition;
 import game.environment.update.UpdateAction;
 
@@ -18,9 +20,13 @@ public abstract class ProgramAction <SubjectType extends Object> extends DataHol
 
 	private static List<ProgramAction> actions = new ArrayList<ProgramAction>();
 	public static List<String> actionNames = new ArrayList<String>();
+	
 	public static final BaseProgramAction base = new BaseProgramAction();
 	public static final SetColourProgramAction set_colour = new SetColourProgramAction();
 	public static final SetUpdateActionProgramAction set_update_action = new SetUpdateActionProgramAction();
+	public static final DefineVariableProgramAction define_variable = new DefineVariableProgramAction();
+	public static final IncrementVariableProgramAction increment_variable = new IncrementVariableProgramAction();
+	public static final DisplayImageProgramAction display_image = new DisplayImageProgramAction();
 	
 	private ProgramState state;
 	

@@ -19,9 +19,9 @@ public class Hero extends GraphicEntity implements Colourable{
 
 	public final static byte BLACK_COLOUR = 0;
 	public final static byte WHITE_COLOUR = 7;	
-	public final static byte BOTH_INT = 0;
-	public final static byte BLACK_INT = 1;
-	public final static byte WHITE_INT = 2;
+	public final static byte BOTH_INT = 3;
+	public final static byte BLACK_INT = 0;
+	public final static byte WHITE_INT = 1;
 	public final static boolean BLACK_BOOL = true;
 	public final static boolean WHITE_BOOL = false;
 	private float deltaX=0f;
@@ -44,7 +44,7 @@ public class Hero extends GraphicEntity implements Colourable{
 		this("heroes",game,colour);
 	}
 	public Hero(String texture,Game game, boolean colour) {
-		super(texture,1);
+		super(texture,Hub.MID_LAYER);
 		if(colour==BLACK_BOOL){
 			index=BLACK_INT;
 			this.setFrame(BLACK_COLOUR);
@@ -75,7 +75,6 @@ public class Hero extends GraphicEntity implements Colourable{
 	}
 	@Override
 	public void update(double secondsSinceLastFrame){
-
 		velocityX=velocityX*0.9f+accelerationX;
 		if(Math.abs(velocityX)>2f){
 			velocityX=Math.signum(velocityX)*2f;
