@@ -59,19 +59,13 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		super();
 
 		GraphicEntity nameButton = new MenuButton("Name:"){
+			{
+				text.setJustified(GraphicText.LEFT_JUSTIFIED);
+			}
 			@Override
 			public void performOnRelease(MotionEvent e){
 				Gui.removeOnType(ip);
 				Gui.giveOnType(name);
-			}
-			@Override
-			public float offsetX(int index){
-				if(index<3){
-					return super.offsetX(index);
-				}
-				else {
-					return 0.05f;
-				}
 			}
 		};
 		nameButton.resize(0.8f, 0.15f);
@@ -79,8 +73,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 
 		name = new TextWriter("impact","Player Two"){
 			{
-				setWidthFactor(1.4f);
-				setHeightFactor(3f);
+				setFontSize(GraphicText.FONT_SIZE_LARGE);
 				resize(getWidth(), getHeight());
 				charIndex=10;
 				index=10;
@@ -104,19 +97,13 @@ public class JoinMenu extends Menu implements IDuoMenu{
 
 
 		GraphicEntity ipButton = new MenuButton("IP:"){
+			{
+				text.setJustified(GraphicText.LEFT_JUSTIFIED);
+			}
 			@Override
 			public void performOnRelease(MotionEvent e){
 				Gui.removeOnType(name);
 				Gui.giveOnType(ip);
-			}
-			@Override
-			public float offsetX(int index){
-				if(index<3){
-					return super.offsetX(index);
-				}
-				else {
-					return 0.05f;
-				}
 			}
 		};
 		ipButton.resize(0.8f, 0.15f);
@@ -125,8 +112,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 		final JoinMenu self = this;
 		ip = new TextWriter("impact","52.35.55.220"){
 			{
-				setWidthFactor(1.4f);
-				setHeightFactor(3f);
+				setFontSize(GraphicText.FONT_SIZE_LARGE);
 				resize(getWidth(), getHeight());
 				charIndex=0;
 				index=0;
@@ -186,9 +172,9 @@ public class JoinMenu extends Menu implements IDuoMenu{
 
 		buttonList = new MenuButton(""){
 			private int botIndex = 1;
-			private GraphicText gameNames = new GraphicText("impact","",1);
-			private GraphicText mapNames = new GraphicText("impact","",1);
-			private GraphicText colours = new GraphicText("impact","",1);
+			private GraphicText gameNames = new GraphicText("impact","",Hub.MID_LAYER);
+			private GraphicText mapNames = new GraphicText("impact","",Hub.MID_LAYER);
+			private GraphicText colours = new GraphicText("impact","",Hub.MID_LAYER);
 			GraphicEntity selectorSquare = new GraphicEntity("squares",Hub.MID_LAYER);
 			{
 				selectorSquare.setFrame(6);
@@ -199,14 +185,13 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				addChild(gameNames);
 				addChild(mapNames);
 				addChild(colours);
-				text.setWidthFactor(1f);
-				text.setHeightFactor(1.4f);
-				gameNames.setWidthFactor(1f);
-				gameNames.setHeightFactor(1.4f);
-				mapNames.setWidthFactor(1f);
-				mapNames.setHeightFactor(1.4f);
-				colours.setWidthFactor(1f);
-				colours.setHeightFactor(1.4f);
+				text.setFontSize(GraphicText.FONT_SIZE_TALLER);
+				gameNames.setFontSize(GraphicText.FONT_SIZE_TALLER);
+				gameNames.setJustified(GraphicText.LEFT_JUSTIFIED);
+				mapNames.setFontSize(GraphicText.FONT_SIZE_TALLER);
+				mapNames.setJustified(GraphicText.MIDDLE_JUSTIFIED);
+				colours.setFontSize(GraphicText.FONT_SIZE_TALLER);
+				colours.setJustified(GraphicText.RIGHT_JUSTIFIED);
 
 			}
 			@Override
@@ -220,16 +205,10 @@ public class JoinMenu extends Menu implements IDuoMenu{
 				reset();
 			}
 			public float offsetX(int index){
-				if(index>=3&&index<=5){
-					return 0.05f;
+				if(getChild(index)==selectorSquare){
+					return 0.04f;
 				}
-				else if(index==6){
-					return getWidth()/3f;
-				}
-				else if(index==7){
-					return getWidth()-0.15f;
-				}
-				else return super.offsetX(index);
+				return super.offsetX(index);
 			}
 			public float offsetY(int index){
 				if(index>=4){
@@ -244,7 +223,7 @@ public class JoinMenu extends Menu implements IDuoMenu{
 			public void resize(float x, float y){
 				super.resize(x, y);
 				if(selectorSquare!=null){
-					selectorSquare.resize(0.7f,0.03f);
+					selectorSquare.resize(0.725f,0.03f);
 				}
 			}
 			@Override

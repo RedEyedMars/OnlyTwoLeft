@@ -19,6 +19,7 @@ public class Library {
 			"Living Nightmare - snowflake",
 			"Living Nightmare by snowflake (c) copyright 2016 Licensed under a Creative Commons Attribution (3.0) license. http://dig.ccmixter.org/files/snowflake/54422 Ft: Blue Wave Theory");*/
 	public static final List<Track> tracks = new ArrayList<Track>();
+	public static final List<String> licenses = new ArrayList<String>();
 
 	static {
 		try {
@@ -31,13 +32,20 @@ public class Library {
 			while(line!=null){
 				if(line.startsWith("\t\t")){
 					if(currentTrack!=null){
-						currentTrack.setHttpLink(line.substring(2));
+						if(currentTrack.getHttpLink()==null){
+							currentTrack.setHttpLink(line.substring(2));
+						}
+						else {
+							currentTrack.setFeature(line.substring(2));
+						}
 					}
 					else {
+						String[] split = currentTrackName.split(" by ");
 						currentTrack = new Track(
 								line.substring(2),
-								currentTrackName.replaceFirst(" by "," - "),
-								currentTrackName+" "+currentLicense);
+								split[0],
+								split[1],
+								currentLicense);
 						tracks.add(currentTrack);
 					}
 				}
@@ -47,6 +55,7 @@ public class Library {
 				}
 				else {
 					currentLicense = line;
+					licenses.add(currentLicense);
 				}
 				line = reader.readLine();
 			}

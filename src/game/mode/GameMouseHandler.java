@@ -4,6 +4,7 @@ import duo.client.Client;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
+import main.Hub;
 
 public abstract class GameMouseHandler implements MouseListener, KeyBoardListener{
 	private int previousClickDirection = -1;
@@ -13,7 +14,10 @@ public abstract class GameMouseHandler implements MouseListener, KeyBoardListene
 	private static final int DOWN = 3;
 	@Override
 	public boolean onClick(MotionEvent event) {
-		if(event.getAction()==MotionEvent.ACTION_MOVE)return false;		
+		if(event.getAction()==MotionEvent.ACTION_MOVE)return false;
+		if(Hub.music.isMaximized()){
+			return Hub.music.onClick(event);			
+		}
 		double angle = Math.atan2(event.getY()-0.5f,event.getX()-0.5f);
 		int direction = getDirection(angle);
 		boolean action = event.getAction()==MotionEvent.ACTION_DOWN?KeyBoardListener.DOWN:

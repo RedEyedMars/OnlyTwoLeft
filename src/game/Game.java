@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Random;
 
 import duo.client.Client;
+import duo.messages.ChatMessage;
 import duo.messages.HeroEndGameMessage;
 import duo.messages.MoveHeroMessage;
 import duo.messages.SaveGameMessage;
+import game.chat.Chat;
 import game.environment.onstep.OnStepSquare;
 import game.environment.update.UpdatableSquare;
 import game.hero.Hero;
 import game.menu.MainMenu;
+import game.menu.MenuButton;
 import game.menu.PauseMenu;
 import game.menu.TransitionMenu;
 import game.mode.GameMode;
@@ -42,7 +45,7 @@ public class Game extends GraphicView{
 	private PauseMenu pauseMenu;
 	private boolean waiting=false;
 	public Game(boolean colourToControl, long seed){
-		
+
 		addChild(Hub.music);
 		MoveHeroMessage.reset();
 		Main.randomizer = new Random(seed);
@@ -75,9 +78,14 @@ public class Game extends GraphicView{
 		if(Hub.map.getSquares().size()>0){
 			OnStepSquare wildWall = new OnStepSquare(-1,0.5f,((OnStepSquare)Hub.map.getSquares().get(0)).getBlackAction());
 			Hub.map.getFunctionalSquares().add(0,wildWall);
-			chat = new Chat(Hub.TOP_LAYER);
-			chat.reposition(0.03f, 0.03f);
-			//addChild(chat);
+			if(Client.isConnected()){
+				chat = new Chat(Hub.TOP_LAYER,colourToControl);
+				chat.reposition(0.03f, 0.03f);
+				addChild(chat);
+				ChatMessage.setChatBox(chat);
+				chat.setVisible(false);			
+				
+			}
 			gameMode.setup(this,colourToControl, wildWall);
 			for(GraphicEntity e:gameMode.getAuxillaryChildren()){
 				addChild(e);
@@ -125,7 +133,9 @@ public class Game extends GraphicView{
 		}
 		Hub.map.update(secondsSinceLastFrame);
 		gameMode.update(secondsSinceLastFrame);
-		chat.update(secondsSinceLastFrame);
+		if(chat!=null){
+			chat.update(secondsSinceLastFrame);
+		}
 	}
 
 	@Override
@@ -136,6 +146,11 @@ public class Game extends GraphicView{
 	}
 	@Override
 	public boolean onClick(MotionEvent e){
+		if(chat!=null&&
+			chat.getOpenChatButton().isWithin(e.getX(),e.getY())){
+			chat.getOpenChatButton().performOnRelease(e);
+			e.setAction(MotionEvent.ACTION_UP);
+		}
 		if(gameMode!=null){
 			return gameMode.onClick(e);
 		}

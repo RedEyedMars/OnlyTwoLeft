@@ -7,9 +7,26 @@ import main.Hub;
 
 public class GraphicText extends GraphicEntity {
 
+	public static final int LEFT_JUSTIFIED = 0;
+	public static final int MIDDLE_JUSTIFIED = 1;
+	public static final int RIGHT_JUSTIFIED = 2;
+	
+	public static final int FONT_SIZE_LARGE = 0;
+	public static final int FONT_SIZE_REGULAR = 1;
+	public static final int FONT_SIZE_TALLER = 2;
+	
+	private static final float REGULAR_FONT_WIDTH = 1f;
+	private static final float REGULAR_FONT_HEIGHT = 1f;	
+
+	private static final float TALLER_FONT_WIDTH = 1f;
+	private static final float TALLER_FONT_HEIGHT = 1.4f;
+
+	private static final float LARGE_FONT_WIDTH = 1.4f;
+	private static final float LARGE_FONT_HEIGHT = 3.2f;
+	
 	private float visualW=1f;
 	private float visualH=1f;
-	
+
 	protected String text;
 	protected List<GraphicLine> lines = new ArrayList<GraphicLine>();
 
@@ -18,7 +35,9 @@ public class GraphicText extends GraphicEntity {
 	private GraphicText self = this;
 	private String font;
 	private int layer;
-	protected GraphicEntity blinker = new GraphicEntity("squares",Hub.MID_LAYER){
+	
+	private int justified = LEFT_JUSTIFIED;
+	protected GraphicEntity blinker = new GraphicEntity("squares",Hub.TOP_LAYER){
 		private double since;
 		@Override
 		public void resize(float w, float h){
@@ -36,25 +55,7 @@ public class GraphicText extends GraphicEntity {
 				since-=0.5f;
 			}
 			if(blinker.isVisible()){
-					if(lineIndex<lines.size()&&lines.get(lineIndex).length()>0&&charIndex>0){
-						if(charIndex>=lines.get(lineIndex).length()){
-							reposition(self.getX()+
-									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getX()+
-									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getWidth()*
-									lines.get(lineIndex).chars.get(lines.get(lineIndex).length()-1).getWidthValue()*visualW,
-									self.getY()-lineIndex*0.025f);
-						}
-						else {
-							reposition(self.getX()+
-									lines.get(lineIndex).chars.get(charIndex-1).getX()+
-									lines.get(lineIndex).chars.get(charIndex-1).getWidth()*
-									lines.get(lineIndex).chars.get(charIndex-1).getWidthValue()*visualW,
-									self.getY()-lineIndex*0.025f);
-						}
-					}
-					else {
-						reposition(self.getX(),self.getY()-lineIndex*0.025f);
-					}
+				blinker.reposition(self.getX()+self.offsetX(0), self.getY()+self.offsetY(0));
 			}
 		}
 	};
@@ -117,16 +118,66 @@ public class GraphicText extends GraphicEntity {
 		}
 		return lines.get(i);
 	}
+	public void setJustified(int justified){
+		this.justified = justified;
+		reposition(getX(),getY());
+	}
+	public boolean isJustified(int justified){
+		return this.justified == justified;
+	}
+	@Override
+	public float offsetX(int index){
+		if(getChild(index)==blinker){
+			if(lineIndex<lines.size()&&lines.get(lineIndex).length()>0&&charIndex>1){
+				int horizontalIndex = Math.min(charIndex-2, lines.get(lineIndex).length()-1);
+				return	lines.get(lineIndex).chars.get(horizontalIndex).getX();
+				
+			}
+			else if(lineIndex<lines.size()&&lines.get(lineIndex).length()>0&&charIndex==1){
+				return lines.get(lineIndex).chars.get(0).getWidth()*
+					   lines.get(lineIndex).chars.get(0).getWidthValue()*visualW;
+			}
+			return 0f;
+		}
+		else if(justified==LEFT_JUSTIFIED){
+			return super.offsetX(index);
+		}
+		else if(justified==RIGHT_JUSTIFIED){
+			if(getChild(index) instanceof GraphicLine){
+				return getWidth()-((GraphicLine)getChild(index)).getCharWidth();
+			}
+		}
+		else if(justified==MIDDLE_JUSTIFIED){
+			if(getChild(index) instanceof GraphicLine){
+				return getWidth()/2f-((GraphicLine)getChild(index)).getCharWidth()/2f;
+			}
+		}
+		return super.offsetX(index);
+	}
 	@Override
 	public float offsetY(int index){
+
+		if(getChild(index)==blinker){
+			return 0.005f-lineIndex*0.025f;
+		}
 		return 0.025f*(-index+1)*visualH;
 	}
 
-	public void setWidthFactor(float w){
-		this.visualW = w;
-	}
-	public void setHeightFactor(float h){
-		this.visualH = h;
+	public void setFontSize(int fontSize){
+		if(fontSize==FONT_SIZE_LARGE){
+			this.visualW = GraphicText.LARGE_FONT_WIDTH;
+			this.visualH = GraphicText.LARGE_FONT_HEIGHT;
+		}
+		else if(fontSize==FONT_SIZE_REGULAR){
+			this.visualW = GraphicText.REGULAR_FONT_WIDTH;
+			this.visualH = GraphicText.REGULAR_FONT_HEIGHT;
+		}
+		else if(fontSize==FONT_SIZE_TALLER){
+			this.visualW = GraphicText.TALLER_FONT_WIDTH;
+			this.visualH = GraphicText.TALLER_FONT_HEIGHT;
+		}
+		this.resize(getWidth(), getHeight());
+		this.reposition(getX(),getY());
 	}
 
 	protected class GraphicLine extends GraphicEntity{
@@ -183,6 +234,13 @@ public class GraphicText extends GraphicEntity {
 		public String getText() {
 			return text;
 		}
+		public float getCharWidth(){
+			float accumulator = 0f;
+			for(int i=0;i<text.length();++i){
+				accumulator+=getChild(i).getWidth()*chars.get(i).getWidthValue()*visualW;
+			}
+			return accumulator;
+		}
 		public String wrap(float max) {
 			float accumulator = 0f;
 			int i=0;
@@ -201,14 +259,19 @@ public class GraphicText extends GraphicEntity {
 				return excess;
 			}
 		}
-
 	}
+	
+
 	private class GraphicChar extends GraphicEntity{
 		private float value;
 
 		public GraphicChar(char c) {
 			super("$"+font,layer);
-			setFrame(c);
+			setFrame(c);/*
+			super("squares",layer);
+			if(sid>15)sid=0;
+			setFrame(sid++);
+			if(sid>15)sid=0;*/
 			setValue(c);
 		}
 
@@ -220,6 +283,11 @@ public class GraphicText extends GraphicEntity {
 			setFrame(c);
 			setValue(c);
 		}
+		/*
+		@Override
+		public void setFrame(int frame){
+			super.setFrame(frame%16);
+		}*/
 
 		private void setValue(char c){
 			if(c=='\t'){

@@ -6,6 +6,7 @@ import java.util.List;
 
 import game.menu.MenuButton;
 import gui.Gui;
+import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Hub;
@@ -31,8 +32,8 @@ public class FieldEditor <SubjectType extends Object> extends MenuButton{
 		for(int i=0;i<onTypes.length-1;++i){			
 			onTypes[i].setNext(onTypes[i+1]);
 		}
-		text.setWidthFactor(1f);
-		text.setHeightFactor(1f);
+		text.setFontSize(GraphicText.FONT_SIZE_REGULAR);
+		text.setJustified(GraphicText.LEFT_JUSTIFIED);
 		for(TextFieldComponent<SubjectType,?> tfc:onTypes){
 			addChild(tfc);			
 			tfc.setParent(this);

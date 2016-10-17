@@ -22,6 +22,7 @@ import editor.TextWriter;
 import game.Game;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import main.Hub;
@@ -101,8 +102,7 @@ public class TransitionMenu extends Menu{
 			isBest = true;			
 			playerName = new TextWriter("impact",lastName){
 				{
-					setWidthFactor(1.4f);
-					setHeightFactor(3f);
+					setFontSize(GraphicText.FONT_SIZE_LARGE);
 					resize(getWidth(), getHeight());
 					charIndex=text.length();
 					index=text.length();
@@ -121,18 +121,12 @@ public class TransitionMenu extends Menu{
 				}
 			};
 			GraphicEntity nameButton = new MenuButton("Name:"){
+				{
+					text.setJustified(GraphicText.LEFT_JUSTIFIED);
+				}
 				@Override
 				public void performOnRelease(MotionEvent e){
 					Gui.giveOnType(playerName);
-				}
-				@Override
-				public float offsetX(int index){
-					if(index<3){
-						return super.offsetX(index);
-					}
-					else {
-						return 0.05f;
-					}
 				}
 			};
 			nameButton.resize(0.8f, 0.15f);

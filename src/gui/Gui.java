@@ -8,8 +8,12 @@ import gui.inputs.KeyBoardListener;
 import gui.inputs.MotionEvent;
 import gui.inputs.MouseListener;
 
+import java.awt.Desktop;
 import java.awt.Font;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Stack;
 
 import javax.swing.JFileChooser;
@@ -169,9 +173,13 @@ public class Gui extends GLApp {
 			keyboardListener.peek().keyCommand(KeyBoardListener.DOWN,c,keycode);
 		}
 	}
-
 	@Override
 	public void keyUp(int keycode) {
+		if(!keyboardListener.isEmpty()){
+			keyboardListener.peek().keyCommand(KeyBoardListener.UP,' ',keycode);
+		}
+	}
+	public static void releaseKey(int keycode) {
 		if(!keyboardListener.isEmpty()){
 			keyboardListener.peek().keyCommand(KeyBoardListener.UP,' ',keycode);
 		}
@@ -246,6 +254,25 @@ public class Gui extends GLApp {
 
 	public static void enableDrag(){
 		Gui.drag = true;
+	}
+	
+	public static void openWebpage(URI uri) {
+	    Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+	        try {
+	            desktop.browse(uri);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
+
+	public static void openWebpage(URL url) {
+	    try {
+	        openWebpage(url.toURI());
+	    } catch (URISyntaxException e) {
+	        e.printStackTrace();
+	    }
 	}
 
 }

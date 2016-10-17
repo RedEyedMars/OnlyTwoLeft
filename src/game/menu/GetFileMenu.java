@@ -7,12 +7,15 @@ import java.util.Stack;
 import editor.TextWriter;
 import gui.Gui;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.graphics.GraphicView;
 import gui.inputs.MotionEvent;
 import main.Hub;
 
 public class GetFileMenu extends Menu{
-	
+
+	protected static final int NEW_FOLDER = 0;
+	protected static final int NEW_FILE = 1;
 	private String extension = "";
 	private File foundFile;
 	private Stack<File> filePath = new Stack<File>();
@@ -29,6 +32,7 @@ public class GetFileMenu extends Menu{
 	private int scrollOffset = 0;
 
 	private TextWriter createNewNameWriter;
+	private int creatingNew;
 
 	public GetFileMenu(GraphicView parentView,final String startFolder, boolean canCreateNew) {
 		super();
@@ -71,18 +75,31 @@ public class GetFileMenu extends Menu{
 		backButton.setVisible(false);
 		if(canCreateNew){
 			final MenuButton createNewNameField = new MenuButton(""){
+
 				@Override
 				public void performOnRelease(MotionEvent e){
 					if(this.isVisible()){
-						if(createNewNameWriter!=null&&!("."+startFolder.substring(0,3)).equals(createNewNameWriter.getText())){
-							
+						if(createNewNameWriter!=null&&
+								!("."+startFolder.substring(0,3)).equals(createNewNameWriter.getText())&&
+								!"".equals(createNewNameWriter.getText())){
+
 							File file = new File(currentFolder.getAbsolutePath()+
 									File.separator+createNewNameWriter.getText());
 							if(!file.exists()){
 								Gui.removeOnType(createNewNameWriter);
-								setFile(file);
+								if(creatingNew == NEW_FILE){
+									setFile(file);
+								}
+								else if(creatingNew == NEW_FOLDER){
+									if(file.mkdirs()){
+										filePath.push(currentFolder);
+										changeButtons(file);
+										this.setVisible(false);
+										createNewNameWriter.setVisible(false);
+									}
+								}
 							}
-						
+
 						}
 					}
 				}
@@ -91,8 +108,7 @@ public class GetFileMenu extends Menu{
 				{
 					this.charIndex = 0;
 					this.index = 0;
-					setWidthFactor(1.4f);
-					setHeightFactor(3f);
+					setFontSize(GraphicText.FONT_SIZE_LARGE);
 					resize(getWidth(), getHeight());
 					reposition(0f,0f);
 				}
@@ -120,18 +136,33 @@ public class GetFileMenu extends Menu{
 			createNewNameWriter.reposition(0.23f, 0.83f);
 			addChild(createNewNameWriter);
 			createNewNameWriter.setVisible(false);
-			IconMenuButton createNewButton = new IconMenuButton("editor_button",3){
+			IconMenuButton createNewFileButton = new IconMenuButton("editor_button",3){
 				@Override
 				public void performOnRelease(MotionEvent e){
 					setVisible(false);
 					createNewNameField.setVisible(true);
 					createNewNameWriter.setVisible(true);
 					Gui.giveOnType(createNewNameWriter);
+					creatingNew = NEW_FILE;
 				}
 			};
-			createNewButton.resize(0.15f, 0.15f);
-			createNewButton.reposition(0.82f, 0.82f);
-			addChild(createNewButton);
+			createNewFileButton.resize(0.15f, 0.075f);
+			createNewFileButton.reposition(0.82f, 0.895f);
+			addChild(createNewFileButton);
+
+			IconMenuButton createNewFolderButton = new IconMenuButton("editor_button",7){
+				@Override
+				public void performOnRelease(MotionEvent e){
+					createNewNameField.setVisible(true);
+					createNewNameWriter.setVisible(true);
+					Gui.giveOnType(createNewNameWriter);
+					creatingNew = NEW_FOLDER;
+					createNewNameWriter.change("");
+				}
+			};
+			createNewFolderButton.resize(0.15f, 0.075f);
+			createNewFolderButton.reposition(0.82f, 0.82f);
+			addChild(createNewFolderButton);
 		}
 
 		scrollBar = new GraphicEntity("squares",Hub.MID_LAYER){
@@ -318,10 +349,13 @@ public class GetFileMenu extends Menu{
 		scrollBar.setVisible(true);
 		downButton.setVisible(true);
 		upButton.setVisible(true);
-		if(buttons[3].getText().equals(trimExtension(innerFiles[innerFiles.length-1].getName()))||innerFiles.length<=4){
+		
+		if(innerFiles.length<=4||
+			buttons[3].getText().equals(trimExtension(innerFiles[innerFiles.length-1].getName()))){
 			downButton.setVisible(false);
 		}
-		if(buttons[0].getText().equals(trimExtension(innerFiles[0].getName()))||innerFiles.length<=4){
+		if(innerFiles.length<=4||
+		   buttons[0].getText().equals(trimExtension(innerFiles[0].getName()))){
 			upButton.setVisible(false);
 		}
 		if(innerFiles.length<=4){

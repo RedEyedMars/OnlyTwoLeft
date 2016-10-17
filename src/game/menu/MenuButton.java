@@ -43,18 +43,16 @@ public class MenuButton extends GraphicEntity {
 		right.reposition(0.7f,0f);
 		right.setFrame(2);
 		addChild(right);
-		resize(0.6f,0.15f);
 		text = new GraphicText("impact",name,Hub.MID_LAYER){
 			@Override
 			public void reposition(float x, float y){
 				super.reposition(x, y);
 			}
 		};
-		text.setWidthFactor(1.4f);
-		text.setHeightFactor(3f);
-		text.resize(text.getWidth(), text.getHeight());
-		text.reposition(0f,0f);
+		text.setJustified(GraphicText.MIDDLE_JUSTIFIED);
+		text.setFontSize(GraphicText.FONT_SIZE_LARGE);
 		addChild(text);
+		resize(0.6f,0.15f);
 	}
 	public MenuButton(String name,boolean inverted) {
 		super("blank",Hub.BOT_LAYER);
@@ -88,20 +86,29 @@ public class MenuButton extends GraphicEntity {
 		right.reposition(0.7f,0f);
 		right.setFrame(2);
 		addChild(right);
-		resize(0.6f,0.15f);
-		text = new GraphicText("impactWhite",name,1);
-		text.setWidthFactor(1.4f);
-		text.setHeightFactor(3f);
-		text.resize(text.getWidth(), text.getHeight());
-		text.reposition(0f,0f);
+		text = new GraphicText("impactWhite",name,Hub.MID_LAYER);
+		text.setFontSize(GraphicText.FONT_SIZE_LARGE);
+		text.setJustified(GraphicText.MIDDLE_JUSTIFIED);
 		addChild(text);
+		resize(0.6f,0.15f);
 	}
 	public float offsetY(int index){
 		return index==3?0.02f:0f;
 	}
 	public float offsetX(int index){
-		return index==3?(getWidth()/2f)-(text.getText().length()*0.03f)/2f:
-			   index==2?getChild(0).getWidth()+getChild(1).getWidth():
+		if(getChild(index) instanceof GraphicText){
+			GraphicText t = (GraphicText)getChild(index);
+			if(t.isJustified(GraphicText.MIDDLE_JUSTIFIED)){
+				return 0.0f;
+			}
+			else if(t.isJustified(GraphicText.LEFT_JUSTIFIED)){
+				return 0.05f;
+			}
+			else if(t.isJustified(GraphicText.RIGHT_JUSTIFIED)){
+				return -0.05f;
+			}
+		}
+		return index==2?getChild(0).getWidth()+getChild(1).getWidth():
 			   index==1?getChild(0).getWidth():0f;
 	}
 	@Override
@@ -110,6 +117,7 @@ public class MenuButton extends GraphicEntity {
 		left.resize(x*0.1f/0.6f, y);
 		mid.resize(x*0.4f/0.6f, y);
 		right.resize(x*0.1f/0.6f, y);
+		text.resize(x, y);
 	}
 	public String getText() {
 		return text.getText();

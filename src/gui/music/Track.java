@@ -16,8 +16,10 @@ public class Track extends PlaybackListener implements Runnable {
 
 	private String copyright;
 	private String name;
+	private String artist;
+	private String artistAndName;
 	private String mp3Name;
-	private String httpLink;
+	private String httpLink = null;
 
 	private String filePath;
 
@@ -29,11 +31,14 @@ public class Track extends PlaybackListener implements Runnable {
 	private JavaSoundAudioDevice volumeAdjustableAudio;
 	private float volume;
 	private boolean pausing;
+	private String feature;
 
-	public Track(String mp3, String name, String copyright) {
+	public Track(String mp3, String name, String artist, String copyright) {
 		super();
 		this.mp3Name = mp3;
 		this.name = name;
+		this.artist = artist;
+		this.artistAndName = name+" - "+artist;
 		this.copyright = copyright;
 
 		this.filePath = "res/music/"+mp3Name;
@@ -42,11 +47,18 @@ public class Track extends PlaybackListener implements Runnable {
 	}
 
 	public void play(float volume) throws JavaLayerException, IOException {
+		File file = new File(this.filePath);
+		if(!file.exists()){
+			this.isFinished = true;
+			return;
+		}
+		else {
+			this.isFinished = false;
+		}
 		this.volume = volume;
 		String urlAsString = 
             "file:///" 
-            + new File(".").getCanonicalPath()         + "/" 
-            + this.filePath;
+            + file.getCanonicalPath(); 
 
 		AudioDevice audio = FactoryRegistry.systemRegistry().createAudioDevice();
 
@@ -111,6 +123,17 @@ public class Track extends PlaybackListener implements Runnable {
 		this.httpLink = link;
 	}
 
+	public String getHttpLink() {
+		return this.httpLink;
+	}
+	public void setFeature(String ft) {
+		this.feature = ft;
+	}
+
+	public String getFeature() {
+		return this.feature;
+	}
+
 	public boolean isFinished() {
 		return this.isFinished;
 	}
@@ -120,5 +143,17 @@ public class Track extends PlaybackListener implements Runnable {
 			volumeAdjustableAudio.setVolume(volume);
 			this.volume = volume;
 		}
+	}
+
+	public String getLicense() {
+		return copyright;
+	}
+
+	public String getArtist() {		
+		return artist;
+	}
+
+	public String getFullName(){
+		return artistAndName;
 	}
 }

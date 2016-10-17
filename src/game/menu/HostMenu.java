@@ -32,7 +32,7 @@ import main.Main;
 public class HostMenu extends Menu implements IDuoMenu{
 	private MenuButton ip;
 	private Client client;
-	private MenuButton mapButton;
+	private GraphicText mapButton;
 	private File mapFile = null;
 	private TextWriter name;
 	private GraphicEntity blackButton;
@@ -43,8 +43,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 		super();
 		GraphicEntity button = new GraphicText("impact","Name:",1){
 			{
-				setWidthFactor(1.4f);
-				setHeightFactor(3f);
+				setFontSize(GraphicText.FONT_SIZE_LARGE);
 			}
 		};
 		button.resize(0.2f, 0.15f);
@@ -56,9 +55,8 @@ public class HostMenu extends Menu implements IDuoMenu{
 
 		name = new TextWriter("impact","New Game"){
 			{
-				setWidthFactor(1.4f);
-				setHeightFactor(3f);
-				resize(getWidth(), getHeight());
+				setFontSize(GraphicText.FONT_SIZE_LARGE);
+				
 				charIndex=8;
 				index=8;
 			}
@@ -81,14 +79,19 @@ public class HostMenu extends Menu implements IDuoMenu{
 		addChild(name);
 		addChild(button);
 
-		button = new GraphicText("impact","Map:",1){
+		button = new MenuButton("Map:"){
 			{
-				setWidthFactor(1.4f);
-				setHeightFactor(3f);
+				text.setJustified(GraphicText.LEFT_JUSTIFIED);
+			}
+			@Override
+			public void performOnRelease(MotionEvent e){
+				if("Create Game".equals(gameButton.getText())){
+					changeMap();
+				}
 			}
 		};
-		button.resize(0.2f, 0.15f);
-		button.reposition(0.15f,0.53f);
+		button.resize(0.8f, 0.15f);
+		button.reposition(0.1f,0.51f);
 
 
 		mapFile = new File("data"+File.separator+
@@ -96,27 +99,12 @@ public class HostMenu extends Menu implements IDuoMenu{
 				"races"+File.separator+
 				"Rollacluster"+File.separator+
 				"Purple Hurdle.map");
-		mapButton = new MenuButton("Purple Hurdle"){
-			@Override
-			public void performOnRelease(MotionEvent e){
-				if("Create Game".equals(gameButton.getText())){
-					changeMap();
-				}
-			}
-			@Override
-			public float offsetX(int index){
-				if(index<3){
-					return super.offsetX(index);
-				}
-				else {
-					return 0.18f;
-				}
-			}
-		};
+		mapButton = new GraphicText("impact","Purple Hurdle",Hub.MID_LAYER);
+		mapButton.setFontSize(GraphicText.FONT_SIZE_LARGE);
 		mapButton.resize(0.8f, 0.15f);
-		mapButton.reposition(0.1f,0.51f);
-		addChild(mapButton);
+		mapButton.reposition(0.27f,0.53f);
 		addChild(button);
+		addChild(mapButton);
 		
 		whiteButton = new MenuButton("White"){
 			@Override
@@ -145,19 +133,13 @@ public class HostMenu extends Menu implements IDuoMenu{
 		blackButton.resize(0.25f, 0.1f);
 		blackButton.reposition(0.35f,0.375f);
 		button = new MenuButton("Colour:"){
+			{
+				text.setJustified(GraphicText.LEFT_JUSTIFIED);
+			}
 			@Override
 			public void performOnRelease(MotionEvent e){
 				if("Create Game".equals(gameButton.getText())){
 					flipColour();
-				}
-			}
-			@Override
-			public float offsetX(int index){
-				if(index<3){
-					return super.offsetX(index);
-				}
-				else {
-					return 0.05f;
 				}
 			}
 		};
@@ -259,7 +241,7 @@ public class HostMenu extends Menu implements IDuoMenu{
 			if(dotIndex!=-1){
 				name = name.substring(0, dotIndex);
 			}
-			mapButton.changeText(name);
+			mapButton.change(name);
 		}
 	}
 	public void playerJoins(String playerName) {

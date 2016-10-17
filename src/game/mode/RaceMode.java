@@ -63,7 +63,7 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 		this.colourToControl = colourToControl;
 		focused = Hub.getHero(colourToControl);
 		wild = Hub.getHero(!colourToControl);
-		
+
 		focused.resize(0.02f, standingHeight);
 		wild.resize(0.02f, 0.04f);
 		this.wildWall = wildWall;
@@ -76,13 +76,11 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 		}
 		showTimeBack = new GraphicText("impact","0",1);
 		showTimeBack.reposition(0.445f,0.895f);
-		showTimeBack.setWidthFactor(1.45f);
-		showTimeBack.setHeightFactor(3.2f);
+		showTimeBack.setFontSize(GraphicText.FONT_SIZE_LARGE);
 		auxillaryChildren.add(showTimeBack);
 		showTime = new GraphicText("impactWhite","0",1);
 		showTime.reposition(0.45f,0.9f);
-		showTime.setWidthFactor(1.4f);
-		showTime.setHeightFactor(3f);
+		showTime.setFontSize(GraphicText.FONT_SIZE_LARGE);
 		auxillaryChildren.add(showTime);
 	}
 
@@ -167,7 +165,7 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 				float x = ghostPath.readFloat();
 				float y = ghostPath.readFloat();
 				wild.reposition(x+Hub.map.getX(),
-						    y+Hub.map.getY());
+						y+Hub.map.getY());
 				char endChar = ghostPath.readChar();
 				if(endChar=='!'){
 					ghostPath.close();
@@ -203,12 +201,12 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 		}
 
 		Hub.map.reposition(Hub.map.getX()+(heroMoveX-focused.getX()),
-				       Hub.map.getY()+(heroMoveY-focused.getY()));
+				Hub.map.getY()+(heroMoveY-focused.getY()));
 		wild.reposition(wild.getX()+(heroMoveX-focused.getX()),
-				    wild.getY()+(heroMoveY-focused.getY()));
+				wild.getY()+(heroMoveY-focused.getY()));
 		focused.reposition(heroMoveX,heroMoveY);
 		wildWall.reposition(wild.getX()-0.25f,
-				        wild.getY()-0.25f);
+				wild.getY()-0.25f);
 	}
 	@Override 
 	public void update(double secondsSinceLastFrame){
@@ -267,12 +265,12 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 		}
 
 		if(HeroEndGameMessage.partnerHasWon()){
-		game.transition("Restart", false);
-		if(!Client.isConnected()){
-			HeroEndGameMessage.setAndSend(focused.isBlack(), false, Long.MAX_VALUE);
-			HeroEndGameMessage.setAndSend(!focused.isBlack(), false, bestTime);
-		}
-		ending = true;
+			game.transition("Restart", false);
+			if(!Client.isConnected()){
+				HeroEndGameMessage.setAndSend(focused.isBlack(), false, Long.MAX_VALUE);
+				HeroEndGameMessage.setAndSend(!focused.isBlack(), false, bestTime);
+			}
+			ending = true;
 		}
 		else {
 			game.restart();
@@ -298,7 +296,7 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		game.transition(nextMap, true);
 		if(!Client.isConnected()){
 			HeroEndGameMessage.setAndSend(focused.isBlack(), true, now);
@@ -330,7 +328,7 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 						subject.setJumping(true);
 						focusedCanJump=true;
 					}
-					
+
 				});
 			}
 		}
@@ -374,8 +372,15 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 				jump();
 			}
 			else if(28==keycode){//enter
-				game.getChatBox().blinkerOn();
-				Gui.giveOnType(game.getChatBox().getDefaultKeyBoardListener());
+				if(game.getChatBox()!=null){
+					focused.setXAcceleration(0f);
+					focused.resize(focused.getWidth(), standingHeight);
+
+					game.getChatBox().setVisible(true);
+					game.getChatBox().blinkerOn();
+					Gui.giveOnType(game.getChatBox().getDefaultKeyBoardListener());
+					Gui.giveOnClick(game.getChatBox());
+				}
 			}
 		}
 	}
@@ -384,7 +389,7 @@ public class RaceMode extends GameMouseHandler implements GameMode{
 	public boolean isCompetetive(){
 		return true;
 	}
-	
+
 	@Override
 	public boolean continuousKeyboard() {
 		return false;

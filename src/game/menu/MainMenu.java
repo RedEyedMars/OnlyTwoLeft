@@ -54,6 +54,29 @@ public class MainMenu extends Menu{
 		};
 		button.reposition(0.2f,0.19f);
 		addChild(button);
+		
+		button = new IconMenuButton("music_player_icons",4){
+			{
+				icon.resize(0.08f, 0.08f);
+			}
+			@Override
+			public void performOnRelease(MotionEvent e){
+				Gui.setView(new CreditMenu());
+			}
+			@Override
+			public void resize(float w, float h){
+				super.resize(w, h);
+				if(icon!=null){
+					left.resize(w*0.5f,h);
+					mid.resize(w*0.0f,h);
+					right.resize(w*0.5f,h);			
+					icon.resize(0.08f,0.08f);
+				}
+			}
+		};
+		button.resize(0.09f, 0.08f);
+		button.reposition(0.03f,0.77f);
+		addChild(button);
 	}
 
 	public void duo(){

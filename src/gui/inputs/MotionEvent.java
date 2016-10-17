@@ -43,4 +43,8 @@ public class MotionEvent {
 	public float getY() {
 		return y;
 	}
+
+	public void setAction(int action) {
+		this.action = action;
+	}
 }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import game.menu.MenuButton;
 import gui.graphics.GraphicElement;
 import gui.graphics.GraphicEntity;
+import gui.graphics.GraphicText;
 import gui.inputs.MotionEvent;
 import javazoom.jl.decoder.JavaLayerException;
 import main.Hub;
@@ -44,8 +45,7 @@ public class MusicPlayer extends MenuButton {
 			currentTrack = track;
 			index = Library.tracks.indexOf(track);
 		}
-		text.setWidthFactor(1f);
-		text.setHeightFactor(1f);
+		text.setFontSize(GraphicText.FONT_SIZE_REGULAR);
 		playPauseButton = new GraphicEntity("music_player_icons",Hub.MID_LAYER){
 			@Override
 			public void performOnRelease(MotionEvent e){
@@ -270,23 +270,26 @@ public class MusicPlayer extends MenuButton {
 		if(!minimized){
 			String suffix = "";
 			String prefix = "";
-			if(scroller<currentTrack.getName().length()-1){
+			if(scroller<currentTrack.getFullName().length()-1){
 				++scroller;
 			}
 			else {
 				scroller = 0;
 			}
-			if(scroller>=currentTrack.getName().length()-16){
-				prefix = currentTrack.getName().substring(scroller, currentTrack.getName().length());
-				suffix = "//"+currentTrack.getName().substring(0, scroller-(currentTrack.getName().length()-16));
+			if(scroller>=currentTrack.getFullName().length()-16){
+				prefix = currentTrack.getFullName().substring(scroller, currentTrack.getFullName().length());
+				suffix = "//"+currentTrack.getFullName().substring(0, scroller-(currentTrack.getFullName().length()-16));
 			}
 			else {
-				prefix = currentTrack.getName().substring(scroller, scroller+16);
+				prefix = currentTrack.getFullName().substring(scroller, scroller+16);
 			}
 			text.change(prefix+suffix);
 		}
 		if(currentTrack.isFinished()){
 			next();
 		}
+	}
+	public boolean isMaximized() {
+		return !minimized;
 	}
 }
